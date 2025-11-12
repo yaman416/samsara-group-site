@@ -12,15 +12,18 @@ import { CalendarDays, Trophy, ListOrdered, Users, Megaphone, Building2, Shield,
 
 // -------------------- CORE DATA --------------------
 const ORG = {
-  name: "Samsara Group",
-  tagline: "Community. Football. Support.",
+  name: "The Samsara Group - Canberra",
+  tagline: "Fostering Community, Empowering Growth",
   intro:
-    "Samsara Group is a community-led organisation in Canberra that supports sports, culture, and youth engagement. We run events and programs that bring people together.",
-  email: "info@samsaragroup.org",
-  phone: "+61 4xx xxx xxx",
-  location: "Canberra, ACT",
-  website: "https://example.org",
+    "Building connections, promoting culture, and empowering Nepalese communities in Canberra. The Samsara Group aims to strengthen unity through cultural programs, sports events, and social initiatives.",
+  email: "samsaragroup.cbr@gmail.com",
+  phone: "+61 449 981 624",
+  location: "Canberra, Australia",
+  facebook: "https://www.facebook.com/profile.php?id=61566789173985",
+  director: "Sujan Pakhrin Tamang (Director)",
+  coordinators: "Yaman Gurung & Kapil Shrish (Coordinators)",
 };
+
 
 const SPL_SEASON = {
   name: "Samsara Premier League (SPL) 2025-26",
@@ -171,20 +174,24 @@ export default function SamsaraApp() {
         {topTab === "org" && (
           <div className="grid md:grid-cols-3 gap-4">
             <Card className="md:col-span-2 rounded-2xl">
-              <CardHeader><CardTitle>Who we are</CardTitle></CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-700 leading-relaxed">{ORG.intro}</p>
-                <ul className="list-disc pl-5 mt-4 text-sm text-gray-700 space-y-1">
-                  <li>Community events and sports days</li>
-                  <li>Youth programs and volunteering</li>
-                  <li>Annual Samsara Premier League</li>
+              <CardHeader>
+                <CardTitle>About The Samsara Group</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-gray-700 space-y-3">
+                <p>{ORG.intro}</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>{ORG.director}</li>
+                  <li>{ORG.coordinators}</li>
                 </ul>
+                <p><strong>Address:</strong> {ORG.location}</p>
+                <p><strong>Email:</strong> <a href={`mailto:${ORG.email}`} className="text-blue-600 underline">{ORG.email}</a></p>
+                <p><strong>Phone:</strong> {ORG.phone}</p>
+                <p><strong>Facebook:</strong> <a href={ORG.facebook} className="text-blue-600 underline">Facebook Page</a></p>
               </CardContent>
             </Card>
             <Card className="rounded-2xl">
               <CardHeader><CardTitle>At a glance</CardTitle></CardHeader>
               <CardContent className="text-sm text-gray-700 space-y-2">
-                <p><Globe className="inline mr-2" size={16}/>Website: <a className="text-blue-600 underline" href={ORG.website}>{ORG.website}</a></p>
                 <p><Mail className="inline mr-2" size={16}/>Email: <a className="text-blue-600 underline" href={`mailto:${ORG.email}`}>{ORG.email}</a></p>
                 <p><Phone className="inline mr-2" size={16}/>Phone: {ORG.phone}</p>
                 <p>Location: {ORG.location}</p>
@@ -418,8 +425,12 @@ export default function SamsaraApp() {
         )}
       </main>
 
-      <footer className="mx-auto max-w-6xl px-4 py-8 text-center text-xs text-gray-500">
-        © {new Date().getFullYear()} {ORG.name}. All rights reserved.
+      <footer className="mx-auto max-w-6xl px-4 py-8 text-center text-xs text-gray-600 space-y-1">
+        <p>© {new Date().getFullYear()} {ORG.name}. All rights reserved.</p>
+        <p>Fostering Community, Empowering Growth</p>
+        <p>
+          <a href={ORG.facebook} target="_blank" className="text-blue-600 underline">Facebook</a> |
+        </p>
       </footer>
     </div>
   );
