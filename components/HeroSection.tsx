@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ORG } from "@/lib/splData";
 import { Button } from "@/components/ui/button";
 
-const IMAGES = ["/hero-1.jpg", "/hero-2.jpg", "/hero-3.jpg"]; // keep your images here
+const IMAGES = ["/1.jpg", "/2.jpg", "/3.jpg", "/4.jpg", "/5.jpg"]; // keep your images here
 
 export default function HeroSection() {
   const [index, setIndex] = useState(0);

@@ -15,45 +15,45 @@ type SectionKey = "home" | "table" | "fixtures" | "sponsors";
 export default function HomePage() {
   const [section, setSection] = useState<SectionKey>("home");
 
+  const handleNavChange = (target: SectionKey) => {
+    setSection(target);
+
+    if (typeof window === "undefined") return;
+
+    if (target === "home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    if (target === "table") {
+      const el = document.getElementById("league-table");
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    if (target === "fixtures") {
+      const el = document.getElementById("upcoming-fixtures");
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    if (target === "sponsors") {
+      const el = document.getElementById("sponsors");
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <MainHeader active={section} onChange={setSection} />
+      <MainHeader active={section} onChange={handleNavChange} />
       <main className="flex-1 mx-auto max-w-6xl px-4 pb-10">
-        {section === "home" && (
-          <>
-            <HeroSection />
-            <FeaturedEventsSection />
-            {/* League table ABOVE fixtures */}
-            <LeagueTableSection />
-            <UpcomingFixturesSection />
-            <SponsorsSection />
-          </>
-        )}
-
-        {section === "table" && (
-          <>
-            <HeroSection />
-            {/* Focus on table first, fixtures under it */}
-            <LeagueTableSection />
-            <UpcomingFixturesSection />
-          </>
-        )}
-
-        {section === "fixtures" && (
-          <>
-            <HeroSection />
-            {/* Still keep table above fixtures for consistency */}
-            <LeagueTableSection />
-            <UpcomingFixturesSection />
-          </>
-        )}
-
-        {section === "sponsors" && (
-          <>
-            <HeroSection />
-            <SponsorsSection />
-          </>
-        )}
+        {/* We always render the same vertical layout; header just scrolls to sections */}
+        <HeroSection />
+        <FeaturedEventsSection />
+        <LeagueTableSection />
+        <UpcomingFixturesSection />
+        <SponsorsSection />
       </main>
       <MainFooter />
     </div>
