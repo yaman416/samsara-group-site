@@ -74,21 +74,26 @@ export const FIXTURES: Fixture[] = [
   { id: "R1-M5", round: 1, date: "2025-11-15", time: "6:30 PM", home: "Achos Football Team", away: "Phuensum FC", ground: "Ground 1" },
   { id: "R1-M6", round: 1, date: "2025-11-15", time: "6:30 PM", home: "JA Brothers Football Club", away: "Queanbeyan Nepalese United Football Club", ground: "Ground 2" },
 
-  // Round 2 - 22 Nov 2025 (sample, continue same pattern as your fixture list)
+    // Round 2 - 22 Nov 2025
   { id: "R2-M1", round: 2, date: "2025-11-22", time: "3:30 PM", home: "Everest FC", away: "Phuensum FC", ground: "Ground 1" },
   { id: "R2-M2", round: 2, date: "2025-11-22", time: "3:30 PM", home: "Druk FC", away: "Khukuri Canberra FC", ground: "Ground 2" },
-  // ... continue all rounds the same way using ids R2-M3, R2-M4, etc
+  { id: "R2-M3", round: 2, date: "2025-11-22", time: "5:00 PM", home: "Thuenlam FC", away: "Unity Stars FC", ground: "Ground 1" },
+  { id: "R2-M4", round: 2, date: "2025-11-22", time: "5:00 PM", home: "Achos Football Team", away: "JA Brothers Football Club", ground: "Ground 2" },
+  { id: "R2-M5", round: 2, date: "2025-11-22", time: "6:30 PM", home: "Azhas FC", away: "Queanbeyan Nepalese United Football Club", ground: "Ground 1" },
+  { id: "R2-M6", round: 2, date: "2025-11-22", time: "6:30 PM", home: "Nepal United FC", away: "CNFC Canberra", ground: "Ground 2" },
+
 ];
 
 // Results for the league table (you can grow this as games are played)
-export const RESULTS: { fixtureId: string; homeGoals: number; awayGoals: number }[] = [
-  { fixtureId: "R1-M1", homeGoals: 9, awayGoals: 1 }, // Nepal United 9 - 1 Druk
-  { fixtureId: "R1-M2", homeGoals: 3, awayGoals: 1 }, // Thuenlam 3 - 1 CNFC
-  { fixtureId: "R1-M3", homeGoals: 0, awayGoals: 2 }, // Everest 0 - 2 Khukuri
-  { fixtureId: "R1-M4", homeGoals: 3, awayGoals: 1 }, // Azhas 3 - 1 Unity Stars
-  { fixtureId: "R1-M5", homeGoals: 1, awayGoals: 0 }, // Achos 1 - 0 Phuensum
-  { fixtureId: "R1-M6", homeGoals: 0, awayGoals: 2 }, // JA Brothers 0 - 2 QN United
+export const RESULTS = [
+  { fixtureId: "R1-M1", homeGoals: 9, awayGoals: 1 },  // Nepal United vs Druk
+  { fixtureId: "R1-M2", homeGoals: 4, awayGoals: 1 },  // Thuenlam vs CNFC (UPDATED)
+  { fixtureId: "R1-M3", homeGoals: 0, awayGoals: 2 },  // Everest vs Khukuri
+  { fixtureId: "R1-M4", homeGoals: 3, awayGoals: 1 },  // Azhas vs Unity Stars
+  { fixtureId: "R1-M5", homeGoals: 1, awayGoals: 0 },  // Achos vs Phuensum
+  { fixtureId: "R1-M6", homeGoals: 0, awayGoals: 2 },  // JA Brothers vs QN United
 ];
+
 
 export type TableRow = {
   name: string;
