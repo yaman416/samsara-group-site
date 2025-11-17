@@ -65,7 +65,7 @@ export default function LeagueTableSection() {
                           <span className="font-medium">{row.name}</span>
                           {knockout && (
                             <span className="ml-1 rounded-full bg-amber-100 text-[10px] px-2 py-0.5 text-amber-700">
-                              *
+                              
                             </span>
                           )}
                         </div>
