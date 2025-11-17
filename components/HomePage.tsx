@@ -23,6 +23,8 @@ export default function HomePage() {
           <>
             <HeroSection />
             <FeaturedEventsSection />
+            {/* League table ABOVE fixtures */}
+            <LeagueTableSection />
             <UpcomingFixturesSection />
             <SponsorsSection />
           </>
@@ -31,6 +33,7 @@ export default function HomePage() {
         {section === "table" && (
           <>
             <HeroSection />
+            {/* Focus on table first, fixtures under it */}
             <LeagueTableSection />
             <UpcomingFixturesSection />
           </>
@@ -39,8 +42,9 @@ export default function HomePage() {
         {section === "fixtures" && (
           <>
             <HeroSection />
-            <UpcomingFixturesSection />
+            {/* Still keep table above fixtures for consistency */}
             <LeagueTableSection />
+            <UpcomingFixturesSection />
           </>
         )}
 

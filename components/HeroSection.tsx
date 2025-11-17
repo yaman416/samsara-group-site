@@ -2,11 +2,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ORG, SPL_SEASON } from "@/lib/splData";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { ORG } from "@/lib/splData";
 
-const IMAGES = ["/hero-1.jpg", "/hero-2.jpg", "/hero-3.jpg"]; // add these files into /public
+const IMAGES = ["/hero-1.jpg", "/hero-2.jpg", "/hero-3.jpg"]; // keep your images here
 
 export default function HeroSection() {
   const [index, setIndex] = useState(0);
@@ -21,26 +19,24 @@ export default function HeroSection() {
 
   return (
     <section className="mt-6 grid gap-6 md:grid-cols-2 items-stretch">
-      {/* Intro */}
+      {/* Intro text only */}
       <div className="space-y-4">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-          The Samsara Group - Canberra
+          {ORG.name}
         </h1>
-        <p className="text-gray-700 leading-relaxed text-sm md:text-base">{ORG.intro}</p>
-        <Card className="rounded-2xl border bg-white shadow-sm">
-          <CardContent className="py-4 text-sm text-gray-700 space-y-1">
-            <div className="font-semibold">{SPL_SEASON.name}</div>
-            <div>Venue: {SPL_SEASON.venue}</div>
-            <div>Season start: {new Date(SPL_SEASON.startDate).toLocaleDateString()}</div>
-            <Button
-              asChild
-              size="sm"
-              className="mt-3 rounded-xl"
-            >
-              <a href="#league-table">View League Table</a>
-            </Button>
-          </CardContent>
-        </Card>
+        <p className="text-gray-700 leading-relaxed text-sm md:text-base">
+          {ORG.intro}
+        </p>
+        <div className="text-xs md:text-sm text-gray-600 space-y-1">
+          <p><strong>Location:</strong> {ORG.location}</p>
+          <p>
+            <strong>Email:</strong>{" "}
+            <a href={`mailto:${ORG.email}`} className="text-blue-600 underline">
+              {ORG.email}
+            </a>
+          </p>
+          <p><strong>Phone:</strong> {ORG.phone}</p>
+        </div>
       </div>
 
       {/* Photo slider */}
