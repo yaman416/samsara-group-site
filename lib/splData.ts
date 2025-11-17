@@ -1,7 +1,7 @@
 // lib/splData.ts
 
 export const ORG = {
-  name: "The Samsara Group - Canberra",
+  name: "Samsara Group",
   tagline: "Fostering Community, Empowering Growth",
   intro:
     "Building connections, promoting culture, and empowering Nepalese & Bhutanese communities in Canberra through culture, sport, and community events.",
