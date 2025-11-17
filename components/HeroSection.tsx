@@ -2,9 +2,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ORG } from "@/lib/splData";
+import { ORG, SPL_SEASON } from "@/lib/splData";
 
-// Add 5 images in /public with these names
+// 5 images in /public
 const IMAGES = [
   "/hero-1.jpg",
   "/hero-2.jpg",
@@ -29,23 +29,34 @@ export default function HeroSection() {
       id="top"
       className="mt-6 grid gap-6 md:grid-cols-2 items-stretch"
     >
-      {/* Intro text only */}
+      {/* Intro text: story + focus areas, no contact details */}
       <div className="space-y-4">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
           {ORG.name}
         </h1>
+
         <p className="text-gray-700 leading-relaxed text-sm md:text-base">
-          {ORG.intro}
+          The Samsara Group is a volunteer led community organisation in
+          Canberra. We create welcoming spaces where Nepalese and Bhutanese
+          communities can connect, celebrate, and grow together.
         </p>
-        <div className="text-xs md:text-sm text-gray-600 space-y-1">
-          <p><strong>Location:</strong> {ORG.location}</p>
+
+        <div className="text-xs md:text-sm text-gray-700 space-y-2">
           <p>
-            <strong>Email:</strong>{" "}
-            <a href={`mailto:${ORG.email}`} className="text-blue-600 underline">
-              {ORG.email}
-            </a>
+            <strong>What we do</strong>
           </p>
-          <p><strong>Phone:</strong> {ORG.phone}</p>
+          <ul className="list-disc pl-4 space-y-1">
+            <li>Host cultural events and community gatherings</li>
+            <li>Support youth through volunteering and leadership opportunities</li>
+            <li>Run community sport, including the Samsara Premier League</li>
+          </ul>
+        </div>
+
+        <div className="text-xs md:text-sm text-gray-600">
+          <p>
+            <strong>Flagship event:</strong> {SPL_SEASON.name} at{" "}
+            {SPL_SEASON.venue}
+          </p>
         </div>
       </div>
 
