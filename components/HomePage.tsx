@@ -16,9 +16,9 @@ export default function HomePage() {
   const [section, setSection] = useState<SectionKey>("home");
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden">
       <MainHeader active={section} onChange={setSection} />
-      <main className="flex-1 mx-auto max-w-6xl px-4 pb-10">
+      <main className="flex-1 mx-auto max-w-6xl w-full px-4 pb-10">
         <HeroSection />
         <FeaturedEventsSection />
         <LeagueTableSection />
