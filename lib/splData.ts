@@ -34,25 +34,71 @@ export const TEAMS = [
   "Druk FC",
 ];
 
+export const TEAM_LOGOS: Record<string, string> = {
+  "Achos Football Team": "/team/achos.png",
+  "Azhas FC": "/team/azhas.png",
+  "CNFC Canberra": "/team/cnfc.png",
+  "Druk FC": "/team/druk.png",
+  "Everest FC": "/team/everest.png",
+  "JA Brothers Football Club": "/team/jabrothers.png",
+  "Khukuri Canberra FC": "/team/khukuri.png",
+  "Nepal United FC": "/team/nufc.png",
+  "Phuensum FC": "/team/phuensum.png",
+  "Queanbeyan Nepalese United Football Club": "/team/queanbeyan.png",
+  "Thuenlam FC": "/team/thuenlam.png",
+  "Unity Stars FC": "/team/unity.png",
+};
+
+
+
 export const SPONSORS = {
-  title: [{ name: "SBA Property Group - Sbapropertygroup", url: "#" }],
-  platinum: [{ name: "GTM Facility Services", url: "#" }],
-  silver: [
-    { name: "Nepali Haat Bazaar", url: "#" },
-    { name: "Canberra Momo House - Nepalese Restaurant", url: "#" },
-    { name: "Dikshant Dhungel – Real Estate Agent", url: "#" },
-    { name: "The Monkey Temple", url: "#" },
-    { name: "Ooshman Gungahlin", url: "#" },
+  title: [
+    {
+      name: "SBA Property Group - Sbapropertygroup",
+      url: "#",
+      logo: "/sponsor/sba.png",
+    },
   ],
+
+  platinum: [
+    {
+      name: "GTM Facility Services",
+      url: "#",
+      logo: "/sponsor/gtm.png",
+    },
+  ],
+
+  silver: [
+    { name: "Nepali Haat Bazaar", url: "#", logo: "/sponsor/nepalihaat.png" },
+    { name: "Canberra Momo House - Nepalese Restaurant", url: "#", logo: "/sponsor/momo.png" },
+    { name: "Dikshant Dhungel – Real Estate Agent", url: "#", logo: "/sponsor/dikshant.png" },
+    { name: "The Monkey Temple", url: "#", logo: "/sponsor/monkeytemple.png" },
+    { name: "Ooshman Gungahlin", url: "#", logo: "/sponsor/ooshman.png" },
+    { name: "Zenith Services Sydney", url: "#", logo: "/sponsor/zenith.png" }, // NEW SILVER SPONSOR
+  ],
+
   media: [
-    { name: "Fan Voice TV", url: "#" },
-    { name: "Lensfusion Photo & Video", url: "#" },
-    { name: "Goal Lens Photography", url: "#" },
-    { name: "Lenscrafters Photography", url: "#" },
-    { name: "Films Yaman", url: "#" },
-    { name: "Crafts by Juna", url: "#" },
+    { name: "Fan Voice TV", url: "#", logo: "/media/fanvoice.png" },
+    { name: "Lensfusion Photo & Video", url: "#", logo: "/media/lensfusion.png" },
+    { name: "Goal Lens Photography", url: "#", logo: "/media/goallens.png" },
+    { name: "Lenscrafters Photography", url: "#", logo: "/media/lenscrafters.png" },
+    { name: "Films Yaman", url: "#", logo: "/media/fimlsyaman.png" },
+    { name: "Crafts by Juna", url: "#", logo: "/media/junacrafts.png" },
+    { name: "Avyukt News", url: "#", logo: "/media/avyukt.png" }, // NEW PARTNER
+    { name: "Gyelpo Photography", url: "#", logo: "/media/gyelpo.png" }, // NEW PARTNER
+  ],
+
+  merch: [
+    {
+      name: "Lhotse",
+      url: "#",
+      logo: "/sponsor/lhotse.png",
+      note: "Merchandise partner providing SPL merch and gifts for standout players.",
+    },
   ],
 };
+
+
 
 export type Fixture = {
   id: string;
