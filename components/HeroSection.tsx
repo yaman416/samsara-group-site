@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { ORG } from "@/lib/splData";
+import { Button } from "@/components/ui/button";
 
 const IMAGES = ["/hero-1.jpg", "/hero-2.jpg", "/hero-3.jpg"]; // keep your images here
 
@@ -28,14 +29,14 @@ export default function HeroSection() {
           {ORG.intro}
         </p>
         <div className="text-xs md:text-sm text-gray-600 space-y-1">
-          <p><strong>Location:</strong> {ORG.location}</p>
+          <p><strong>Watch Games Live on Facebook:</strong></p>
           <p>
-            <strong>Email:</strong>{" "}
-            <a href={`mailto:${ORG.email}`} className="text-blue-600 underline">
-              {ORG.email}
-            </a>
+            <Button asChild size="sm" className="rounded-xl">
+              <a href={ORG.facebook} target="_blank" rel="noreferrer">
+                Follow
+              </a>
+          </Button>
           </p>
-          <p><strong>Phone:</strong> {ORG.phone}</p>
         </div>
       </div>
 
