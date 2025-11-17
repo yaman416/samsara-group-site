@@ -4,7 +4,7 @@ export const ORG = {
   name: "The Samsara Group - Canberra",
   tagline: "Fostering Community, Empowering Growth",
   intro:
-    "Building connections, promoting culture, and empowering Nepalese communities in Canberra through culture, sport, and community events.",
+    "Building connections, promoting culture, and empowering Nepalese & Bhutanese communities in Canberra through culture, sport, and community events.",
   email: "samsaragroup.cbr@gmail.com",
   phone: "+61 449 981 624",
   location: "Canberra, Australia",

@@ -45,9 +45,6 @@ export default function LeagueTableSection() {
               ))}
             </tbody>
           </table>
-          <p className="text-[10px] md:text-xs text-gray-500 mt-2">
-            Table updates automatically when you add results in lib/splData.ts.
-          </p>
         </CardContent>
       </Card>
     </section>
