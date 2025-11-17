@@ -30,10 +30,11 @@ export default function HeroSection() {
         </p>
         <div className="text-xs md:text-sm text-gray-600 space-y-1">
           <p><strong>Watch Games Live on Facebook:</strong></p>
-          <p>
+          <p>Saturdays' from 3:30PM to 7:30PM</p>
+          <p>  
             <Button asChild size="sm" className="rounded-xl">
               <a href={ORG.facebook} target="_blank" rel="noreferrer">
-                Follow
+                Watch Live
               </a>
           </Button>
           </p>
