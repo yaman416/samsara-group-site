@@ -8,6 +8,13 @@ import { Menu, X } from "lucide-react";
 
 type SectionKey = "home" | "table" | "fixtures" | "sponsors";
 
+const hrefMap: Record<SectionKey, string> = {
+  home: "#top",
+  table: "#league-table",
+  fixtures: "#upcoming-fixtures",
+  sponsors: "#sponsors",
+};
+
 export default function MainHeader({
   active,
   onChange,
@@ -17,8 +24,9 @@ export default function MainHeader({
 }) {
   const [open, setOpen] = useState(false);
 
-  const NavButton = ({ keyName, label }: { keyName: SectionKey; label: string }) => (
-    <button
+  const NavLink = ({ keyName, label }: { keyName: SectionKey; label: string }) => (
+    <a
+      href={hrefMap[keyName]}
       className={`px-3 py-2 text-sm rounded-xl transition ${
         active === keyName ? "bg-gray-900 text-white" : "text-gray-700 hover:bg-gray-100"
       }`}
@@ -28,7 +36,7 @@ export default function MainHeader({
       }}
     >
       {label}
-    </button>
+    </a>
   );
 
   return (
@@ -42,11 +50,12 @@ export default function MainHeader({
           </div>
         </div>
 
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-2">
-          <NavButton keyName="home" label="About" />
-          <NavButton keyName="table" label="League Table" />
-          <NavButton keyName="fixtures" label="Upcoming Fixtures" />
-          <NavButton keyName="sponsors" label="Sponsors" />
+          <NavLink keyName="home" label="About" />
+          <NavLink keyName="table" label="League Table" />
+          <NavLink keyName="fixtures" label="Upcoming Fixtures" />
+          <NavLink keyName="sponsors" label="Sponsors" />
           <Button asChild size="sm" className="rounded-xl">
             <a href={ORG.facebook} target="_blank" rel="noreferrer">
               Follow
@@ -54,6 +63,7 @@ export default function MainHeader({
           </Button>
         </nav>
 
+        {/* Mobile toggle */}
         <button
           className="md:hidden p-2 rounded-lg hover:bg-gray-100"
           onClick={() => setOpen((v) => !v)}
@@ -62,13 +72,14 @@ export default function MainHeader({
         </button>
       </div>
 
+      {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t bg-white">
           <div className="mx-auto max-w-6xl px-4 py-2 flex flex-col gap-1">
-            <NavButton keyName="home" label="About" />
-            <NavButton keyName="table" label="League Table" />
-            <NavButton keyName="fixtures" label="Upcoming Fixtures" />
-            <NavButton keyName="sponsors" label="Sponsors" />
+            <NavLink keyName="home" label="About" />
+            <NavLink keyName="table" label="League Table" />
+            <NavLink keyName="fixtures" label="Upcoming Fixtures" />
+            <NavLink keyName="sponsors" label="Sponsors" />
           </div>
         </div>
       )}

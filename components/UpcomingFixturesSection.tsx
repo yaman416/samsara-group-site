@@ -7,7 +7,7 @@ export default function UpcomingFixturesSection() {
   const fixtures = getUpcomingFixtures(6);
 
   return (
-    <section className="mt-10 space-y-4">
+    <section id="upcoming-fixtures" className="mt-10 space-y-4">
       <h2 className="text-xl md:text-2xl font-semibold tracking-tight flex items-center gap-2">
         <CalendarDays size={20} />
         Upcoming Fixtures

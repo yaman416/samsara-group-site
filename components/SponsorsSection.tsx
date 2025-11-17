@@ -28,7 +28,7 @@ function SponsorGroup({ title, items, badge }: { title: string; items: SponsorIt
 
 export default function SponsorsSection() {
   return (
-    <section className="mt-10 space-y-4">
+    <section id="sponsors" className="mt-10 space-y-4">
       <h2 className="text-xl md:text-2xl font-semibold tracking-tight flex items-center gap-2">
         <Building2 size={20} />
         Sponsors and Partners

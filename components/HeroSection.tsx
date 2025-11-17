@@ -3,9 +3,15 @@
 
 import { useEffect, useState } from "react";
 import { ORG } from "@/lib/splData";
-import { Button } from "@/components/ui/button";
 
-const IMAGES = ["/hero-1.jpg", "/hero-2.jpg", "/hero-3.jpg", "/hero-4.jpg", "/hero-5.jpg"]; // keep your images here
+// Add 5 images in /public with these names
+const IMAGES = [
+  "/hero-1.jpg",
+  "/hero-2.jpg",
+  "/hero-3.jpg",
+  "/hero-4.jpg",
+  "/hero-5.jpg",
+];
 
 export default function HeroSection() {
   const [index, setIndex] = useState(0);
@@ -19,7 +25,10 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section className="mt-6 grid gap-6 md:grid-cols-2 items-stretch">
+    <section
+      id="top"
+      className="mt-6 grid gap-6 md:grid-cols-2 items-stretch"
+    >
       {/* Intro text only */}
       <div className="space-y-4">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
@@ -29,15 +38,14 @@ export default function HeroSection() {
           {ORG.intro}
         </p>
         <div className="text-xs md:text-sm text-gray-600 space-y-1">
-          <p><strong>Watch Games Live on Facebook:</strong></p>
-          <p>Saturdays' from 3:30PM to 7:30PM</p>
-          <p>  
-            <Button asChild size="sm" className="rounded-xl">
-              <a href={ORG.facebook} target="_blank" rel="noreferrer">
-                Watch Live
-              </a>
-          </Button>
+          <p><strong>Location:</strong> {ORG.location}</p>
+          <p>
+            <strong>Email:</strong>{" "}
+            <a href={`mailto:${ORG.email}`} className="text-blue-600 underline">
+              {ORG.email}
+            </a>
           </p>
+          <p><strong>Phone:</strong> {ORG.phone}</p>
         </div>
       </div>
 
