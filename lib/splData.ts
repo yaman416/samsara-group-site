@@ -144,7 +144,7 @@ export const RESULTS = [
   { fixtureId: "R2-M1", homeGoals: 1, awayGoals: 1 },  // Everest 1-1 Phuensum
   { fixtureId: "R2-M2", homeGoals: 0, awayGoals: 4 },  // Druk 0-4 Khukuri
   { fixtureId: "R2-M3", homeGoals: 6, awayGoals: 0 },  // Thuenlam 6-0 Unity
-  { fixtureId: "R2-M4", homeGoals: 0, awayGoals: 2 },  // Achos 2-0 JA Brothers
+  { fixtureId: "R2-M4", homeGoals: 2, awayGoals: 0 },  // Achos 2-0 JA Brothers
   { fixtureId: "R2-M5", homeGoals: 1, awayGoals: 1 },  // Azhas 1-1 QNU
   { fixtureId: "R2-M6", homeGoals: 10, awayGoals: 0 }, // Nepal United 10-0 CNFC
 ];

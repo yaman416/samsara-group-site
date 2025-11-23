@@ -1,7 +1,17 @@
 // components/ResultsSection.tsx
+"use client";
+
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FIXTURES, RESULTS, TEAM_LOGOS } from "@/lib/splData";
 import { ListChecks } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type MatchResultRow = {
   round: number;
@@ -14,76 +24,99 @@ type MatchResultRow = {
   awayGoals: number;
 };
 
-function buildResults(): { round: number; matches: MatchResultRow[] }[] {
-  const resultMap = new Map(
-    RESULTS.map((r) => [r.fixtureId, r])
-  );
-
-  const completed: MatchResultRow[] = FIXTURES
-    .filter((f) => resultMap.has(f.id))
-    .map((f) => {
-      const r = resultMap.get(f.id)!;
-      return {
-        round: f.round,
-        date: f.date,
-        time: f.time,
-        ground: f.ground,
-        home: f.home,
-        away: f.away,
-        homeGoals: r.homeGoals,
-        awayGoals: r.awayGoals,
-      };
-    });
-
-  // group by round
+function buildResultsByRound(): Map<number, MatchResultRow[]> {
+  const resultMap = new Map(RESULTS.map((r) => [r.fixtureId, r]));
   const byRound = new Map<number, MatchResultRow[]>();
-  for (const m of completed) {
-    if (!byRound.has(m.round)) byRound.set(m.round, []);
-    byRound.get(m.round)!.push(m);
+
+  for (const f of FIXTURES) {
+    const r = resultMap.get(f.id);
+    if (!r) continue;
+
+    const row: MatchResultRow = {
+      round: f.round,
+      date: f.date,
+      time: f.time,
+      ground: f.ground,
+      home: f.home,
+      away: f.away,
+      homeGoals: r.homeGoals,
+      awayGoals: r.awayGoals,
+    };
+
+    if (!byRound.has(f.round)) {
+      byRound.set(f.round, []);
+    }
+    byRound.get(f.round)!.push(row);
   }
 
-  // build sorted array
-  const rounds = Array.from(byRound.keys()).sort((a, b) => a - b);
-  return rounds.map((round) => {
-    const matches = byRound.get(round)!;
+  // sort each round by date and time
+  for (const [round, matches] of byRound.entries()) {
     matches.sort((a, b) => {
       const da = new Date(a.date).getTime();
       const db = new Date(b.date).getTime();
       if (da !== db) return da - db;
       return a.time.localeCompare(b.time);
     });
-    return { round, matches };
-  });
+    byRound.set(round, matches);
+  }
+
+  return byRound;
 }
 
 export default function ResultsSection() {
-  const grouped = buildResults();
-  if (grouped.length === 0) {
-    return null;
-  }
+  const byRound = useMemo(() => buildResultsByRound(), []);
+  const allRoundsWithResults = Array.from(byRound.keys()).sort((a, b) => a - b);
 
-  const latestRound = grouped[grouped.length - 1]?.round;
+  // latest round that has results, otherwise 1
+  const latestRound = allRoundsWithResults[allRoundsWithResults.length - 1] || 1;
+
+  const [round, setRound] = useState<number>(latestRound);
+
+  const matches = byRound.get(round) || [];
+  const weeks = Array.from({ length: 11 }, (_, i) => i + 1); // 1 to 11
 
   return (
     <section id="results" className="mt-10 space-y-4">
-      <h2 className="text-xl md:text-2xl font-semibold tracking-tight flex items-center gap-2">
-        <ListChecks size={20} />
-        Match Results
-      </h2>
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <h2 className="text-xl md:text-2xl font-semibold tracking-tight flex items-center gap-2">
+          <ListChecks size={20} />
+          Match Results
+        </h2>
 
-      {grouped.map(({ round, matches }) => (
-        <Card key={round} className="rounded-2xl border bg-white shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-sm md:text-base">
-              Match Week {round}
-            </CardTitle>
-            {round === latestRound && (
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-700 border border-emerald-100">
-                Latest
-              </span>
-            )}
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
+        <div className="flex items-center gap-2">
+          <span className="text-xs md:text-sm text-gray-600">Match Week</span>
+          <Select
+            value={String(round)}
+            onValueChange={(val) => setRound(Number(val))}
+          >
+            <SelectTrigger className="w-32 rounded-2xl h-8 text-xs md:text-sm">
+              <SelectValue placeholder="Select week" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl">
+              {weeks.map((w) => (
+                <SelectItem key={w} value={String(w)}>
+                  Week {w}
+                  {w === latestRound && " (latest)"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <Card className="rounded-2xl border bg-white shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-sm md:text-base">
+            Match Week {round} results
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="overflow-x-auto">
+          {matches.length === 0 ? (
+            <p className="text-sm text-gray-600">
+              No results recorded for this week yet.
+            </p>
+          ) : (
             <table className="w-full text-xs md:text-sm">
               <thead className="text-gray-500 text-left">
                 <tr>
@@ -141,9 +174,13 @@ export default function ResultsSection() {
                 ))}
               </tbody>
             </table>
-          </CardContent>
-        </Card>
-      ))}
+          )}
+        </CardContent>
+      </Card>
+
+      <p className="text-[11px] md:text-xs text-gray-500">
+        Results update automatically when you edit the RESULTS list in lib/splData.ts.
+      </p>
     </section>
   );
 }
