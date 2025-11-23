@@ -39,18 +39,18 @@ export default function LeagueTableSection() {
               </thead>
               <tbody>
                 {table.map((row, i) => {
-                  const knockout = i < 4; // top 4 go to knockouts
+                  const position = i + 1;
+                  const knockout = position <= 4;     // top 4
+                  const relegation = position >= 11;  // positions 11 and 12
+
+                  let rowClass = "border-t ";
+                  if (knockout) rowClass += "bg-amber-50/70 ";
+                  if (relegation) rowClass += "bg-red-50/80 ";
 
                   return (
-                    <tr
-                      key={row.name}
-                      className={
-                        "border-t " +
-                        (knockout ? "bg-amber-50/70" : "")
-                      }
-                    >
+                    <tr key={row.name} className={rowClass}>
                       <td className="py-1.5 pr-2 font-semibold">
-                        {i + 1}
+                        {position}
                       </td>
 
                       <td className="py-1.5 pr-2">
@@ -65,7 +65,12 @@ export default function LeagueTableSection() {
                           <span className="font-medium">{row.name}</span>
                           {knockout && (
                             <span className="ml-1 rounded-full bg-amber-100 text-[10px] px-2 py-0.5 text-amber-700">
-                              
+                              Knockout position
+                            </span>
+                          )}
+                          {relegation && (
+                            <span className="ml-1 rounded-full bg-red-100 text-[10px] px-2 py-0.5 text-red-700">
+                              Relegation position
                             </span>
                           )}
                         </div>
@@ -88,9 +93,13 @@ export default function LeagueTableSection() {
             </table>
           </div>
 
-          <p className="text-[11px] md:text-xs text-gray-500 mt-3">
-            Top four clubs qualify for the SPL knockout stage after the league
-            phase.
+          <p className="text-[11px] md:text-xs text-gray-500 mt-3 space-y-1">
+            <span className="block">
+              Top four clubs qualify for the SPL knockout stage after the league phase.
+            </span>
+            <span className="block">
+              Positions 11 and 12 are marked as relegation positions.
+            </span>
           </p>
         </CardContent>
       </Card>
