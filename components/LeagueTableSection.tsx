@@ -98,7 +98,7 @@ export default function LeagueTableSection() {
               Top four clubs qualify for the SPL knockout stage after the league phase.
             </span>
             <span className="block">
-              Positions 11 and 12 are marked as relegation positions.
+              Positions 11 and 12 are relegation positions.
             </span>
           </p>
         </CardContent>
