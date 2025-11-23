@@ -6,14 +6,18 @@ import { ORG } from "@/lib/splData";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
-type SectionKey = "home" | "table" | "fixtures" | "sponsors";
+type SectionKey = "home" | "table" | "fixtures" | "results" | "sponsors";
+
 
 const hrefMap: Record<SectionKey, string> = {
   home: "#top",
   table: "#league-table",
   fixtures: "#upcoming-fixtures",
+  results: "#results",
   sponsors: "#sponsors",
 };
+
+
 
 export default function MainHeader({
   active,
@@ -55,6 +59,7 @@ export default function MainHeader({
           <NavLink keyName="home" label="About" />
           <NavLink keyName="table" label="League Table" />
           <NavLink keyName="fixtures" label="Upcoming Fixtures" />
+          <NavLink keyName="results" label="Match Results" />
           <NavLink keyName="sponsors" label="Sponsors" />
           <Button asChild size="sm" className="rounded-xl">
             <a href={ORG.facebook} target="_blank" rel="noreferrer">
@@ -79,6 +84,7 @@ export default function MainHeader({
             <NavLink keyName="home" label="About" />
             <NavLink keyName="table" label="League Table" />
             <NavLink keyName="fixtures" label="Upcoming Fixtures" />
+            <NavLink keyName="results" label="Match Results" />
             <NavLink keyName="sponsors" label="Sponsors" />
           </div>
         </div>

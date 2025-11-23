@@ -7,10 +7,11 @@ import HeroSection from "@/components/HeroSection";
 import FeaturedEventsSection from "@/components/FeaturedEventsSection";
 import LeagueTableSection from "@/components/LeagueTableSection";
 import UpcomingFixturesSection from "@/components/UpcomingFixturesSection";
+import ResultsSection from "@/components/ResultsSection";
 import SponsorsSection from "@/components/SponsorsSection";
 import MainFooter from "@/components/MainFooter";
 
-type SectionKey = "home" | "table" | "fixtures" | "sponsors";
+type SectionKey = "home" | "table" | "fixtures" | "results" | "sponsors";
 
 export default function HomePage() {
   const [section, setSection] = useState<SectionKey>("home");
@@ -23,6 +24,7 @@ export default function HomePage() {
         <FeaturedEventsSection />
         <LeagueTableSection />
         <UpcomingFixturesSection />
+        <ResultsSection />
         <SponsorsSection />
       </main>
       <MainFooter />

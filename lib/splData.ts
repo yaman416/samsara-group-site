@@ -132,12 +132,21 @@ export const FIXTURES: Fixture[] = [
 
 // Results for the league table (you can grow this as games are played)
 export const RESULTS = [
-  { fixtureId: "R1-M1", homeGoals: 9, awayGoals: 1 },  // Nepal United vs Druk
-  { fixtureId: "R1-M2", homeGoals: 4, awayGoals: 1 },  // Thuenlam vs CNFC (UPDATED)
-  { fixtureId: "R1-M3", homeGoals: 0, awayGoals: 2 },  // Everest vs Khukuri
-  { fixtureId: "R1-M4", homeGoals: 3, awayGoals: 1 },  // Azhas vs Unity Stars
-  { fixtureId: "R1-M5", homeGoals: 1, awayGoals: 0 },  // Achos vs Phuensum
-  { fixtureId: "R1-M6", homeGoals: 0, awayGoals: 2 },  // JA Brothers vs QN United
+  // Week 1
+  { fixtureId: "R1-M1", homeGoals: 9, awayGoals: 1 },  // Nepal United FC 9-1 Druk
+  { fixtureId: "R1-M2", homeGoals: 4, awayGoals: 1 },  // Thuenlam 4-1 CNFC
+  { fixtureId: "R1-M3", homeGoals: 0, awayGoals: 2 },  // Everest 0-2 Khukuri
+  { fixtureId: "R1-M4", homeGoals: 3, awayGoals: 1 },  // Azhas 3-1 Unity
+  { fixtureId: "R1-M5", homeGoals: 1, awayGoals: 0 },  // Achos 1-0 Phuensum
+  { fixtureId: "R1-M6", homeGoals: 0, awayGoals: 2 },  // JA Brothers 0-2 QNU
+
+  // Week 2
+  { fixtureId: "R2-M1", homeGoals: 1, awayGoals: 1 },  // Everest 1-1 Phuensum
+  { fixtureId: "R2-M2", homeGoals: 0, awayGoals: 4 },  // Druk 0-4 Khukuri
+  { fixtureId: "R2-M3", homeGoals: 6, awayGoals: 0 },  // Thuenlam 6-0 Unity
+  { fixtureId: "R2-M4", homeGoals: 0, awayGoals: 2 },  // Achos 2-0 JA Brothers
+  { fixtureId: "R2-M5", homeGoals: 1, awayGoals: 1 },  // Azhas 1-1 QNU
+  { fixtureId: "R2-M6", homeGoals: 10, awayGoals: 0 }, // Nepal United 10-0 CNFC
 ];
 
 
