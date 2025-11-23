@@ -177,10 +177,6 @@ export default function ResultsSection() {
           )}
         </CardContent>
       </Card>
-
-      <p className="text-[11px] md:text-xs text-gray-500">
-        Results update automatically when you edit the RESULTS list in lib/splData.ts.
-      </p>
     </section>
   );
 }

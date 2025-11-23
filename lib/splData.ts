@@ -75,6 +75,11 @@ export const SPONSORS = {
     { name: "The Monkey Temple", url: "#", logo: "/sponsor/monkeytemple.png" },
     { name: "Ooshman Gungahlin", url: "#", logo: "/sponsor/ooshman.png" },
     { name: "Zenith Services Sydney", url: "#", logo: "/sponsor/zenith.png" }, // NEW SILVER SPONSOR
+    {
+      name: "Expert Education and Visa Services (Blacktown, Sydney)",
+      url: "#",
+      logo: "/sponsor/expert.png",
+    },
   ],
 
   media: [
