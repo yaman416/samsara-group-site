@@ -31,6 +31,9 @@ export default function MainFooter() {
               Visit page
             </a>
           </p>
+          <a href="/privacy-policy" className="text-xs text-gray-500 hover:underline">
+            Privacy Policy
+          </a>
           <p className="text-gray-500">
             © {new Date().getFullYear()} {ORG.name}. All rights reserved.
           </p>
