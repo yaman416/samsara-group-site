@@ -1,95 +1,170 @@
+// components/FixturesResultsSection.tsx
 "use client";
 
-import { useMemo, useState } from "react";
-import { FIXTURES, RESULTS, TEAM_LOGOS, MATCH_FACTS } from "@/lib/splData";
+import { useState, useMemo } from "react";
+import {
+  FIXTURES,
+  RESULTS,
+  TEAM_LOGOS,
+  MATCH_FACTS,
+  getRounds,
+} from "@/lib/splData";
 import Modal from "@/components/Modal";
 
-export default function ResultsSection() {
-  // Fixtures that have a result saved
-  const completed = FIXTURES.filter(f =>
-    RESULTS.some(r => r.fixtureId === f.id)
-  );
+type ResultMap = Record<string, { homeGoals: number; awayGoals: number }>;
 
-  // Get list of available result weeks
-  const weeks = [...new Set(completed.map(f => f.round))].sort((a, b) => b - a);
+export default function FixturesResultsSection() {
+  // All match weeks
+  const rounds = getRounds();
 
-  const [selectedWeek, setSelectedWeek] = useState(weeks[0]);
+  // Default to the first round
+  const [selectedRound, setSelectedRound] = useState<number>(rounds[0]);
+
+  // Modal state
   const [openMatchId, setOpenMatchId] = useState<string | null>(null);
 
-  // Matches to show
-  const matchesThisWeek = useMemo(
-    () => completed.filter(f => f.round === selectedWeek),
-    [selectedWeek, completed]
+  // Map all results by fixtureId for quick lookup
+  const resultMap: ResultMap = useMemo(
+    () =>
+      Object.fromEntries(
+        RESULTS.map((r) => [
+          r.fixtureId,
+          { homeGoals: r.homeGoals, awayGoals: r.awayGoals },
+        ]),
+      ),
+    [],
   );
 
-  function logo(team: string) {
-    return TEAM_LOGOS[team] || "/team/default.png";
-  }
+  // Fixtures for selected week
+  const fixtures = useMemo(
+    () =>
+      FIXTURES.filter((f) => f.round === selectedRound).sort((a, b) =>
+        a.time.localeCompare(b.time),
+      ),
+    [selectedRound],
+  );
 
-  function getScore(id: string) {
-    return RESULTS.find(r => r.fixtureId === id);
+  // Detect next upcoming round
+  const today = new Date();
+  const nextUpcomingRound =
+    FIXTURES.find((f) => new Date(f.date) >= today)?.round || rounds[0];
+
+  function logo(team: string) {
+    return TEAM_LOGOS[team] || "";
   }
 
   return (
-    <section id="results" className="mt-12">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Match Results</h2>
+    <section id="fixtures" className="mt-12">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
+        <h2 className="text-xl font-bold tracking-tight">
+          SPL Fixtures & Results
+        </h2>
 
-        {/* Week dropdown */}
-        <select
-          value={selectedWeek}
-          onChange={(e) => setSelectedWeek(Number(e.target.value))}
-          className="border px-3 py-2 rounded-lg text-sm bg-white"
-        >
-          {weeks.map(w => (
-            <option key={w} value={w}>Week {w}</option>
-          ))}
-        </select>
+        {/* Week Selector */}
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-gray-600">Week</label>
+          <select
+            value={selectedRound}
+            onChange={(e) => setSelectedRound(Number(e.target.value))}
+            className="border px-3 py-2 rounded-lg text-sm shadow-sm"
+          >
+            {rounds.map((r) => (
+              <option key={r} value={r}>
+                Week {r}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Results list */}
+      {/* Upcoming Week Indicator */}
+      <p className="text-xs text-gray-600 mb-3">
+        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
+          Upcoming Week: {nextUpcomingRound}
+        </span>
+      </p>
+
+      {/* Fixtures list */}
       <div className="space-y-4">
-        {matchesThisWeek.map(m => {
-          const s = getScore(m.id);
-          if (!s) return null;
+        {fixtures.map((f) => {
+          const res = resultMap[f.id];
+          const isFinished = !!res;
+          const hasFacts = !!MATCH_FACTS[f.id];
 
           return (
             <div
-              key={m.id}
-              className="bg-white border rounded-xl shadow-sm p-4 flex flex-col gap-3"
+              key={f.id}
+              className="bg-white p-4 shadow rounded-xl border"
             >
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>{m.date}</span>
-                <span>{m.ground}</span>
+              {/* Team Row */}
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                {/* Home */}
+                <div className="flex items-center gap-2 min-w-[40%]">
+                  <img
+                    src={logo(f.home)}
+                    className="w-7 h-7 rounded-full border"
+                    alt={f.home}
+                  />
+                  <span className="font-semibold text-sm">{f.home}</span>
+                </div>
+
+                {/* Centre */}
+                <div className="flex-1 text-center">
+                  {isFinished ? (
+                    <span className="text-lg font-bold">
+                      {res.homeGoals}
+                      <span className="text-[10px] text-gray-500 mx-1">
+                        FT
+                      </span>
+                      {res.awayGoals}
+                    </span>
+                  ) : (
+                    <span className="text-sm font-semibold text-gray-600">
+                      vs
+                    </span>
+                  )}
+                  <div className="text-[10px] text-gray-600 mt-1">
+                    Week {f.round} • {f.date} • {f.time}
+                  </div>
+                </div>
+
+                {/* Away */}
+                <div className="flex items-center justify-end gap-2 min-w-[40%]">
+                  <span className="font-semibold text-sm text-right">
+                    {f.away}
+                  </span>
+                  <img
+                    src={logo(f.away)}
+                    className="w-7 h-7 rounded-full border"
+                    alt={f.away}
+                  />
+                </div>
               </div>
 
-              <div className="flex justify-between items-center">
-                {/* HOME */}
-                <div className="flex flex-col items-center w-1/3">
-                  <img src={logo(m.home)} className="w-10 h-10 rounded-full" />
-                  <span className="text-xs font-semibold text-center">{m.home}</span>
-                </div>
+              {/* Match info row */}
+              <div className="mt-2 flex items-center justify-between text-xs text-gray-600 flex-wrap gap-2">
+                <span>
+                  Ground: <strong>{f.ground}</strong>
+                </span>
 
-                <div className="text-xl font-bold text-gray-900">
-                  {s.homeGoals} - {s.awayGoals}
-                </div>
+                <div className="flex items-center gap-2">
+                  {!isFinished && (
+                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[10px]">
+                      Upcoming fixture
+                    </span>
+                  )}
 
-                {/* AWAY */}
-                <div className="flex flex-col items-center w-1/3">
-                  <img src={logo(m.away)} className="w-10 h-10 rounded-full" />
-                  <span className="text-xs font-semibold text-center">{m.away}</span>
+                  {isFinished && hasFacts && (
+                    <button
+                      onClick={() => setOpenMatchId(f.id)}
+                      className="bg-blue-600 text-white text-xs px-3 py-1 rounded-lg hover:bg-blue-700"
+                    >
+                      Match Facts
+                    </button>
+                  )}
                 </div>
               </div>
-
-              {/* Match Facts button */}
-              {MATCH_FACTS[m.id] && (
-                <button
-                  onClick={() => setOpenMatchId(m.id)}
-                  className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md w-fit mx-auto"
-                >
-                  Match Facts
-                </button>
-              )}
             </div>
           );
         })}
@@ -104,38 +179,61 @@ export default function ResultsSection() {
 }
 
 function MatchFacts({ matchId }: { matchId: string }) {
-  const m = MATCH_FACTS[matchId];
-  if (!m) return <p className="text-sm">No match facts available.</p>;
+  const d = MATCH_FACTS[matchId];
+
+  if (!d) return <p className="text-sm text-white">No data available.</p>;
 
   return (
-    <div className="text-sm space-y-6">
-      {/* HOME */}
-      <div>
-        <h3 className="font-bold mb-1">Home Team</h3>
+    <div className="text-sm space-y-5 text-white">
+      <h3 className="text-lg font-bold">Match Facts</h3>
 
-        <p className="font-semibold">Goals</p>
+      {/* Home Team */}
+      <div>
+        <p className="font-semibold bg-white/10 px-2 py-1 rounded">
+          Home Team
+        </p>
+
+        <p className="mt-2 font-semibold">Goals</p>
         <ul className="list-disc pl-5">
-          {m.home.scorers.length ? m.home.scorers.map((g, i) => <li key={i}>{g}</li>) : <li>None</li>}
+          {d.home.scorers.length > 0 ? (
+            d.home.scorers.map((s, i) => <li key={i}>{s}</li>)
+          ) : (
+            <li>No goals</li>
+          )}
         </ul>
 
-        <p className="font-semibold mt-2">Cards</p>
+        <p className="mt-3 font-semibold">Cards</p>
         <ul className="list-disc pl-5">
-          {m.home.cards.length ? m.home.cards.map((c, i) => <li key={i}>{c}</li>) : <li>None</li>}
+          {d.home.cards.length > 0 ? (
+            d.home.cards.map((c, i) => <li key={i}>{c}</li>)
+          ) : (
+            <li>No cards</li>
+          )}
         </ul>
       </div>
 
-      {/* AWAY */}
+      {/* Away Team */}
       <div>
-        <h3 className="font-bold mb-1">Away Team</h3>
+        <p className="font-semibold bg-white/10 px-2 py-1 rounded">
+          Away Team
+        </p>
 
-        <p className="font-semibold">Goals</p>
+        <p className="mt-2 font-semibold">Goals</p>
         <ul className="list-disc pl-5">
-          {m.away.scorers.length ? m.away.scorers.map((g, i) => <li key={i}>{g}</li>) : <li>None</li>}
+          {d.away.scorers.length > 0 ? (
+            d.away.scorers.map((s, i) => <li key={i}>{s}</li>)
+          ) : (
+            <li>No goals</li>
+          )}
         </ul>
 
-        <p className="font-semibold mt-2">Cards</p>
+        <p className="mt-3 font-semibold">Cards</p>
         <ul className="list-disc pl-5">
-          {m.away.cards.length ? m.away.cards.map((c, i) => <li key={i}>{c}</li>) : <li>None</li>}
+          {d.away.cards.length > 0 ? (
+            d.away.cards.map((c, i) => <li key={i}>{c}</li>)
+          ) : (
+            <li>No cards</li>
+          )}
         </ul>
       </div>
     </div>
