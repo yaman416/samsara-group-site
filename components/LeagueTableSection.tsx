@@ -1,337 +1,281 @@
 // components/LeagueTableSection.tsx
+"use client";
 
-import Image from "next/image";
-import { ChevronUp, ChevronDown, Minus } from "lucide-react";
+import { useMemo } from "react";
 import {
   TEAMS,
-  TEAM_LOGOS,
-  FIXTURE_MAP,
+  FIXTURES,
   RESULTS,
-  Result,
+  TEAM_LOGOS,
+  SPL_SEASON,
+  type TableRow,
 } from "@/lib/splData";
 
-type TableRow = {
-  teamName: string;
-  logo: string;
-  played: number;
-  won: number;
-  drawn: number;
-  lost: number;
-  goalsFor: number;
-  goalsAgainst: number;
-  goalDiff: number;
-  points: number;
-  form: ("W" | "D" | "L")[];
+type RowWithMeta = TableRow & {
   position: number;
-  previousPosition?: number;
+  change: number; // positive = moved up, negative = moved down
 };
 
-function getResultRound(result: Result): number {
-  const fixture = FIXTURE_MAP[result.fixtureId];
-  return fixture?.round ?? 0;
-}
+type ResultEntry = {
+  fixtureId: string;
+  homeGoals: number;
+  awayGoals: number;
+};
 
-function getMaxPlayedRound(): number {
-  let max = 0;
-  for (const r of RESULTS) {
-    const round = getResultRound(r);
-    if (round > max) max = round;
-  }
-  return max;
-}
+function buildTableFromResults(results: ResultEntry[]): TableRow[] {
+  const index = Object.fromEntries(TEAMS.map((t, i) => [t, i]));
+  const rows: TableRow[] = TEAMS.map((name) => ({
+    name,
+    played: 0,
+    won: 0,
+    drawn: 0,
+    lost: 0,
+    goalsFor: 0,
+    goalsAgainst: 0,
+    goalDiff: 0,
+    points: 0,
+  }));
 
-function buildTable(uptoRound: number): TableRow[] {
-  const stats = new Map<
-    string,
-    {
-      played: number;
-      won: number;
-      drawn: number;
-      lost: number;
-      goalsFor: number;
-      goalsAgainst: number;
-      points: number;
-      form: ("W" | "D" | "L")[];
-    }
-  >();
-
-  TEAMS.forEach((name) => {
-    stats.set(name, {
-      played: 0,
-      won: 0,
-      drawn: 0,
-      lost: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      points: 0,
-      form: [],
-    });
-  });
-
-  const sortedResults = [...RESULTS].sort(
-    (a, b) => getResultRound(a) - getResultRound(b),
+  const resultMap = Object.fromEntries(
+    results.map((r) => [r.fixtureId, r]),
   );
 
-  for (const result of sortedResults) {
-    const fixture = FIXTURE_MAP[result.fixtureId];
-    if (!fixture) continue;
-    if (fixture.round > uptoRound) continue;
+  for (const f of FIXTURES) {
+    const r = resultMap[f.id];
+    if (!r) continue;
 
-    const homeStats = stats.get(fixture.home)!;
-    const awayStats = stats.get(fixture.away)!;
+    const hi = index[f.home];
+    const ai = index[f.away];
+    if (hi === undefined || ai === undefined) continue;
 
-    homeStats.played += 1;
-    awayStats.played += 1;
+    const home = rows[hi];
+    const away = rows[ai];
 
-    homeStats.goalsFor += result.homeGoals;
-    homeStats.goalsAgainst += result.awayGoals;
+    home.played += 1;
+    away.played += 1;
+    home.goalsFor += r.homeGoals;
+    home.goalsAgainst += r.awayGoals;
+    away.goalsFor += r.awayGoals;
+    away.goalsAgainst += r.homeGoals;
+    home.goalDiff = home.goalsFor - home.goalsAgainst;
+    away.goalDiff = away.goalsFor - away.goalsAgainst;
 
-    awayStats.goalsFor += result.awayGoals;
-    awayStats.goalsAgainst += result.homeGoals;
-
-    if (result.homeGoals > result.awayGoals) {
-      homeStats.won += 1;
-      homeStats.points += 3;
-      awayStats.lost += 1;
-      homeStats.form.push("W");
-      awayStats.form.push("L");
-    } else if (result.homeGoals < result.awayGoals) {
-      awayStats.won += 1;
-      awayStats.points += 3;
-      homeStats.lost += 1;
-      homeStats.form.push("L");
-      awayStats.form.push("W");
+    if (r.homeGoals > r.awayGoals) {
+      home.won += 1;
+      home.points += 3;
+      away.lost += 1;
+    } else if (r.homeGoals < r.awayGoals) {
+      away.won += 1;
+      away.points += 3;
+      home.lost += 1;
     } else {
-      homeStats.drawn += 1;
-      awayStats.drawn += 1;
-      homeStats.points += 1;
-      awayStats.points += 1;
-      homeStats.form.push("D");
-      awayStats.form.push("D");
+      home.drawn += 1;
+      away.drawn += 1;
+      home.points += 1;
+      away.points += 1;
     }
   }
 
-  const rows: TableRow[] = TEAMS.map((name) => {
-    const s = stats.get(name)!;
-    const goalDiff = s.goalsFor - s.goalsAgainst;
-    const logo = TEAM_LOGOS[name] ?? "/team/everest.png";
-
-    return {
-      teamName: name,
-      logo,
-      played: s.played,
-      won: s.won,
-      drawn: s.drawn,
-      lost: s.lost,
-      goalsFor: s.goalsFor,
-      goalsAgainst: s.goalsAgainst,
-      goalDiff,
-      points: s.points,
-      form: s.form.slice(-5),
-      position: 0,
-    };
-  });
-
-  rows.sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff;
-    if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
-    return a.teamName.localeCompare(b.teamName);
-  });
-
-  rows.forEach((row, idx) => {
-    row.position = idx + 1;
-  });
+  rows.sort(
+    (a, b) =>
+      b.points - a.points ||
+      b.goalDiff - a.goalDiff ||
+      b.goalsFor - a.goalsFor ||
+      a.name.localeCompare(b.name),
+  );
 
   return rows;
 }
 
-function movementIcon(current: number, previous?: number) {
-  if (!previous) {
+function PositionChangeBadge({ change }: { change: number }) {
+  if (change > 0) {
     return (
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-[10px] font-semibold text-gray-600">
-        N
+      <span className="ml-1 inline-flex items-center text-[10px] font-semibold text-emerald-600">
+        ▲ {change}
       </span>
     );
   }
-  if (previous > current) {
+  if (change < 0) {
     return (
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-700">
-        <ChevronUp className="h-3 w-3" />
-      </span>
-    );
-  }
-  if (previous < current) {
-    return (
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-red-700">
-        <ChevronDown className="h-3 w-3" />
+      <span className="ml-1 inline-flex items-center text-[10px] font-semibold text-red-600">
+        ▼ {Math.abs(change)}
       </span>
     );
   }
   return (
-    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-gray-500">
-      <Minus className="h-3 w-3" />
+    <span className="ml-1 inline-flex items-center text-[10px] text-gray-400">
+      •
     </span>
   );
 }
 
-function zoneClass(position: number) {
-  if (position <= 4) return "border-l-4 border-blue-500 bg-blue-50/40";
-  if (position >= 11) return "border-l-4 border-red-500 bg-red-50/40";
-  return "border-l border-gray-200";
-}
-
-function formDot(result: "W" | "D" | "L", index: number) {
-  const base = "h-2.5 w-2.5 rounded-full";
-  if (result === "W") return <span key={index} className={`${base} bg-green-500`} />;
-  if (result === "D") return <span key={index} className={`${base} bg-yellow-400`} />;
-  return <span key={index} className={`${base} bg-red-500`} />;
-}
-
 export default function LeagueTableSection() {
-  const maxRound = getMaxPlayedRound();
-  const current = buildTable(maxRound);
-  const previous = maxRound > 1 ? buildTable(maxRound - 1) : null;
+  // Full current table from all results
+  const currentTable = useMemo(
+    () => buildTableFromResults(RESULTS),
+    [],
+  );
 
-  const rows: TableRow[] = current.map((row) => {
-    const prev = previous?.find((p) => p.teamName === row.teamName);
-    return { ...row, previousPosition: prev?.position };
-  });
+  // Find latest round with a result
+  const latestRound = useMemo(() => {
+    let maxRound = 0;
+    for (const r of RESULTS) {
+      const fx = FIXTURES.find((f) => f.id === r.fixtureId);
+      if (fx && fx.round > maxRound) {
+        maxRound = fx.round;
+      }
+    }
+    return maxRound;
+  }, []);
+
+  // Previous table (up to round before latest)
+  const previousResults = useMemo(() => {
+    if (latestRound <= 1) return [] as ResultEntry[];
+    return RESULTS.filter((r) => {
+      const fx = FIXTURES.find((f) => f.id === r.fixtureId);
+      return fx && fx.round < latestRound;
+    });
+  }, [latestRound]);
+
+  const previousTable = useMemo(() => {
+    if (previousResults.length === 0) return null;
+    return buildTableFromResults(previousResults);
+  }, [previousResults]);
+
+  const prevPositionMap: Record<string, number> = useMemo(() => {
+    if (!previousTable) return {};
+    const map: Record<string, number> = {};
+    previousTable.forEach((row, idx) => {
+      map[row.name] = idx + 1;
+    });
+    return map;
+  }, [previousTable]);
+
+  const rowsWithMeta: RowWithMeta[] = useMemo(() => {
+    return currentTable.map((row, idx) => {
+      const position = idx + 1;
+      const prev = prevPositionMap[row.name];
+      const change =
+        prev !== undefined ? prev - position : 0; // positive means moved up
+      return { ...row, position, change };
+    });
+  }, [currentTable, prevPositionMap]);
 
   return (
-    <section className="rounded-2xl bg-white p-4 shadow-sm border">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-lg font-semibold">League Table</h2>
-          <p className="text-xs text-gray-500">
-            After Matchweek {maxRound}. Top 4 qualify for knockouts. Bottom 2 are
-            in relegation zone.
-          </p>
-        </div>
-        <div className="flex items-center gap-4 text-[11px] text-gray-500">
-          <div className="flex items-center gap-1">
-            <span className="h-3 w-3 rounded-sm bg-blue-500" />
-            Top 4
+    <section
+      id="table"
+      className="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+    >
+      {/* Header with SPL logo */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <img
+            src="/spl-logo.png"
+            alt="Samsara Premier League logo"
+            className="h-10 w-auto rounded-md bg-white"
+          />
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">
+              League Table
+            </h2>
+            <p className="text-xs text-gray-500">
+              {SPL_SEASON.name} - top 4 qualify for knockouts. Bottom 2 in
+              relegation zone.
+            </p>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="h-3 w-3 rounded-sm bg-red-500" />
-            Relegation
+        </div>
+        <div className="hidden sm:flex flex-col items-end text-[11px] text-gray-500">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-3 w-3 rounded-sm bg-emerald-100 border border-emerald-400" />
+            <span>Top 4 - knockout round</span>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="inline-block h-3 w-3 rounded-sm bg-red-100 border border-red-400" />
+            <span>Positions 11-12 - relegation zone</span>
           </div>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs md:text-sm">
+      {/* Table */}
+      <div className="mt-4 overflow-x-auto">
+        <table className="min-w-full text-xs md:text-sm border-collapse">
           <thead>
-            <tr className="border-b text-[11px] uppercase tracking-wide text-gray-500">
-              <th className="py-2 pr-2 text-left">Pos</th>
-              <th className="py-2 pr-2 text-left">Club</th>
-              <th className="px-1 text-center">MP</th>
-              <th className="px-1 text-center">W</th>
-              <th className="px-1 text-center">D</th>
-              <th className="px-1 text-center">L</th>
-              <th className="px-1 text-center">GF</th>
-              <th className="px-1 text-center">GA</th>
-              <th className="px-1 text-center">GD</th>
-              <th className="px-1 text-center">Pts</th>
-              <th className="px-2 text-center whitespace-nowrap">Last 5</th>
+            <tr className="bg-gray-100 text-[11px] uppercase tracking-wide text-gray-600">
+              <th className="px-2 py-2 text-left">Pos</th>
+              <th className="px-2 py-2 text-left">Team</th>
+              <th className="px-1 py-2 text-center">P</th>
+              <th className="px-1 py-2 text-center">W</th>
+              <th className="px-1 py-2 text-center">D</th>
+              <th className="px-1 py-2 text-center">L</th>
+              <th className="px-1 py-2 text-center">GF</th>
+              <th className="px-1 py-2 text-center">GA</th>
+              <th className="px-1 py-2 text-center">GD</th>
+              <th className="px-2 py-2 text-center">Pts</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.teamName}
-                className={`border-b last:border-0 ${zoneClass(row.position)}`}
-              >
-                <td className="py-1.5 pr-2 text-center text-xs font-semibold text-gray-700">
-                  {row.position}
-                </td>
-                <td className="py-1.5 pr-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
-                      <Image
-                        src={row.logo}
-                        alt={row.teamName}
-                        width={24}
-                        height={24}
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium md:text-sm">
-                        {row.teamName}
+            {rowsWithMeta.map((row) => {
+              const isTop4 = row.position <= 4;
+              const isRelegation = row.position >= 11;
+              const logoSrc = TEAM_LOGOS[row.name];
+
+              const baseRow =
+                "border-b border-gray-100 text-gray-800";
+              const bgClass = isTop4
+                ? "bg-emerald-50"
+                : isRelegation
+                ? "bg-red-50"
+                : "bg-white";
+
+              return (
+                <tr key={row.name} className={`${baseRow} ${bgClass}`}>
+                  <td className="px-2 py-2 text-left font-semibold text-gray-800">
+                    <span className="inline-flex items-center">
+                      {row.position}
+                      <PositionChangeBadge change={row.change} />
+                    </span>
+                  </td>
+                  <td className="px-2 py-2">
+                    <div className="flex items-center gap-2">
+                      {logoSrc && (
+                        <img
+                          src={logoSrc}
+                          alt={row.name}
+                          className="h-6 w-6 rounded-full border border-gray-200 bg-white object-contain"
+                        />
+                      )}
+                      <span className="text-[11px] md:text-xs font-medium">
+                        {row.name}
                       </span>
-                      <span className="flex items-center gap-1 text-[10px] text-gray-500">
-                        {movementIcon(row.position, row.previousPosition)}
-                        <span>
-                          {row.previousPosition
-                            ? row.position === row.previousPosition
-                              ? "No change"
-                              : row.position < row.previousPosition
-                              ? `Up from ${row.previousPosition}`
-                              : `Down from ${row.previousPosition}`
-                            : "First update"}
-                        </span>
-                      </span>
                     </div>
-                  </div>
-                </td>
-                <td className="px-1 text-center">{row.played}</td>
-                <td className="px-1 text-center">{row.won}</td>
-                <td className="px-1 text-center">{row.drawn}</td>
-                <td className="px-1 text-center">{row.lost}</td>
-                <td className="px-1 text-center">{row.goalsFor}</td>
-                <td className="px-1 text-center">{row.goalsAgainst}</td>
-                <td className="px-1 text-center">
-                  <span
-                    className={
-                      row.goalDiff > 0
-                        ? "text-green-600"
-                        : row.goalDiff < 0
-                        ? "text-red-600"
-                        : ""
-                    }
-                  >
+                  </td>
+                  <td className="px-1 py-2 text-center">
+                    {row.played}
+                  </td>
+                  <td className="px-1 py-2 text-center">{row.won}</td>
+                  <td className="px-1 py-2 text-center">
+                    {row.drawn}
+                  </td>
+                  <td className="px-1 py-2 text-center">
+                    {row.lost}
+                  </td>
+                  <td className="px-1 py-2 text-center">
+                    {row.goalsFor}
+                  </td>
+                  <td className="px-1 py-2 text-center">
+                    {row.goalsAgainst}
+                  </td>
+                  <td className="px-1 py-2 text-center">
                     {row.goalDiff}
-                  </span>
-                </td>
-                <td className="px-1 text-center font-semibold">
-                  {row.points}
-                </td>
-                <td className="px-2 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    {row.form.length === 0 ? (
-                      <span className="text-[10px] text-gray-400">No games</span>
-                    ) : (
-                      row.form.map(formDot)
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-2 py-2 text-center font-semibold">
+                    {row.points}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[11px] text-gray-500">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-semibold">Key:</span>
-          <span>MP: Matches played</span>
-          <span>GF: Goals for</span>
-          <span>GA: Goals against</span>
-          <span>GD: Goal difference</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="font-semibold">Last 5:</span>
-          <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-full bg-green-500" /> Win
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" /> Draw
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-full bg-red-500" /> Loss
-          </span>
-        </div>
       </div>
     </section>
   );

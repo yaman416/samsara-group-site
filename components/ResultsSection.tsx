@@ -54,7 +54,7 @@ export default function ResultsSection() {
     return map;
   }, []);
 
-  // Find latest completed round (at least one result in that round)
+  // Latest completed round (at least one fixture has a result)
   const latestCompletedRound = useMemo(() => {
     let latest = 1;
     for (const tab of tabs) {
@@ -174,7 +174,7 @@ export default function ResultsSection() {
                         {homeGoals}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between gap-2 mt-1">
+                    <div className="mt-1 flex items-center justify-between gap-2">
                       <span
                         className={
                           awayWon

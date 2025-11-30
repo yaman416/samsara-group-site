@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { ORG, SPL_SEASON } from "@/lib/splData";
 
-// Images in /public
 const IMAGES = [
   "/hero-1.jpg",
   "/hero-2.jpg",
@@ -20,6 +19,21 @@ const IMAGES = [
   "/hero-12.jpg",
 ];
 
+const IMAGE_LABELS = [
+  "Nepal United FC",
+  "Thuenlam FC",
+  "Khukuri Canberra FC",
+  "Queanbeyan Nepalese United Football Club",
+  "Azhas FC",
+  "CNFC Canberra",
+  "Druk FC",
+  "Everest FC",
+  "JA Brothers Football Club",
+  "Achos Football Team",
+  "Phuensum FC",
+  "Unity Stars FC",
+];
+
 const YOUTUBE_URL = "https://www.youtube.com/@SamsaraGroupCanberra";
 
 export default function HeroSection() {
@@ -33,12 +47,14 @@ export default function HeroSection() {
     return () => clearInterval(id);
   }, []);
 
+  const clubLabel = IMAGE_LABELS[index] ?? "Samsara Premier League club";
+
   return (
     <section
       id="top"
       className="mt-6 grid gap-6 md:grid-cols-2 items-stretch"
     >
-      {/* Intro text: story + focus areas */}
+      {/* Left: About Samsara Group */}
       <div className="space-y-4">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
           {ORG.name} - Canberra
@@ -66,7 +82,7 @@ export default function HeroSection() {
           </p>
         </div>
 
-        {/* Single YouTube button under about section */}
+        {/* YouTube button only here */}
         <div className="pt-1">
           <a
             href={YOUTUBE_URL}
@@ -82,18 +98,23 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Photo slider */}
+      {/* Right: Photo slider with club label */}
       <div className="relative rounded-2xl overflow-hidden border bg-gray-200 h-56 md:h-64 lg:h-72">
         <img
           src={IMAGES[index]}
-          alt="Samsara Group event"
+          alt={clubLabel}
           className="h-full w-full object-cover transition-opacity duration-500"
         />
 
-        {/* Dots */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-          <div className="text-[11px] md:text-xs text-white bg-black/40 px-2 py-1 rounded-full">
-            Samsara Premier League 2025-26
+        {/* Overlay labels and dots */}
+        <div className="absolute inset-x-3 bottom-3 flex items-end justify-between gap-2">
+          <div className="space-y-1">
+            <div className="inline-flex items-center rounded-full bg-black/70 px-3 py-1 text-[11px] text-white">
+              <span className="font-semibold">{clubLabel}</span>
+            </div>
+            <div className="inline-flex items-center rounded-full bg-black/60 px-3 py-1 text-[10px] text-gray-100">
+              Samsara Premier League 2025-26
+            </div>
           </div>
           <div className="flex gap-1">
             {IMAGES.map((_, i) => (

@@ -81,10 +81,10 @@ export default function UpcomingFixturesSection() {
       <div className="flex items-center justify-between gap-2">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">
-            Upcoming Fixtures
+            Fixtures
           </h2>
           <p className="text-xs text-gray-500">
-            Highlighted week shows the next scheduled round.
+            Upcoming week is tagged below. Select any week to view fixtures.
           </p>
         </div>
         <div className="hidden sm:flex flex-col items-end text-[11px] text-gray-500">
@@ -141,7 +141,8 @@ export default function UpcomingFixturesSection() {
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="font-semibold text-gray-800">
-                  {f.home} <span className="text-gray-500">vs</span> {f.away}
+                  {f.home} <span className="text-gray-500">vs</span>{" "}
+                  {f.away}
                 </div>
                 <div className="text-[11px] text-gray-500">
                   {f.date} · {f.time}
