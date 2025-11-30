@@ -2,18 +2,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FIXTURES, TEAM_LOGOS } from "@/lib/splData";
-import { CalendarDays } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FIXTURES, FIXTURE_MAP, RESULTS } from "@/lib/splData";
 
-type FixtureRow = {
+type FixtureView = {
+  id: string;
   round: number;
   date: string;
   time: string;
@@ -22,170 +14,130 @@ type FixtureRow = {
   away: string;
 };
 
-function buildFixturesByRound(): Map<number, FixtureRow[]> {
-  const byRound = new Map<number, FixtureRow[]>();
-
+function getAllRounds(): number[] {
+  const rounds = new Set<number>();
   for (const f of FIXTURES) {
-    const row: FixtureRow = {
-      round: f.round,
-      date: f.date,
-      time: f.time,
-      ground: f.ground,
-      home: f.home,
-      away: f.away,
-    };
+    rounds.add(f.round);
+  }
+  return Array.from(rounds).sort((a, b) => a - b);
+}
 
-    if (!byRound.has(f.round)) {
-      byRound.set(f.round, []);
+function getFixtureRoundFromResultFixtureId(fixtureId: string): number {
+  const fixture = FIXTURE_MAP[fixtureId];
+  return fixture?.round ?? 0;
+}
+
+// Based on results, guess the next upcoming round
+function getNextRound(): number {
+  const allRounds = getAllRounds();
+  if (RESULTS.length === 0) {
+    // No games played yet
+    return allRounds[0];
+  }
+
+  const completedRounds = new Set<number>();
+  for (const result of RESULTS) {
+    const r = getFixtureRoundFromResultFixtureId(result.fixtureId);
+    if (r > 0) completedRounds.add(r);
+  }
+
+  // First round that does not have any result yet
+  for (const r of allRounds) {
+    if (!completedRounds.has(r)) {
+      return r;
     }
-    byRound.get(f.round)!.push(row);
   }
 
-  // sort fixtures in each round by date and time
-  for (const [round, matches] of byRound.entries()) {
-    matches.sort((a, b) => {
-      const da = new Date(a.date).getTime();
-      const db = new Date(b.date).getTime();
-      if (da !== db) return da - db;
-      return a.time.localeCompare(b.time);
-    });
-    byRound.set(round, matches);
-  }
-
-  return byRound;
+  // If all rounds have some result, just show last one
+  return allRounds[allRounds.length - 1];
 }
 
 export default function UpcomingFixturesSection() {
-  const byRound = useMemo(() => buildFixturesByRound(), []);
-  const roundsWithFixtures = Array.from(byRound.keys()).sort((a, b) => a - b);
+  const rounds = getAllRounds();
+  const initialRound = getNextRound();
 
-  // choose default round as upcoming if possible, otherwise first round
-  const now = new Date().getTime();
-  let defaultRound = roundsWithFixtures[0] || 1;
+  const [round, setRound] = useState<number>(initialRound);
 
-  for (const r of roundsWithFixtures) {
-    const matches = byRound.get(r) || [];
-    const hasFuture = matches.some(
-      (m) => new Date(m.date).getTime() >= now
-    );
-    if (hasFuture) {
-      defaultRound = r;
-      break;
-    }
-  }
-
-  const [round, setRound] = useState<number>(defaultRound);
-  const matches = byRound.get(round) || [];
-
-  // Option list: use actual rounds that exist (should be 1 to 11)
-  const weeks = roundsWithFixtures;
+  const fixturesForRound: FixtureView[] = useMemo(() => {
+    return FIXTURES.filter((f) => f.round === round)
+      .sort((a, b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        return a.time.localeCompare(b.time);
+      })
+      .map((f) => ({
+        id: f.id,
+        round: f.round,
+        date: f.date,
+        time: f.time,
+        ground: f.ground,
+        home: f.home,
+        away: f.away,
+      }));
+  }, [round]);
 
   return (
-    <section id="upcoming-fixtures" className="mt-10 space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-xl md:text-2xl font-semibold tracking-tight flex items-center gap-2">
-          <CalendarDays size={20} />
-          Fixtures
-        </h2>
+    <section className="rounded-2xl bg-white p-4 shadow-sm border">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">Upcoming Fixtures</h2>
+          <p className="text-xs text-gray-500">
+            Full match schedule for the Samsara Premier League up to week 11.
+          </p>
+        </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs md:text-sm text-gray-600">Match Week</span>
-          <Select
-            value={String(round)}
-            onValueChange={(val) => setRound(Number(val))}
+        <div className="flex items-center gap-2 text-xs">
+          <label htmlFor="fixtures-round-select" className="text-gray-600">
+            Matchweek
+          </label>
+          <select
+            id="fixtures-round-select"
+            value={round}
+            onChange={(e) => setRound(Number(e.target.value))}
+            className="rounded-xl border border-gray-300 px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <SelectTrigger className="w-32 rounded-2xl h-8 text-xs md:text-sm">
-              <SelectValue placeholder="Select week" />
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl">
-              {weeks.map((w) => (
-                <SelectItem key={w} value={String(w)}>
-                  Week {w}
-                  {w === defaultRound && " (upcoming)"}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {rounds.map((r) => (
+              <option key={r} value={r}>
+                Week {r}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <Card className="rounded-2xl border bg-white shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-sm md:text-base">
-            Match Week {round} fixtures
-          </CardTitle>
-        </CardHeader>
+      {fixturesForRound.length === 0 ? (
+        <p className="text-sm text-gray-500">
+          No fixtures scheduled for this week.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {fixturesForRound.map((f) => (
+            <div
+              key={f.id}
+              className="flex flex-col gap-2 rounded-2xl border bg-gray-50 p-3 md:flex-row md:items-center md:justify-between"
+            >
+              <div className="flex flex-1 flex-col gap-1 md:flex-row md:items-center md:gap-3">
+                <div className="flex flex-1 items-center justify-between gap-2 md:justify-start">
+                  <span className="text-xs font-medium md:text-sm">
+                    {f.home}
+                  </span>
+                  <span className="text-xs text-gray-500">vs</span>
+                  <span className="text-xs font-medium md:text-sm">
+                    {f.away}
+                  </span>
+                </div>
+              </div>
 
-        <CardContent className="overflow-x-auto">
-          {matches.length === 0 ? (
-            <p className="text-sm text-gray-600">
-              No fixtures scheduled for this week.
-            </p>
-          ) : (
-            <table className="w-full text-xs md:text-sm">
-              <thead className="text-gray-500 text-left">
-                <tr>
-                  <th className="py-2 pr-2">Date</th>
-                  <th className="py-2 pr-2">Time</th>
-                  <th className="py-2 pr-2">Home</th>
-                  <th className="py-2 pr-2"></th>
-                  <th className="py-2 pr-2">Away</th>
-                  <th className="py-2 pr-0">Ground</th>
-                </tr>
-              </thead>
-              <tbody>
-                {matches.map((m, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="py-1.5 pr-2">
-                      {new Date(m.date).toLocaleDateString()}
-                    </td>
-                    <td className="py-1.5 pr-2">{m.time}</td>
-
-                    {/* Home */}
-                    <td className="py-1.5 pr-2">
-                      <div className="flex items-center gap-2">
-                        {TEAM_LOGOS[m.home] && (
-                          <img
-                            src={TEAM_LOGOS[m.home]}
-                            alt={m.home}
-                            className="h-6 w-6 rounded-full border object-cover"
-                          />
-                        )}
-                        <span className="font-medium">{m.home}</span>
-                      </div>
-                    </td>
-
-                    {/* VS */}
-                    <td className="py-1.5 pr-2 text-center font-semibold text-gray-500">
-                      vs
-                    </td>
-
-                    {/* Away */}
-                    <td className="py-1.5 pr-2">
-                      <div className="flex items-center gap-2">
-                        {TEAM_LOGOS[m.away] && (
-                          <img
-                            src={TEAM_LOGOS[m.away]}
-                            alt={m.away}
-                            className="h-6 w-6 rounded-full border object-cover"
-                          />
-                        )}
-                        <span>{m.away}</span>
-                      </div>
-                    </td>
-
-                    <td className="py-1.5 pr-0">{m.ground}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
-
-      <p className="text-[11px] md:text-xs text-gray-500">
-        Use the Match Week selector to view fixtures for any week of the SPL league stage.
-      </p>
+              <div className="flex flex-col items-end text-[11px] text-gray-500">
+                <span>
+                  Week {f.round} • {f.time}
+                </span>
+                <span>{f.ground}</span>
+                <span className="text-gray-400">Date {f.date}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
