@@ -2,490 +2,353 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  FIXTURES,
-  RESULTS,
-  TEAM_LOGOS,
-  MATCH_FACTS,
-  type Fixture,
-  type GoalEvent,
-  type CardEvent,
-} from "@/lib/splData";
+import { FIXTURES, RESULTS, TEAM_LOGOS } from "@/lib/splData";
+import Modal from "@/components/Modal";
 
-type RoundTab = {
-  round: number;
-  label: string;
-  dateLabel: string;
+type Fixture = (typeof FIXTURES)[number];
+type Result = (typeof RESULTS)[number];
+
+type MatchFacts = {
+  fixtureId: string;
+  homeGoals: string[];
+  awayGoals: string[];
+  cards: {
+    team: "home" | "away";
+    player: string;
+    card: "Yellow" | "Red";
+  }[];
 };
 
-type ResultMapValue = {
-  homeGoals: number;
-  awayGoals: number;
-};
+// Example facts. Extend this as you record more games.
+const MATCH_FACTS: MatchFacts[] = [
+  {
+    fixtureId: "R3-M1", // Everest 1 - 3 JA Brothers
+    homeGoals: ["Kiran Gautam"],
+    awayGoals: ["Dipesh Tamang", "Ajay Shrestha", "Alton Thakuri"],
+    cards: [
+      {
+        team: "away",
+        player: "Silas Tamang",
+        card: "Yellow",
+      },
+      {
+        team: "away",
+        player: "Ajay Shrestha",
+        card: "Yellow",
+      },
+      {
+        team: "away",
+        player: "Rahul Tamang",
+        card: "Yellow",
+      },
+    ],
+  },
+  // Add Week 1 and Week 2 facts here when ready
+];
 
-type ActiveMatch = {
-  fixture: Fixture;
-  homeGoals: number;
-  awayGoals: number;
-};
-
-function buildRoundTabs(): RoundTab[] {
-  const rounds = Array.from(new Set(FIXTURES.map((f) => f.round))).sort(
-    (a, b) => a - b,
-  );
-
-  return rounds.map((round) => {
-    const fixtures = FIXTURES.filter((f) => f.round === round);
-    const first = fixtures[0];
-    let dateLabel = `Week ${round}`;
-    if (first) {
-      const d = new Date(first.date + "T00:00:00");
-      dateLabel = d.toLocaleDateString("en-AU", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-      });
-    }
-    return {
-      round,
-      label: `Week ${round}`,
-      dateLabel,
-    };
-  });
+function getAllRounds() {
+  const set = new Set<number>();
+  FIXTURES.forEach((f) => set.add(f.round));
+  return Array.from(set).sort((a, b) => a - b);
 }
 
-function MatchFactsModal({
-  match,
-  onClose,
-}: {
-  match: ActiveMatch | null;
-  onClose: () => void;
-}) {
-  if (!match) return null;
+function toRoundMap() {
+  const byId = Object.fromEntries(FIXTURES.map((f) => [f.id, f]));
+  const map = new Map<number, { fixture: Fixture; result: Result }[]>();
 
-  const { fixture, homeGoals, awayGoals } = match;
-  const facts = MATCH_FACTS[fixture.id];
-  const homeLogo = TEAM_LOGOS[fixture.home];
-  const awayLogo = TEAM_LOGOS[fixture.away];
+  for (const r of RESULTS) {
+    const f = byId[r.fixtureId];
+    if (!f) continue;
+    if (!map.has(f.round)) map.set(f.round, []);
+    map.get(f.round)!.push({ fixture: f, result: r });
+  }
 
-  const hasFacts =
-    facts && (facts.goals.length > 0 || facts.cards.length > 0);
+  for (const [round, arr] of map.entries()) {
+    arr.sort((a, b) => a.fixture.time.localeCompare(b.fixture.time));
+    map.set(round, arr);
+  }
+
+  return map;
+}
+
+export default function ResultsSection() {
+  const allRounds = useMemo(getAllRounds, []);
+  const roundMap = useMemo(toRoundMap, []);
+
+  const latestRoundWithResult = useMemo(() => {
+    const completed = Array.from(roundMap.keys()).sort((a, b) => a - b);
+    return completed[completed.length - 1] ?? 1;
+  }, [roundMap]);
+
+  const [round, setRound] = useState<number>(latestRoundWithResult);
+  const [selected, setSelected] = useState<{
+    fixture: Fixture;
+    result: Result;
+  } | null>(null);
+
+  const items = roundMap.get(round) ?? [];
+
+  function getFactsForFixture(id: string) {
+    return MATCH_FACTS.find((m) => m.fixtureId === id) || null;
+  }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-900 text-gray-100 shadow-2xl">
-        {/* Close button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-3 top-3 rounded-full bg-gray-800 px-2 py-1 text-xs text-gray-300 hover:bg-gray-700"
-        >
-          Close
-        </button>
-
-        {/* Main match banner */}
-        <div className="px-6 pb-5 pt-6">
-          <div className="flex items-center justify-between gap-4">
-            {/* Home team */}
-            <div className="flex flex-1 flex-col items-start gap-2">
-              <div className="flex items-center gap-2">
-                {homeLogo && (
-                  <img
-                    src={homeLogo}
-                    alt={fixture.home}
-                    className="h-9 w-9 rounded-full border border-gray-700 bg-white object-contain"
-                  />
-                )}
-                <span className="text-sm font-semibold">
-                  {fixture.home}
-                </span>
-              </div>
-            </div>
-
-            {/* Centre score block */}
-            <div className="flex flex-col items-center justify-center gap-1 text-center">
-              <div className="flex items-center gap-3 text-2xl font-semibold">
-                <span>{homeGoals}</span>
-                <span className="text-gray-400">-</span>
-                <span>{awayGoals}</span>
-              </div>
-              <span className="text-[11px] uppercase tracking-wide text-gray-400">
-                Full time
-              </span>
-              <div className="mt-1 text-[11px] text-gray-400">
-                Round {fixture.round} · {fixture.date} · {fixture.time}
-              </div>
-              <div className="text-[11px] text-gray-500">
-                {fixture.ground}
-              </div>
-            </div>
-
-            {/* Away team */}
-            <div className="flex flex-1 flex-col items-end gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-right">
-                  {fixture.away}
-                </span>
-                {awayLogo && (
-                  <img
-                    src={awayLogo}
-                    alt={fixture.away}
-                    className="h-9 w-9 rounded-full border border-gray-700 bg-white object-contain"
-                  />
-                )}
-              </div>
-            </div>
+    <section id="results" className="mt-10">
+      <div className="rounded-3xl border bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Match Results
+            </h2>
+            <p className="text-xs text-slate-500 sm:text-sm">
+              Select a week to view full time scores. Tap Match facts for
+              detailed stats.
+            </p>
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-gray-800" />
+        {/* Week selector */}
+        <div className="border-b px-4 pb-2 pt-3 sm:px-6">
+          <div className="flex gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
+            {allRounds.map((r) => {
+              const isActive = r === round;
+              const hasData = roundMap.has(r);
+              return (
+                <button
+                  key={r}
+                  onClick={() => setRound(r)}
+                  className={[
+                    "min-w-[84px] rounded-full px-3 py-1.5 text-xs font-medium",
+                    isActive
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200",
+                    !hasData && "!bg-slate-100 !text-slate-400",
+                  ].join(" ")}
+                >
+                  Week {r}
+                  {!hasData && (
+                    <span className="ml-1 text-[10px]">(TBC)</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-        {/* Facts content */}
-        <div className="px-6 py-4 text-xs md:text-sm">
-          {hasFacts ? (
-            <>
-              {/* Goals */}
-              {facts.goals.length > 0 && (
-                <div className="grid gap-4 md:grid-cols-2">
-                  {/* Home goals */}
-                  <div>
-                    <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                      Goals – {fixture.home}
-                    </div>
-                    <ul className="space-y-1">
-                      {facts.goals
-                        .filter((g: GoalEvent) => g.team === fixture.home)
-                        .map((g: GoalEvent, idx: number) => (
-                          <li key={idx} className="text-gray-100">
-                            {g.player}
-                            {g.info ? (
-                              <span className="text-gray-400">
-                                {" "}
-                                ({g.info})
-                              </span>
-                            ) : null}
-                          </li>
-                        ))}
-                      {facts.goals.filter(
-                        (g) => g.team === fixture.home,
-                      ).length === 0 && (
-                        <li className="text-gray-500">
-                          No goals recorded.
-                        </li>
-                      )}
-                    </ul>
-                  </div>
+        {/* Results list */}
+        <div className="space-y-2 px-4 py-3 sm:px-6 sm:py-4">
+          {items.map(({ fixture, result }) => {
+            const homeLogo = TEAM_LOGOS[fixture.home];
+            const awayLogo = TEAM_LOGOS[fixture.away];
 
-                  {/* Away goals */}
-                  <div className="md:text-right">
-                    <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                      Goals – {fixture.away}
-                    </div>
-                    <ul className="space-y-1">
-                      {facts.goals
-                        .filter((g: GoalEvent) => g.team === fixture.away)
-                        .map((g: GoalEvent, idx: number) => (
-                          <li key={idx} className="text-gray-100">
-                            {g.player}
-                            {g.info ? (
-                              <span className="text-gray-400">
-                                {" "}
-                                ({g.info})
-                              </span>
-                            ) : null}
-                          </li>
-                        ))}
-                      {facts.goals.filter(
-                        (g) => g.team === fixture.away,
-                      ).length === 0 && (
-                        <li className="text-gray-500">
-                          No goals recorded.
-                        </li>
-                      )}
-                    </ul>
-                  </div>
+            return (
+              <div
+                key={fixture.id}
+                className="flex items-center justify-between gap-3 rounded-2xl border bg-slate-50 px-3 py-2.5 text-xs sm:px-4 sm:py-3 sm:text-sm"
+              >
+                <div className="flex flex-1 items-center gap-2">
+                  {homeLogo && (
+                    <img
+                      src={homeLogo}
+                      alt={fixture.home}
+                      className="h-7 w-7 rounded-full border bg-white object-contain"
+                    />
+                  )}
+                  <span className="truncate font-semibold text-slate-900">
+                    {fixture.home}
+                  </span>
                 </div>
-              )}
 
-              {/* Cards */}
-              {facts.cards.length > 0 && (
-                <div className="mt-4 rounded-xl bg-gray-800/80 px-4 py-3">
-                  <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-300">
-                    Cards
-                  </div>
-                  <ul className="space-y-1 text-xs md:text-sm">
-                    {facts.cards.map((c: CardEvent, idx: number) => (
-                      <li
-                        key={idx}
-                        className="flex items-center justify-between gap-3"
-                      >
-                        <span className="text-gray-200">
-                          {c.team}
-                        </span>
-                        <span className="flex-1 text-right text-gray-200">
-                          {c.player}
-                        </span>
-                        <span
-                          className={
-                            c.type === "Yellow"
-                              ? "ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-yellow-400"
-                              : "ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-red-400"
-                          }
-                        >
-                          <span className="h-2.5 w-2.5 rounded-[2px] bg-current" />
-                          {c.type}
-                        </span>
-                        {c.info && (
-                          <span className="text-[11px] text-gray-400">
-                            {c.info}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                <div className="flex flex-col items-center text-[11px] text-slate-600 sm:text-xs">
+                  <span className="text-sm font-semibold text-slate-900 sm:text-base">
+                    {result.homeGoals} - {result.awayGoals}
+                  </span>
+                  <span>Full time</span>
+                  <span>
+                    {fixture.date} · {fixture.time}
+                  </span>
+                  <span>Round {fixture.round}</span>
                 </div>
-              )}
 
-              {facts.goals.length === 0 && facts.cards.length === 0 && (
-                <p className="text-xs text-gray-400">
-                  Match facts are recorded but no goals or cards have
-                  been entered yet.
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="text-xs text-gray-400">
-              Detailed match facts have not been added for this game
-              yet. Scoreline is still shown on the main results list.
+                <div className="flex flex-1 items-center justify-end gap-2">
+                  <span className="truncate text-right font-semibold text-slate-900">
+                    {fixture.away}
+                  </span>
+                  {awayLogo && (
+                    <img
+                      src={awayLogo}
+                      alt={fixture.away}
+                      className="h-7 w-7 rounded-full border bg-white object-contain"
+                    />
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setSelected({ fixture, result })}
+                  className="ml-1 whitespace-nowrap rounded-full border border-blue-600 px-3 py-1 text-[11px] font-semibold text-blue-600 hover:bg-blue-50 sm:text-xs"
+                >
+                  Match facts
+                </button>
+              </div>
+            );
+          })}
+
+          {items.length === 0 && (
+            <p className="py-3 text-center text-xs text-slate-500 sm:text-sm">
+              Results for this week will be added after the games.
             </p>
           )}
         </div>
       </div>
-    </div>
+
+      {/* Modal */}
+      <Modal open={!!selected} onClose={() => setSelected(null)}>
+        {selected && (
+          <MatchFactsModalContent
+            selected={selected}
+            facts={getFactsForFixture(selected.fixture.id)}
+          />
+        )}
+      </Modal>
+    </section>
   );
 }
 
-export default function ResultsSection() {
-  const tabs = useMemo(() => buildRoundTabs(), []);
+type ModalProps = {
+  selected: { fixture: Fixture; result: Result };
+  facts: MatchFacts | null;
+};
 
-  const resultMap = useMemo(() => {
-    const map = new Map<string, ResultMapValue>();
-    for (const r of RESULTS) {
-      map.set(r.fixtureId, {
-        homeGoals: r.homeGoals,
-        awayGoals: r.awayGoals,
-      });
-    }
-    return map;
-  }, []);
+function MatchFactsModalContent({ selected, facts }: ModalProps) {
+  const { fixture, result } = selected;
+  const homeLogo = TEAM_LOGOS[fixture.home];
+  const awayLogo = TEAM_LOGOS[fixture.away];
 
-  const latestCompletedRound = useMemo(() => {
-    let latest = 1;
-    for (const tab of tabs) {
-      const hasResult = FIXTURES.some(
-        (f) => f.round === tab.round && resultMap.has(f.id),
-      );
-      if (hasResult) latest = tab.round;
-    }
-    return latest;
-  }, [tabs, resultMap]);
-
-  const [selectedRound, setSelectedRound] = useState<number>(
-    latestCompletedRound,
-  );
-
-  const [activeMatch, setActiveMatch] = useState<ActiveMatch | null>(
-    null,
-  );
-
-  const fixturesWithResults = useMemo(() => {
-    const fixturesForRound = FIXTURES.filter(
-      (f) => f.round === selectedRound,
-    );
-    return fixturesForRound
-      .map((f) => {
-        const r = resultMap.get(f.id);
-        if (!r) return null;
-        return { fixture: f, ...r };
-      })
-      .filter(Boolean) as {
-      fixture: Fixture;
-      homeGoals: number;
-      awayGoals: number;
-    }[];
-  }, [selectedRound, resultMap]);
-
-  const selectedTab = tabs.find((t) => t.round === selectedRound);
+  const homeGoals = facts?.homeGoals ?? [];
+  const awayGoals = facts?.awayGoals ?? [];
+  const cards = facts?.cards ?? [];
 
   return (
-    <section
-      id="results"
-      className="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
-    >
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">
-            Match Results
-          </h2>
-          <p className="text-xs text-gray-500">
-            Select a week to view full-time scores. Tap Match facts for
-            detailed stats.
-          </p>
-        </div>
-        <div className="hidden sm:flex flex-col items-end text-[11px] text-gray-500">
-          <span className="font-medium">
-            Latest completed week: {latestCompletedRound}
+    <div className="space-y-4 text-xs text-slate-100 sm:text-sm">
+      {/* Score header */}
+      <div className="flex items-center justify-between gap-4">
+        {/* Home */}
+        <div className="flex flex-1 flex-col items-center text-center">
+          {homeLogo && (
+            <img
+              src={homeLogo}
+              alt={fixture.home}
+              className="mb-2 h-10 w-10 rounded-full border bg-white object-contain sm:h-12 sm:w-12"
+            />
+          )}
+          <span className="text-sm font-semibold sm:text-base">
+            {fixture.home}
           </span>
-          {selectedTab && (
-            <span>Showing: {selectedTab.label}</span>
+        </div>
+
+        {/* Centre */}
+        <div className="flex flex-col items-center text-center">
+          <span className="text-[11px] tracking-wide text-slate-300">
+            FULL TIME
+          </span>
+          <span className="mt-1 text-2xl font-semibold tracking-[0.35em] sm:text-3xl">
+            {result.homeGoals} - {result.awayGoals}
+          </span>
+          <span className="mt-2 text-[11px] text-slate-200 sm:text-xs">
+            Round {fixture.round} · {fixture.date} · {fixture.time}
+          </span>
+          <span className="text-[11px] text-slate-400 sm:text-xs">
+            {fixture.ground}
+          </span>
+        </div>
+
+        {/* Away */}
+        <div className="flex flex-1 flex-col items-center text-center">
+          {awayLogo && (
+            <img
+              src={awayLogo}
+              alt={fixture.away}
+              className="mb-2 h-10 w-10 rounded-full border bg-white object-contain sm:h-12 sm:w-12"
+            />
+          )}
+          <span className="text-sm font-semibold sm:text-base">
+            {fixture.away}
+          </span>
+        </div>
+      </div>
+
+      {/* Goals */}
+      <div className="space-y-3 rounded-2xl bg-slate-800 px-4 py-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase text-slate-300 sm:text-xs">
+            Goals - {fixture.home}
+          </p>
+          {homeGoals.length ? (
+            <ul className="mt-1 list-disc pl-4">
+              {homeGoals.map((g, i) => (
+                <li key={i}>{g}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">
+              Goal scorers will be updated soon.
+            </p>
+          )}
+        </div>
+
+        <div>
+          <p className="text-[11px] font-semibold uppercase text-slate-300 sm:text-xs">
+            Goals - {fixture.away}
+          </p>
+          {awayGoals.length ? (
+            <ul className="mt-1 list-disc pl-4">
+              {awayGoals.map((g, i) => (
+                <li key={i}>{g}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">
+              Goal scorers will be updated soon.
+            </p>
           )}
         </div>
       </div>
 
-      {/* Week selector */}
-      <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1">
-        {tabs.map((tab) => {
-          const isActive = tab.round === selectedRound;
-          const isLatest = tab.round === latestCompletedRound;
-          return (
-            <button
-              key={tab.round}
-              onClick={() => setSelectedRound(tab.round)}
-              className={[
-                "flex flex-col items-start rounded-xl border px-3 py-2 min-w-[90px] text-left text-xs transition-colors",
-                isActive
-                  ? "border-blue-500 bg-blue-50 text-blue-800"
-                  : "border-gray-200 bg-gray-50 text-gray-700 hover:border-blue-400 hover:bg-blue-50/60",
-              ].join(" ")}
-            >
-              <span className="font-semibold">{tab.label}</span>
-              <span className="text-[11px] text-gray-500">
-                {tab.dateLabel}
-              </span>
-              {isLatest && (
-                <span className="mt-1 inline-flex items-center rounded-full bg-emerald-100 px-2 py-[2px] text-[10px] font-semibold text-emerald-700">
-                  Latest
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Results list */}
-      <div className="mt-4 space-y-2">
-        {fixturesWithResults.length === 0 ? (
-          <p className="text-xs text-gray-500">
-            No recorded results for this week yet.
+      {/* Cards */}
+      <div className="rounded-2xl bg-slate-800 px-4 py-3">
+        <p className="text-[11px] font-semibold uppercase text-slate-300 sm:text-xs">
+          Cards
+        </p>
+        {cards.length === 0 ? (
+          <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">
+            Card information will be added soon.
           </p>
         ) : (
-          fixturesWithResults.map(
-            ({ fixture, homeGoals, awayGoals }) => {
-              const homeWon = homeGoals > awayGoals;
-              const awayWon = awayGoals > homeGoals;
-              const homeLogo = TEAM_LOGOS[fixture.home];
-              const awayLogo = TEAM_LOGOS[fixture.away];
-
-              const facts = MATCH_FACTS[fixture.id];
-              const hasFacts =
-                facts &&
-                (facts.goals.length > 0 || facts.cards.length > 0);
-
-              return (
-                <div
-                  key={fixture.id}
-                  className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs md:text-sm"
+          <ul className="mt-2 space-y-1 text-xs sm:text-sm">
+            {cards.map((c, i) => (
+              <li
+                key={i}
+                className="flex items-center justify-between gap-3"
+              >
+                <span className="truncate">
+                  {c.team === "home" ? fixture.home : fixture.away}
+                </span>
+                <span className="truncate">{c.player}</span>
+                <span
+                  className={`flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-semibold ${
+                    c.card === "Yellow"
+                      ? "bg-amber-400/20 text-amber-300"
+                      : "bg-red-500/20 text-red-400"
+                  }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      {/* Home */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          {homeLogo && (
-                            <img
-                              src={homeLogo}
-                              alt={fixture.home}
-                              className="h-6 w-6 rounded-full border border-gray-200 bg-white object-contain"
-                            />
-                          )}
-                          <span
-                            className={
-                              homeWon
-                                ? "font-semibold text-gray-900"
-                                : "font-medium text-gray-700"
-                            }
-                          >
-                            {fixture.home}
-                          </span>
-                        </div>
-                        <span className="font-semibold">
-                          {homeGoals}
-                        </span>
-                      </div>
-
-                      {/* Away */}
-                      <div className="mt-1 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          {awayLogo && (
-                            <img
-                              src={awayLogo}
-                              alt={fixture.away}
-                              className="h-6 w-6 rounded-full border border-gray-200 bg-white object-contain"
-                            />
-                          )}
-                          <span
-                            className={
-                              awayWon
-                                ? "font-semibold text-gray-900"
-                                : "font-medium text-gray-700"
-                            }
-                          >
-                            {fixture.away}
-                          </span>
-                        </div>
-                        <span className="font-semibold">
-                          {awayGoals}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-1 text-[11px] text-gray-500 whitespace-nowrap">
-                      <div>{fixture.date}</div>
-                      <div>{fixture.time}</div>
-                      <div>Round {fixture.round}</div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setActiveMatch({
-                            fixture,
-                            homeGoals,
-                            awayGoals,
-                          })
-                        }
-                        className={[
-                          "mt-1 inline-flex items-center rounded-full px-2 py-[3px] text-[10px] font-semibold border transition-colors",
-                          hasFacts
-                            ? "border-blue-600 text-blue-600 hover:bg-blue-50"
-                            : "border-gray-300 text-gray-400 hover:bg-gray-50",
-                        ].join(" ")}
-                      >
-                        Match facts
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            },
-          )
+                  <span className="h-2.5 w-2.5 rounded-[3px] bg-current" />
+                  {c.card}
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
-
-      {/* Modal */}
-      <MatchFactsModal
-        match={activeMatch}
-        onClose={() => setActiveMatch(null)}
-      />
-    </section>
+    </div>
   );
 }

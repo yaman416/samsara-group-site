@@ -1,54 +1,67 @@
 // components/LeagueTableSection.tsx
 "use client";
 
-import { useMemo } from "react";
 import {
-  TEAMS,
   FIXTURES,
   RESULTS,
+  TEAMS,
   TEAM_LOGOS,
-  SPL_SEASON,
   type TableRow,
 } from "@/lib/splData";
+import { useMemo } from "react";
 
-type ResultEntry = {
-  fixtureId: string;
-  homeGoals: number;
-  awayGoals: number;
-};
+type FormCode = "W" | "D" | "L";
 
-type RowWithMeta = TableRow & {
+type RowWithForm = TableRow & {
+  form: FormCode[];
   position: number;
-  change: number; // positive = moved up, negative = moved down
-  form: ("W" | "D" | "L" | null)[];
+  movement: number;
 };
 
-function buildTableFromResults(results: ResultEntry[]): TableRow[] {
-  const index = Object.fromEntries(TEAMS.map((t, i) => [t, i]));
-  const rows: TableRow[] = TEAMS.map((name) => ({
-    name,
-    played: 0,
-    won: 0,
-    drawn: 0,
-    lost: 0,
-    goalsFor: 0,
-    goalsAgainst: 0,
-    goalDiff: 0,
-    points: 0,
-  }));
+function computeTableUpToRound(roundLimit: number) {
+  const teamNames = TEAMS;
+  const base: Record<string, TableRow & { form: FormCode[] }> = {};
 
-  const resultMap = Object.fromEntries(results.map((r) => [r.fixtureId, r]));
+  for (const name of teamNames) {
+    base[name] = {
+      name,
+      played: 0,
+      won: 0,
+      drawn: 0,
+      lost: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      goalDiff: 0,
+      points: 0,
+      form: [],
+    };
+  }
 
-  for (const f of FIXTURES) {
+  const resultMap = Object.fromEntries(
+    RESULTS.map((r) => [r.fixtureId, r]),
+  ) as Record<
+    string,
+    {
+      fixtureId: string;
+      homeGoals: number;
+      awayGoals: number;
+    }
+  >;
+
+  const fixturesSorted = [...FIXTURES].sort((a, b) => {
+    if (a.round !== b.round) return a.round - b.round;
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return a.time.localeCompare(b.time);
+  });
+
+  for (const f of fixturesSorted) {
+    if (f.round > roundLimit) continue;
     const r = resultMap[f.id];
     if (!r) continue;
 
-    const hi = index[f.home];
-    const ai = index[f.away];
-    if (hi === undefined || ai === undefined) continue;
-
-    const home = rows[hi];
-    const away = rows[ai];
+    const home = base[f.home];
+    const away = base[f.away];
+    if (!home || !away) continue;
 
     home.played += 1;
     away.played += 1;
@@ -56,24 +69,42 @@ function buildTableFromResults(results: ResultEntry[]): TableRow[] {
     home.goalsAgainst += r.awayGoals;
     away.goalsFor += r.awayGoals;
     away.goalsAgainst += r.homeGoals;
-    home.goalDiff = home.goalsFor - home.goalsAgainst;
-    away.goalDiff = away.goalsFor - away.goalsAgainst;
+
+    let homeForm: FormCode;
+    let awayForm: FormCode;
 
     if (r.homeGoals > r.awayGoals) {
       home.won += 1;
       home.points += 3;
       away.lost += 1;
+      homeForm = "W";
+      awayForm = "L";
     } else if (r.homeGoals < r.awayGoals) {
       away.won += 1;
       away.points += 3;
       home.lost += 1;
+      homeForm = "L";
+      awayForm = "W";
     } else {
       home.drawn += 1;
       away.drawn += 1;
       home.points += 1;
       away.points += 1;
+      homeForm = "D";
+      awayForm = "D";
     }
+
+    home.form.push(homeForm);
+    away.form.push(awayForm);
   }
+
+  const rows: RowWithForm[] = Object.values(base).map((t) => ({
+    ...t,
+    goalDiff: t.goalsFor - t.goalsAgainst,
+    form: t.form,
+    position: 0,
+    movement: 0,
+  }));
 
   rows.sort(
     (a, b) =>
@@ -83,265 +114,188 @@ function buildTableFromResults(results: ResultEntry[]): TableRow[] {
       a.name.localeCompare(b.name),
   );
 
+  rows.forEach((r, idx) => {
+    r.position = idx + 1;
+  });
+
   return rows;
 }
 
-function computeForm(teamName: string, maxMatches = 5): ("W" | "D" | "L")[] {
-  type MatchForForm = {
-    round: number;
-    date: string;
-    outcome: "W" | "D" | "L";
-  };
-
-  const matches: MatchForForm[] = [];
-
-  for (const r of RESULTS) {
-    const f = FIXTURES.find((fx) => fx.id === r.fixtureId);
-    if (!f) continue;
-    if (f.home !== teamName && f.away !== teamName) continue;
-
-    let outcome: "W" | "D" | "L";
-    if (r.homeGoals === r.awayGoals) {
-      outcome = "D";
-    } else {
-      const teamIsHome = f.home === teamName;
-      const teamGoals = teamIsHome ? r.homeGoals : r.awayGoals;
-      const oppGoals = teamIsHome ? r.awayGoals : r.homeGoals;
-      outcome = teamGoals > oppGoals ? "W" : "L";
-    }
-
-    matches.push({
-      round: f.round,
-      date: f.date,
-      outcome,
-    });
-  }
-
-  matches.sort((a, b) => {
-    if (a.round !== b.round) return a.round - b.round;
-    return a.date.localeCompare(b.date);
-  });
-
-  const outcomes = matches.map((m) => m.outcome);
-  const last = outcomes.slice(-maxMatches);
-  return last;
-}
-
-function PositionChangeBadge({ change }: { change: number }) {
-  if (change > 0) {
-    return (
-      <span className="ml-1 inline-flex items-center text-[10px] font-semibold text-emerald-600">
-        ▲ {change}
-      </span>
-    );
-  }
-  if (change < 0) {
-    return (
-      <span className="ml-1 inline-flex items-center text-[10px] font-semibold text-red-600">
-        ▼ {Math.abs(change)}
-      </span>
-    );
-  }
-  return (
-    <span className="ml-1 inline-flex items-center text-[10px] text-gray-400">
-      •
-    </span>
-  );
-}
-
-function FormPills({ values }: { values: ("W" | "D" | "L" | null)[] }) {
-  const getStyles = (v: "W" | "D" | "L" | null) => {
-    if (v === "W") return "bg-emerald-500 text-white";
-    if (v === "D") return "bg-gray-400 text-white";
-    if (v === "L") return "bg-red-500 text-white";
-    return "bg-gray-100 text-gray-300";
-  };
-
-  return (
-    <div className="flex gap-1 justify-center">
-      {values.map((v, idx) => (
-        <div
-          key={idx}
-          className={
-            "flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-semibold " +
-            getStyles(v)
-          }
-        >
-          {v ?? ""}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function LeagueTableSection() {
-  const currentTable = useMemo(
-    () => buildTableFromResults(RESULTS),
-    [],
-  );
-
-  const latestRound = useMemo(() => {
+  const { latestRound, rows } = useMemo(() => {
+    // detect the latest round that has any result
+    const fixtureById = Object.fromEntries(FIXTURES.map((f) => [f.id, f]));
     let maxRound = 0;
     for (const r of RESULTS) {
-      const fx = FIXTURES.find((f) => f.id === r.fixtureId);
-      if (fx && fx.round > maxRound) {
-        maxRound = fx.round;
-      }
+      const f = fixtureById[r.fixtureId];
+      if (f && f.round > maxRound) maxRound = f.round;
     }
-    return maxRound;
+    if (maxRound === 0) maxRound = 1;
+
+    const current = computeTableUpToRound(maxRound);
+    const previous =
+      maxRound > 1 ? computeTableUpToRound(maxRound - 1) : null;
+
+    const prevPos = new Map<string, number>();
+    if (previous) {
+      previous.forEach((r) => prevPos.set(r.name, r.position));
+    }
+
+    const withMovement = current.map((row) => {
+      const prev = prevPos.get(row.name) ?? row.position;
+      const movement = prev - row.position;
+      return { ...row, movement };
+    });
+
+    return { latestRound: maxRound, rows: withMovement };
   }, []);
 
-  const previousResults = useMemo(() => {
-    if (latestRound <= 1) return [] as ResultEntry[];
-    return RESULTS.filter((r) => {
-      const fx = FIXTURES.find((f) => f.id === r.fixtureId);
-      return fx && fx.round < latestRound;
-    });
-  }, [latestRound]);
-
-  const previousTable = useMemo(() => {
-    if (previousResults.length === 0) return null;
-    return buildTableFromResults(previousResults);
-  }, [previousResults]);
-
-  const prevPositionMap: Record<string, number> = useMemo(() => {
-    if (!previousTable) return {};
-    const map: Record<string, number> = {};
-    previousTable.forEach((row, idx) => {
-      map[row.name] = idx + 1;
-    });
-    return map;
-  }, [previousTable]);
-
-  const rowsWithMeta: RowWithMeta[] = useMemo(() => {
-    return currentTable.map((row, idx) => {
-      const position = idx + 1;
-      const prev = prevPositionMap[row.name];
-      const change =
-        prev !== undefined ? prev - position : 0;
-
-      const formRaw = computeForm(row.name, 5);
-      const padded: ("W" | "D" | "L" | null)[] = Array.from(
-        { length: 5 },
-        (_, i) => formRaw[formRaw.length - 5 + i] ?? null,
-      );
-
-      return { ...row, position, change, form: padded };
-    });
-  }, [currentTable, prevPositionMap]);
-
   return (
-    <section
-      id="table"
-      className="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
-    >
-      {/* Header without logo */}
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">
-            League Table
-          </h2>
-          <p className="text-xs text-gray-500">
-            {SPL_SEASON.name}. Top 4 qualify for knockouts. Bottom 2 in
-            relegation zone.
-          </p>
-        </div>
-        <div className="hidden sm:flex flex-col items-end text-[11px] text-gray-500">
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-3 w-3 rounded-sm bg-emerald-100 border border-emerald-400" />
-            <span>Top 4 knockout places</span>
-          </div>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="inline-block h-3 w-3 rounded-sm bg-red-100 border border-red-400" />
-            <span>11 and 12 relegation zone</span>
+    <section id="league-table" className="mt-10">
+      <div className="rounded-3xl border bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">
+              League Table
+            </h2>
+            <p className="text-xs text-slate-500 sm:text-sm">
+              Samsara Premier League (SPL) 2025-26 - after Week {latestRound}
+            </p>
           </div>
         </div>
-      </div>
 
-      {/* Table */}
-      <div className="mt-4 overflow-x-auto">
-        <table className="min-w-full text-xs md:text-sm border-collapse">
-          <thead>
-            <tr className="bg-gray-50 text-[11px] uppercase tracking-wide text-gray-600">
-              <th className="px-2 py-2 text-left">Pos</th>
-              <th className="px-2 py-2 text-left">Team</th>
-              <th className="px-1 py-2 text-center">P</th>
-              <th className="px-1 py-2 text-center">W</th>
-              <th className="px-1 py-2 text-center">D</th>
-              <th className="px-1 py-2 text-center">L</th>
-              <th className="px-1 py-2 text-center">GF</th>
-              <th className="px-1 py-2 text-center">GA</th>
-              <th className="px-1 py-2 text-center">GD</th>
-              <th className="px-2 py-2 text-center">Pts</th>
-              <th className="px-2 py-2 text-center">Form</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rowsWithMeta.map((row) => {
-              const isTop4 = row.position <= 4;
-              const isRelegation = row.position >= 11;
-              const logoSrc = TEAM_LOGOS[row.name];
+        <div className="-mx-2 overflow-x-auto px-2 pb-2 sm:pb-4">
+          <table className="min-w-full text-left text-xs sm:text-sm">
+            <thead>
+              <tr className="border-b bg-slate-50 text-[11px] uppercase text-slate-500 sm:text-xs">
+                <th className="px-3 py-2">Pos</th>
+                <th className="px-3 py-2">Team</th>
+                <th className="px-2 py-2 text-center">MP</th>
+                <th className="px-2 py-2 text-center">W</th>
+                <th className="px-2 py-2 text-center">D</th>
+                <th className="px-2 py-2 text-center">L</th>
+                <th className="px-2 py-2 text-center">GF</th>
+                <th className="px-2 py-2 text-center">GA</th>
+                <th className="px-2 py-2 text-center">GD</th>
+                <th className="px-2 py-2 text-center">Pts</th>
+                <th className="px-3 py-2 text-center">Form</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => {
+                const logo = TEAM_LOGOS[row.name];
+                const recentForm = row.form.slice(-5);
+                const isTop4 = row.position <= 4;
+                const isBottom2 = row.position >= 11;
 
-              const baseRow =
-                "border-b border-gray-100 text-gray-800";
-              const bgClass = isTop4
-                ? "bg-emerald-50"
-                : isRelegation
-                ? "bg-red-50"
-                : "bg-white";
+                const bg =
+                  row.played === 0
+                    ? "bg-white"
+                    : isTop4
+                    ? "bg-emerald-50"
+                    : isBottom2
+                    ? "bg-rose-50"
+                    : "bg-white";
 
-              return (
-                <tr key={row.name} className={`${baseRow} ${bgClass}`}>
-                  <td className="px-2 py-2 text-left font-semibold text-gray-800">
-                    <span className="inline-flex items-center">
-                      {row.position}
-                      <PositionChangeBadge change={row.change} />
-                    </span>
-                  </td>
-                  <td className="px-2 py-2">
-                    <div className="flex items-center gap-2">
-                      {logoSrc && (
+                const movementSymbol =
+                  row.movement > 0 ? "▲" : row.movement < 0 ? "▼" : "•";
+                const movementClass =
+                  row.movement > 0
+                    ? "text-emerald-600"
+                    : row.movement < 0
+                    ? "text-rose-600"
+                    : "text-slate-400";
+
+                return (
+                  <tr
+                    key={row.name}
+                    className={`${bg} text-[11px] sm:text-xs`}
+                  >
+                    <td className="whitespace-nowrap px-3 py-2 font-semibold text-slate-800">
+                      <span>{row.position}</span>{" "}
+                      <span className={`ml-1 text-[10px] ${movementClass}`}>
+                        {movementSymbol}{" "}
+                        {row.movement !== 0
+                          ? Math.abs(row.movement)
+                          : ""}
+                      </span>
+                    </td>
+                    <td className="flex items-center gap-2 px-3 py-2">
+                      {logo ? (
                         <img
-                          src={logoSrc}
+                          src={logo}
                           alt={row.name}
-                          className="h-6 w-6 rounded-full border border-gray-200 bg-white object-contain"
+                          className="h-6 w-6 rounded-full border bg-white object-contain"
                         />
+                      ) : (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-[9px] font-bold text-slate-700">
+                          {row.name
+                            .split(" ")
+                            .map((p) => p[0])
+                            .join("")}
+                        </div>
                       )}
-                      <span className="text-[11px] md:text-xs font-medium">
+                      <span className="truncate text-xs sm:text-sm">
                         {row.name}
                       </span>
-                    </div>
-                  </td>
-                  <td className="px-1 py-2 text-center">
-                    {row.played}
-                  </td>
-                  <td className="px-1 py-2 text-center">{row.won}</td>
-                  <td className="px-1 py-2 text-center">
-                    {row.drawn}
-                  </td>
-                  <td className="px-1 py-2 text-center">
-                    {row.lost}
-                  </td>
-                  <td className="px-1 py-2 text-center">
-                    {row.goalsFor}
-                  </td>
-                  <td className="px-1 py-2 text-center">
-                    {row.goalsAgainst}
-                  </td>
-                  <td className="px-1 py-2 text-center">
-                    {row.goalDiff}
-                  </td>
-                  <td className="px-2 py-2 text-center font-semibold">
-                    {row.points}
-                  </td>
-                  <td className="px-2 py-2 text-center">
-                    <FormPills values={row.form} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="px-2 py-2 text-center">{row.played}</td>
+                    <td className="px-2 py-2 text-center">{row.won}</td>
+                    <td className="px-2 py-2 text-center">{row.drawn}</td>
+                    <td className="px-2 py-2 text-center">{row.lost}</td>
+                    <td className="px-2 py-2 text-center">
+                      {row.goalsFor}
+                    </td>
+                    <td className="px-2 py-2 text-center">
+                      {row.goalsAgainst}
+                    </td>
+                    <td className="px-2 py-2 text-center">
+                      {row.goalDiff}
+                    </td>
+                    <td className="px-2 py-2 text-center font-semibold">
+                      {row.points}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex justify-end gap-1">
+                        {recentForm.length === 0 ? (
+                          <span className="text-[10px] text-slate-400">
+                            -
+                          </span>
+                        ) : (
+                          recentForm.map((code, i) => (
+                            <span
+                              key={i}
+                              className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold ${
+                                code === "W"
+                                  ? "bg-emerald-500 text-white"
+                                  : code === "D"
+                                  ? "bg-slate-300 text-slate-800"
+                                  : "bg-rose-500 text-white"
+                              }`}
+                            >
+                              {code}
+                            </span>
+                          ))
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 border-t px-4 py-3 text-[11px] text-slate-500 sm:px-6 sm:text-xs">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded bg-emerald-100 border border-emerald-400" />
+            Top 4 advance to knockouts
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded bg-rose-100 border border-rose-400" />
+            Bottom 2 in relegation zone
+          </div>
+        </div>
       </div>
     </section>
   );
