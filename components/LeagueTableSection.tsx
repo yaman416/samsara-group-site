@@ -11,15 +11,16 @@ import {
   type TableRow,
 } from "@/lib/splData";
 
-type RowWithMeta = TableRow & {
-  position: number;
-  change: number; // positive = moved up, negative = moved down
-};
-
 type ResultEntry = {
   fixtureId: string;
   homeGoals: number;
   awayGoals: number;
+};
+
+type RowWithMeta = TableRow & {
+  position: number;
+  change: number; // positive = moved up, negative = moved down
+  form: ("W" | "D" | "L" | null)[];
 };
 
 function buildTableFromResults(results: ResultEntry[]): TableRow[] {
@@ -36,9 +37,7 @@ function buildTableFromResults(results: ResultEntry[]): TableRow[] {
     points: 0,
   }));
 
-  const resultMap = Object.fromEntries(
-    results.map((r) => [r.fixtureId, r]),
-  );
+  const resultMap = Object.fromEntries(results.map((r) => [r.fixtureId, r]));
 
   for (const f of FIXTURES) {
     const r = resultMap[f.id];
@@ -87,6 +86,47 @@ function buildTableFromResults(results: ResultEntry[]): TableRow[] {
   return rows;
 }
 
+function computeForm(teamName: string, maxMatches = 5): ("W" | "D" | "L")[] {
+  type MatchForForm = {
+    round: number;
+    date: string;
+    outcome: "W" | "D" | "L";
+  };
+
+  const matches: MatchForForm[] = [];
+
+  for (const r of RESULTS) {
+    const f = FIXTURES.find((fx) => fx.id === r.fixtureId);
+    if (!f) continue;
+    if (f.home !== teamName && f.away !== teamName) continue;
+
+    let outcome: "W" | "D" | "L";
+    if (r.homeGoals === r.awayGoals) {
+      outcome = "D";
+    } else {
+      const teamIsHome = f.home === teamName;
+      const teamGoals = teamIsHome ? r.homeGoals : r.awayGoals;
+      const oppGoals = teamIsHome ? r.awayGoals : r.homeGoals;
+      outcome = teamGoals > oppGoals ? "W" : "L";
+    }
+
+    matches.push({
+      round: f.round,
+      date: f.date,
+      outcome,
+    });
+  }
+
+  matches.sort((a, b) => {
+    if (a.round !== b.round) return a.round - b.round;
+    return a.date.localeCompare(b.date);
+  });
+
+  const outcomes = matches.map((m) => m.outcome);
+  const last = outcomes.slice(-maxMatches);
+  return last;
+}
+
 function PositionChangeBadge({ change }: { change: number }) {
   if (change > 0) {
     return (
@@ -109,14 +149,37 @@ function PositionChangeBadge({ change }: { change: number }) {
   );
 }
 
+function FormPills({ values }: { values: ("W" | "D" | "L" | null)[] }) {
+  const getStyles = (v: "W" | "D" | "L" | null) => {
+    if (v === "W") return "bg-emerald-500 text-white";
+    if (v === "D") return "bg-gray-400 text-white";
+    if (v === "L") return "bg-red-500 text-white";
+    return "bg-gray-100 text-gray-300";
+  };
+
+  return (
+    <div className="flex gap-1 justify-center">
+      {values.map((v, idx) => (
+        <div
+          key={idx}
+          className={
+            "flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-semibold " +
+            getStyles(v)
+          }
+        >
+          {v ?? ""}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function LeagueTableSection() {
-  // Full current table from all results
   const currentTable = useMemo(
     () => buildTableFromResults(RESULTS),
     [],
   );
 
-  // Find latest round with a result
   const latestRound = useMemo(() => {
     let maxRound = 0;
     for (const r of RESULTS) {
@@ -128,7 +191,6 @@ export default function LeagueTableSection() {
     return maxRound;
   }, []);
 
-  // Previous table (up to round before latest)
   const previousResults = useMemo(() => {
     if (latestRound <= 1) return [] as ResultEntry[];
     return RESULTS.filter((r) => {
@@ -156,8 +218,15 @@ export default function LeagueTableSection() {
       const position = idx + 1;
       const prev = prevPositionMap[row.name];
       const change =
-        prev !== undefined ? prev - position : 0; // positive means moved up
-      return { ...row, position, change };
+        prev !== undefined ? prev - position : 0;
+
+      const formRaw = computeForm(row.name, 5);
+      const padded: ("W" | "D" | "L" | null)[] = Array.from(
+        { length: 5 },
+        (_, i) => formRaw[formRaw.length - 5 + i] ?? null,
+      );
+
+      return { ...row, position, change, form: padded };
     });
   }, [currentTable, prevPositionMap]);
 
@@ -166,20 +235,20 @@ export default function LeagueTableSection() {
       id="table"
       className="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
     >
-      {/* Header with SPL logo */}
+      {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <img
             src="/spl-logo.png"
             alt="Samsara Premier League logo"
-            className="h-10 w-auto rounded-md bg-white"
+            className="h-10 w-auto bg-white"
           />
           <div>
             <h2 className="text-lg font-semibold tracking-tight">
               League Table
             </h2>
             <p className="text-xs text-gray-500">
-              {SPL_SEASON.name} - top 4 qualify for knockouts. Bottom 2 in
+              {SPL_SEASON.name}. Top 4 qualify for knockouts. Bottom 2 in
               relegation zone.
             </p>
           </div>
@@ -187,11 +256,11 @@ export default function LeagueTableSection() {
         <div className="hidden sm:flex flex-col items-end text-[11px] text-gray-500">
           <div className="flex items-center gap-2">
             <span className="inline-block h-3 w-3 rounded-sm bg-emerald-100 border border-emerald-400" />
-            <span>Top 4 - knockout round</span>
+            <span>Top 4 - knockout places</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className="inline-block h-3 w-3 rounded-sm bg-red-100 border border-red-400" />
-            <span>Positions 11-12 - relegation zone</span>
+            <span>11th - 12th - relegation zone</span>
           </div>
         </div>
       </div>
@@ -200,7 +269,7 @@ export default function LeagueTableSection() {
       <div className="mt-4 overflow-x-auto">
         <table className="min-w-full text-xs md:text-sm border-collapse">
           <thead>
-            <tr className="bg-gray-100 text-[11px] uppercase tracking-wide text-gray-600">
+            <tr className="bg-gray-50 text-[11px] uppercase tracking-wide text-gray-600">
               <th className="px-2 py-2 text-left">Pos</th>
               <th className="px-2 py-2 text-left">Team</th>
               <th className="px-1 py-2 text-center">P</th>
@@ -211,6 +280,7 @@ export default function LeagueTableSection() {
               <th className="px-1 py-2 text-center">GA</th>
               <th className="px-1 py-2 text-center">GD</th>
               <th className="px-2 py-2 text-center">Pts</th>
+              <th className="px-2 py-2 text-center">Form</th>
             </tr>
           </thead>
           <tbody>
@@ -270,6 +340,9 @@ export default function LeagueTableSection() {
                   </td>
                   <td className="px-2 py-2 text-center font-semibold">
                     {row.points}
+                  </td>
+                  <td className="px-2 py-2 text-center">
+                    <FormPills values={row.form} />
                   </td>
                 </tr>
               );

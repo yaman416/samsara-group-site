@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FIXTURES, type Fixture } from "@/lib/splData";
+import { FIXTURES, TEAM_LOGOS, type Fixture } from "@/lib/splData";
 
 type RoundTab = {
   round: number;
@@ -60,7 +60,9 @@ function findUpcomingRound(): number {
 export default function UpcomingFixturesSection() {
   const tabs = useMemo(() => buildRoundTabs(), []);
   const upcomingRound = useMemo(() => findUpcomingRound(), []);
-  const [selectedRound, setSelectedRound] = useState<number>(upcomingRound);
+  const [selectedRound, setSelectedRound] = useState<number>(
+    upcomingRound,
+  );
 
   const fixturesForRound = useMemo(
     () =>
@@ -84,7 +86,7 @@ export default function UpcomingFixturesSection() {
             Fixtures
           </h2>
           <p className="text-xs text-gray-500">
-            Upcoming week is tagged below. Select any week to view fixtures.
+            Upcoming week is tagged. Select any week to view fixtures.
           </p>
         </div>
         <div className="hidden sm:flex flex-col items-end text-[11px] text-gray-500">
@@ -127,33 +129,66 @@ export default function UpcomingFixturesSection() {
         })}
       </div>
 
-      {/* Fixtures list */}
+      {/* Fixtures list with logos */}
       <div className="mt-4 space-y-2">
         {fixturesForRound.length === 0 ? (
           <p className="text-xs text-gray-500">
             No fixtures scheduled for this week.
           </p>
         ) : (
-          fixturesForRound.map((f: Fixture) => (
-            <div
-              key={f.id}
-              className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs md:text-sm"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <div className="font-semibold text-gray-800">
-                  {f.home} <span className="text-gray-500">vs</span>{" "}
-                  {f.away}
+          fixturesForRound.map((f: Fixture) => {
+            const homeLogo = TEAM_LOGOS[f.home];
+            const awayLogo = TEAM_LOGOS[f.away];
+
+            return (
+              <div
+                key={f.id}
+                className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs md:text-sm"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        {homeLogo && (
+                          <img
+                            src={homeLogo}
+                            alt={f.home}
+                            className="h-6 w-6 rounded-full border border-gray-200 bg-white object-contain"
+                          />
+                        )}
+                        <span className="font-medium text-gray-800">
+                          {f.home}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-gray-500">
+                        vs
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-800 text-right">
+                          {f.away}
+                        </span>
+                        {awayLogo && (
+                          <img
+                            src={awayLogo}
+                            alt={f.away}
+                            className="h-6 w-6 rounded-full border border-gray-200 bg-white object-contain"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-gray-500 text-right whitespace-nowrap">
+                    <div>{f.date}</div>
+                    <div>{f.time}</div>
+                    <div>Round {f.round}</div>
+                  </div>
                 </div>
-                <div className="text-[11px] text-gray-500">
-                  {f.date} · {f.time}
+                <div className="flex items-center justify-between gap-2 text-[11px] text-gray-500">
+                  <span>Ground: {f.ground}</span>
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-2 text-[11px] text-gray-500">
-                <span>Round {f.round}</span>
-                <span>Ground: {f.ground}</span>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </section>

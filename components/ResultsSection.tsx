@@ -2,7 +2,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FIXTURES, RESULTS, type Fixture } from "@/lib/splData";
+import {
+  FIXTURES,
+  RESULTS,
+  TEAM_LOGOS,
+  type Fixture,
+} from "@/lib/splData";
 
 type RoundTab = {
   round: number;
@@ -54,7 +59,6 @@ export default function ResultsSection() {
     return map;
   }, []);
 
-  // Latest completed round (at least one fixture has a result)
   const latestCompletedRound = useMemo(() => {
     let latest = 1;
     for (const tab of tabs) {
@@ -143,61 +147,88 @@ export default function ResultsSection() {
         })}
       </div>
 
-      {/* Results list */}
+      {/* Results list with logos */}
       <div className="mt-4 space-y-2">
         {fixturesWithResults.length === 0 ? (
           <p className="text-xs text-gray-500">
             No recorded results for this week yet.
           </p>
         ) : (
-          fixturesWithResults.map(({ fixture, homeGoals, awayGoals }) => {
-            const homeWon = homeGoals > awayGoals;
-            const awayWon = awayGoals > homeGoals;
-            return (
-              <div
-                key={fixture.id}
-                className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs md:text-sm"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span
-                        className={
-                          homeWon
-                            ? "font-semibold text-gray-900"
-                            : "font-medium text-gray-700"
-                        }
-                      >
-                        {fixture.home}
-                      </span>
-                      <span className="font-semibold">
-                        {homeGoals}
-                      </span>
+          fixturesWithResults.map(
+            ({ fixture, homeGoals, awayGoals }) => {
+              const homeWon = homeGoals > awayGoals;
+              const awayWon = awayGoals > homeGoals;
+              const homeLogo = TEAM_LOGOS[fixture.home];
+              const awayLogo = TEAM_LOGOS[fixture.away];
+
+              return (
+                <div
+                  key={fixture.id}
+                  className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs md:text-sm"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex-1">
+                      {/* Home */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {homeLogo && (
+                            <img
+                              src={homeLogo}
+                              alt={fixture.home}
+                              className="h-6 w-6 rounded-full border border-gray-200 bg-white object-contain"
+                            />
+                          )}
+                          <span
+                            className={
+                              homeWon
+                                ? "font-semibold text-gray-900"
+                                : "font-medium text-gray-700"
+                            }
+                          >
+                            {fixture.home}
+                          </span>
+                        </div>
+                        <span className="font-semibold">
+                          {homeGoals}
+                        </span>
+                      </div>
+
+                      {/* Away */}
+                      <div className="mt-1 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {awayLogo && (
+                            <img
+                              src={awayLogo}
+                              alt={fixture.away}
+                              className="h-6 w-6 rounded-full border border-gray-200 bg-white object-contain"
+                            />
+                          )}
+                          <span
+                            className={
+                              awayWon
+                                ? "font-semibold text-gray-900"
+                                : "font-medium text-gray-700"
+                            }
+                          >
+                            {fixture.away}
+                          </span>
+                        </div>
+                        <span className="font-semibold">
+                          {awayGoals}
+                        </span>
+                      </div>
                     </div>
-                    <div className="mt-1 flex items-center justify-between gap-2">
-                      <span
-                        className={
-                          awayWon
-                            ? "font-semibold text-gray-900"
-                            : "font-medium text-gray-700"
-                        }
-                      >
-                        {fixture.away}
-                      </span>
-                      <span className="font-semibold">
-                        {awayGoals}
-                      </span>
+
+                    <div className="text-[11px] text-gray-500 text-right whitespace-nowrap">
+                      <div>{fixture.date}</div>
+                      <div>{fixture.time}</div>
+                      <div>Round {fixture.round}</div>
                     </div>
-                  </div>
-                  <div className="text-[11px] text-gray-500 text-right whitespace-nowrap">
-                    <div>{fixture.date}</div>
-                    <div>{fixture.time}</div>
-                    <div>Round {fixture.round}</div>
                   </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            },
+          )
         )}
       </div>
     </section>

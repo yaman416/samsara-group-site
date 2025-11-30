@@ -41,8 +41,8 @@ export default function MainHeader({ active, onChange }: Props) {
             className="flex items-center gap-2"
           >
             <img
-              src="/samsara-logo-dark.png"
-              alt="Samsara Group logo"
+              src="/logo.png"
+              alt="Samsara Group mountain logo"
               className="h-9 w-auto"
             />
             <div className="hidden sm:flex flex-col">
