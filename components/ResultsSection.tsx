@@ -2,181 +2,141 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FIXTURES, RESULTS, TEAM_LOGOS } from "@/lib/splData";
-import { ListChecks } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import Image from "next/image";
+import { FIXTURE_MAP, RESULTS, TEAM_LOGOS } from "@/lib/splData";
 
-type MatchResultRow = {
-  round: number;
-  date: string;
-  time: string;
-  ground: string;
-  home: string;
-  away: string;
-  homeGoals: number;
-  awayGoals: number;
-};
-
-function buildResultsByRound(): Map<number, MatchResultRow[]> {
-  const resultMap = new Map(RESULTS.map((r) => [r.fixtureId, r]));
-  const byRound = new Map<number, MatchResultRow[]>();
-
-  for (const f of FIXTURES) {
-    const r = resultMap.get(f.id);
-    if (!r) continue;
-
-    const row: MatchResultRow = {
-      round: f.round,
-      date: f.date,
-      time: f.time,
-      ground: f.ground,
-      home: f.home,
-      away: f.away,
-      homeGoals: r.homeGoals,
-      awayGoals: r.awayGoals,
-    };
-
-    if (!byRound.has(f.round)) {
-      byRound.set(f.round, []);
-    }
-    byRound.get(f.round)!.push(row);
+function getRoundsWithResults(): number[] {
+  const rounds = new Set<number>();
+  for (const r of RESULTS) {
+    const fixture = FIXTURE_MAP[r.fixtureId];
+    if (fixture) rounds.add(fixture.round);
   }
-
-  // sort each round by date and time
-  for (const [round, matches] of byRound.entries()) {
-    matches.sort((a, b) => {
-      const da = new Date(a.date).getTime();
-      const db = new Date(b.date).getTime();
-      if (da !== db) return da - db;
-      return a.time.localeCompare(b.time);
-    });
-    byRound.set(round, matches);
-  }
-
-  return byRound;
+  return Array.from(rounds).sort((a, b) => a - b);
 }
 
 export default function ResultsSection() {
-  const byRound = useMemo(() => buildResultsByRound(), []);
-  const allRoundsWithResults = Array.from(byRound.keys()).sort((a, b) => a - b);
+  const rounds = getRoundsWithResults();
+  const [round, setRound] = useState<number>(
+    rounds.length > 0 ? rounds[rounds.length - 1] : 1,
+  );
 
-  // latest round that has results, otherwise 1
-  const latestRound = allRoundsWithResults[allRoundsWithResults.length - 1] || 1;
-
-  const [round, setRound] = useState<number>(latestRound);
-
-  const matches = byRound.get(round) || [];
-  const weeks = Array.from({ length: 11 }, (_, i) => i + 1); // 1 to 11
+  const matches = useMemo(() => {
+    return RESULTS.filter((r) => {
+      const f = FIXTURE_MAP[r.fixtureId];
+      return f && f.round === round;
+    }).map((r) => {
+      const f = FIXTURE_MAP[r.fixtureId];
+      const homeLogo = TEAM_LOGOS[f.home] ?? "/team/everest.png";
+      const awayLogo = TEAM_LOGOS[f.away] ?? "/team/everest.png";
+      return {
+        round: f.round,
+        date: f.date,
+        time: f.time,
+        ground: f.ground,
+        home: f.home,
+        away: f.away,
+        homeLogo,
+        awayLogo,
+        homeGoals: r.homeGoals,
+        awayGoals: r.awayGoals,
+      };
+    });
+  }, [round]);
 
   return (
-    <section id="results" className="mt-10 space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-xl md:text-2xl font-semibold tracking-tight flex items-center gap-2">
-          <ListChecks size={20} />
-          Match Results
-        </h2>
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs md:text-sm text-gray-600">Match Week</span>
-          <Select
-            value={String(round)}
-            onValueChange={(val) => setRound(Number(val))}
+    <section className="rounded-2xl bg-white p-4 shadow-sm border">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">Match Results</h2>
+          <p className="text-xs text-gray-500">
+            Final scores for Samsara Premier League by matchweek.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs">
+          <label htmlFor="round-select" className="text-gray-600">
+            Matchweek
+          </label>
+          <select
+            id="round-select"
+            value={round}
+            onChange={(e) => setRound(Number(e.target.value))}
+            className="rounded-xl border border-gray-300 px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <SelectTrigger className="w-32 rounded-2xl h-8 text-xs md:text-sm">
-              <SelectValue placeholder="Select week" />
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl">
-              {weeks.map((w) => (
-                <SelectItem key={w} value={String(w)}>
-                  Week {w}
-                  {w === latestRound && " (latest)"}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {rounds.map((r) => (
+              <option key={r} value={r}>
+                Week {r}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <Card className="rounded-2xl border bg-white shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-sm md:text-base">
-            Match Week {round} results
-          </CardTitle>
-        </CardHeader>
+      {matches.length === 0 ? (
+        <p className="text-sm text-gray-500">
+          No results recorded for this week yet.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {matches.map((m, idx) => (
+            <div
+              key={`${m.round}-${m.home}-${m.away}-${idx}`}
+              className="flex flex-col gap-2 rounded-2xl border bg-gray-50 p-3 md:flex-row md:items-center md:justify-between"
+            >
+              <div className="flex flex-1 items-center justify-between gap-2 md:justify-start">
+                {/* Home team */}
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
+                    <Image
+                      src={m.homeLogo}
+                      alt={m.home}
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                  <span className="text-xs font-medium md:text-sm">
+                    {m.home}
+                  </span>
+                </div>
 
-        <CardContent className="overflow-x-auto">
-          {matches.length === 0 ? (
-            <p className="text-sm text-gray-600">
-              No results recorded for this week yet.
-            </p>
-          ) : (
-            <table className="w-full text-xs md:text-sm">
-              <thead className="text-gray-500 text-left">
-                <tr>
-                  <th className="py-2 pr-2">Date</th>
-                  <th className="py-2 pr-2">Time</th>
-                  <th className="py-2 pr-2">Home</th>
-                  <th className="py-2 pr-2"></th>
-                  <th className="py-2 pr-2">Away</th>
-                  <th className="py-2 pr-0">Ground</th>
-                </tr>
-              </thead>
-              <tbody>
-                {matches.map((m, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="py-1.5 pr-2">
-                      {new Date(m.date).toLocaleDateString()}
-                    </td>
-                    <td className="py-1.5 pr-2">{m.time}</td>
+                {/* Score */}
+                <div className="text-center text-sm font-semibold md:text-base">
+                  {m.homeGoals}{" "}
+                  <span className="mx-1 text-[11px] font-normal text-gray-500">
+                    vs
+                  </span>{" "}
+                  {m.awayGoals}
+                </div>
 
-                    {/* Home */}
-                    <td className="py-1.5 pr-2">
-                      <div className="flex items-center gap-2">
-                        {TEAM_LOGOS[m.home] && (
-                          <img
-                            src={TEAM_LOGOS[m.home]}
-                            alt={m.home}
-                            className="h-6 w-6 rounded-full border object-cover"
-                          />
-                        )}
-                        <span className="font-medium">{m.home}</span>
-                      </div>
-                    </td>
+                {/* Away team */}
+                <div className="flex items-center gap-2 text-right">
+                  <span className="hidden text-xs font-medium md:block md:text-sm">
+                    {m.away}
+                  </span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm">
+                    <Image
+                      src={m.awayLogo}
+                      alt={m.away}
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                  <span className="text-xs font-medium md:hidden">
+                    {m.away}
+                  </span>
+                </div>
+              </div>
 
-                    {/* Score */}
-                    <td className="py-1.5 pr-2 text-center font-semibold">
-                      {m.homeGoals} - {m.awayGoals}
-                    </td>
-
-                    {/* Away */}
-                    <td className="py-1.5 pr-2">
-                      <div className="flex items-center gap-2">
-                        {TEAM_LOGOS[m.away] && (
-                          <img
-                            src={TEAM_LOGOS[m.away]}
-                            alt={m.away}
-                            className="h-6 w-6 rounded-full border object-cover"
-                          />
-                        )}
-                        <span>{m.away}</span>
-                      </div>
-                    </td>
-
-                    <td className="py-1.5 pr-0">{m.ground}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
+              <div className="flex flex-col items-end text-[11px] text-gray-500">
+                <span>
+                  Week {m.round} • {m.time}
+                </span>
+                <span>{m.ground}</span>
+                <span className="text-gray-400">Date {m.date}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
