@@ -10,32 +10,29 @@ type ModalProps = {
 };
 
 export default function Modal({ open, onClose, children }: ModalProps) {
-  // Close on Escape key
   useEffect(() => {
     if (!open) return;
-
-    function onKey(e: KeyboardEvent) {
+    function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
-
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-3">
-      {/* Modal card */}
-      <div className="relative w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-3xl bg-slate-900 text-slate-50 shadow-2xl">
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl relative">
+        {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-3 top-3 rounded-full bg-slate-700/70 px-3 py-1 text-xs font-medium hover:bg-slate-600"
+          className="absolute top-3 right-3 text-gray-600 hover:text-black text-sm"
         >
-          Close
+          ✕
         </button>
 
-        <div className="p-5 sm:p-6">{children}</div>
+        <div className="p-5">{children}</div>
       </div>
     </div>
   );

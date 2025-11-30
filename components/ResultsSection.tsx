@@ -1,353 +1,172 @@
 // components/ResultsSection.tsx
 "use client";
 
-import { useMemo, useState } from "react";
-import { FIXTURES, RESULTS, TEAM_LOGOS } from "@/lib/splData";
+import { useState } from "react";
+import {
+  FIXTURES,
+  RESULTS,
+  TEAM_LOGOS,
+  MATCH_FACTS,
+} from "@/lib/splData";
 import Modal from "@/components/Modal";
 
-type Fixture = (typeof FIXTURES)[number];
-type Result = (typeof RESULTS)[number];
-
-type MatchFacts = {
-  fixtureId: string;
-  homeGoals: string[];
-  awayGoals: string[];
-  cards: {
-    team: "home" | "away";
-    player: string;
-    card: "Yellow" | "Red";
-  }[];
-};
-
-// Example facts. Extend this as you record more games.
-const MATCH_FACTS: MatchFacts[] = [
-  {
-    fixtureId: "R3-M1", // Everest 1 - 3 JA Brothers
-    homeGoals: ["Kiran Gautam"],
-    awayGoals: ["Dipesh Tamang", "Ajay Shrestha", "Alton Thakuri"],
-    cards: [
-      {
-        team: "away",
-        player: "Silas Tamang",
-        card: "Yellow",
-      },
-      {
-        team: "away",
-        player: "Ajay Shrestha",
-        card: "Yellow",
-      },
-      {
-        team: "away",
-        player: "Rahul Tamang",
-        card: "Yellow",
-      },
-    ],
-  },
-  // Add Week 1 and Week 2 facts here when ready
-];
-
-function getAllRounds() {
-  const set = new Set<number>();
-  FIXTURES.forEach((f) => set.add(f.round));
-  return Array.from(set).sort((a, b) => a - b);
-}
-
-function toRoundMap() {
-  const byId = Object.fromEntries(FIXTURES.map((f) => [f.id, f]));
-  const map = new Map<number, { fixture: Fixture; result: Result }[]>();
-
-  for (const r of RESULTS) {
-    const f = byId[r.fixtureId];
-    if (!f) continue;
-    if (!map.has(f.round)) map.set(f.round, []);
-    map.get(f.round)!.push({ fixture: f, result: r });
-  }
-
-  for (const [round, arr] of map.entries()) {
-    arr.sort((a, b) => a.fixture.time.localeCompare(b.fixture.time));
-    map.set(round, arr);
-  }
-
-  return map;
-}
-
 export default function ResultsSection() {
-  const allRounds = useMemo(getAllRounds, []);
-  const roundMap = useMemo(toRoundMap, []);
+  const [selectedWeek, setSelectedWeek] = useState(1);
+  const [openMatchId, setOpenMatchId] = useState<string | null>(null);
 
-  const latestRoundWithResult = useMemo(() => {
-    const completed = Array.from(roundMap.keys()).sort((a, b) => a - b);
-    return completed[completed.length - 1] ?? 1;
-  }, [roundMap]);
+  const weeks = [...new Set(FIXTURES.map((f) => f.round))];
 
-  const [round, setRound] = useState<number>(latestRoundWithResult);
-  const [selected, setSelected] = useState<{
-    fixture: Fixture;
-    result: Result;
-  } | null>(null);
+  const weekFixtures = FIXTURES.filter(
+    (f) => f.round === selectedWeek
+  );
 
-  const items = roundMap.get(round) ?? [];
+  const resultMap = Object.fromEntries(
+    RESULTS.map((r) => [r.fixtureId, r])
+  );
 
-  function getFactsForFixture(id: string) {
-    return MATCH_FACTS.find((m) => m.fixtureId === id) || null;
+  function getTeamLogo(team: string) {
+    return TEAM_LOGOS[team] || "";
   }
 
   return (
-    <section id="results" className="mt-10">
-      <div className="rounded-3xl border bg-white shadow-sm">
-        <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">
-              Match Results
-            </h2>
-            <p className="text-xs text-slate-500 sm:text-sm">
-              Select a week to view full time scores. Tap Match facts for
-              detailed stats.
-            </p>
-          </div>
-        </div>
+    <section id="results" className="mt-12">
+      <h2 className="text-xl font-bold mb-3">Match Results</h2>
 
-        {/* Week selector */}
-        <div className="border-b px-4 pb-2 pt-3 sm:px-6">
-          <div className="flex gap-2 overflow-x-auto pb-1 text-xs no-scrollbar">
-            {allRounds.map((r) => {
-              const isActive = r === round;
-              const hasData = roundMap.has(r);
-              return (
-                <button
-                  key={r}
-                  onClick={() => setRound(r)}
-                  className={[
-                    "min-w-[84px] rounded-full px-3 py-1.5 text-xs font-medium",
-                    isActive
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "bg-slate-100 text-slate-700 hover:bg-slate-200",
-                    !hasData && "!bg-slate-100 !text-slate-400",
-                  ].join(" ")}
-                >
-                  Week {r}
-                  {!hasData && (
-                    <span className="ml-1 text-[10px]">(TBC)</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      {/* Week Selector */}
+      <div className="flex items-center gap-3 mb-4">
+        <label className="text-sm font-semibold">Select Week</label>
+        <select
+          className="border rounded-lg px-3 py-2 text-sm"
+          value={selectedWeek}
+          onChange={(e) => setSelectedWeek(Number(e.target.value))}
+        >
+          {weeks.map((w) => (
+            <option key={w} value={w}>
+              Week {w}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        {/* Results list */}
-        <div className="space-y-2 px-4 py-3 sm:px-6 sm:py-4">
-          {items.map(({ fixture, result }) => {
-            const homeLogo = TEAM_LOGOS[fixture.home];
-            const awayLogo = TEAM_LOGOS[fixture.away];
-
+      {/* Results */}
+      <div className="space-y-4">
+        {weekFixtures.map((f) => {
+          const res = resultMap[f.id];
+          if (!res) {
             return (
               <div
-                key={fixture.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border bg-slate-50 px-3 py-2.5 text-xs sm:px-4 sm:py-3 sm:text-sm"
+                key={f.id}
+                className="p-4 rounded-xl shadow bg-white text-sm flex justify-between"
               >
-                <div className="flex flex-1 items-center gap-2">
-                  {homeLogo && (
-                    <img
-                      src={homeLogo}
-                      alt={fixture.home}
-                      className="h-7 w-7 rounded-full border bg-white object-contain"
-                    />
-                  )}
-                  <span className="truncate font-semibold text-slate-900">
-                    {fixture.home}
-                  </span>
-                </div>
-
-                <div className="flex flex-col items-center text-[11px] text-slate-600 sm:text-xs">
-                  <span className="text-sm font-semibold text-slate-900 sm:text-base">
-                    {result.homeGoals} - {result.awayGoals}
-                  </span>
-                  <span>Full time</span>
-                  <span>
-                    {fixture.date} · {fixture.time}
-                  </span>
-                  <span>Round {fixture.round}</span>
-                </div>
-
-                <div className="flex flex-1 items-center justify-end gap-2">
-                  <span className="truncate text-right font-semibold text-slate-900">
-                    {fixture.away}
-                  </span>
-                  {awayLogo && (
-                    <img
-                      src={awayLogo}
-                      alt={fixture.away}
-                      className="h-7 w-7 rounded-full border bg-white object-contain"
-                    />
-                  )}
-                </div>
-
-                <button
-                  onClick={() => setSelected({ fixture, result })}
-                  className="ml-1 whitespace-nowrap rounded-full border border-blue-600 px-3 py-1 text-[11px] font-semibold text-blue-600 hover:bg-blue-50 sm:text-xs"
-                >
-                  Match facts
-                </button>
+                <span>
+                  {f.home} vs {f.away}
+                </span>
+                <span className="text-gray-500">Not played</span>
               </div>
             );
-          })}
+          }
 
-          {items.length === 0 && (
-            <p className="py-3 text-center text-xs text-slate-500 sm:text-sm">
-              Results for this week will be added after the games.
-            </p>
-          )}
-        </div>
+          return (
+            <div
+              key={f.id}
+              className="bg-white rounded-xl shadow p-4 flex flex-col gap-3"
+            >
+              {/* Teams + Score */}
+              <div className="flex justify-between items-center">
+                {/* Home */}
+                <div className="flex items-center gap-2">
+                  <img
+                    src={getTeamLogo(f.home)}
+                    alt={f.home}
+                    className="w-7 h-7 rounded"
+                  />
+                  <span className="font-semibold text-sm">{f.home}</span>
+                </div>
+
+                {/* Score */}
+                <span className="font-bold text-gray-800 text-sm">
+                  {res.homeGoals} - {res.awayGoals}
+                </span>
+
+                {/* Away */}
+                <div className="flex items-center gap-2">
+                  <img
+                    src={getTeamLogo(f.away)}
+                    alt={f.away}
+                    className="w-7 h-7 rounded"
+                  />
+                  <span className="font-semibold text-sm">{f.away}</span>
+                </div>
+              </div>
+
+              {/* Match Facts Button */}
+              {MATCH_FACTS[f.id] && (
+                <button
+                  onClick={() => setOpenMatchId(f.id)}
+                  className="self-start bg-blue-600 text-white px-3 py-1.5 text-xs rounded-md hover:bg-blue-700"
+                >
+                  Match Facts
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Modal */}
-      <Modal open={!!selected} onClose={() => setSelected(null)}>
-        {selected && (
-          <MatchFactsModalContent
-            selected={selected}
-            facts={getFactsForFixture(selected.fixture.id)}
-          />
-        )}
+      <Modal open={!!openMatchId} onClose={() => setOpenMatchId(null)}>
+        {openMatchId && <MatchFactsContent matchId={openMatchId} />}
       </Modal>
     </section>
   );
 }
 
-type ModalProps = {
-  selected: { fixture: Fixture; result: Result };
-  facts: MatchFacts | null;
-};
-
-function MatchFactsModalContent({ selected, facts }: ModalProps) {
-  const { fixture, result } = selected;
-  const homeLogo = TEAM_LOGOS[fixture.home];
-  const awayLogo = TEAM_LOGOS[fixture.away];
-
-  const homeGoals = facts?.homeGoals ?? [];
-  const awayGoals = facts?.awayGoals ?? [];
-  const cards = facts?.cards ?? [];
+function MatchFactsContent({ matchId }: { matchId: string }) {
+  const data = MATCH_FACTS[matchId];
+  if (!data) return <p>No match facts available.</p>;
 
   return (
-    <div className="space-y-4 text-xs text-slate-100 sm:text-sm">
-      {/* Score header */}
-      <div className="flex items-center justify-between gap-4">
-        {/* Home */}
-        <div className="flex flex-1 flex-col items-center text-center">
-          {homeLogo && (
-            <img
-              src={homeLogo}
-              alt={fixture.home}
-              className="mb-2 h-10 w-10 rounded-full border bg-white object-contain sm:h-12 sm:w-12"
-            />
-          )}
-          <span className="text-sm font-semibold sm:text-base">
-            {fixture.home}
-          </span>
-        </div>
+    <div className="space-y-6">
+      {/* HOME TEAM */}
+      <div>
+        <h3 className="font-bold mb-2 text-gray-900">Home Team</h3>
 
-        {/* Centre */}
-        <div className="flex flex-col items-center text-center">
-          <span className="text-[11px] tracking-wide text-slate-300">
-            FULL TIME
-          </span>
-          <span className="mt-1 text-2xl font-semibold tracking-[0.35em] sm:text-3xl">
-            {result.homeGoals} - {result.awayGoals}
-          </span>
-          <span className="mt-2 text-[11px] text-slate-200 sm:text-xs">
-            Round {fixture.round} · {fixture.date} · {fixture.time}
-          </span>
-          <span className="text-[11px] text-slate-400 sm:text-xs">
-            {fixture.ground}
-          </span>
-        </div>
+        <p className="font-semibold text-sm">Goals:</p>
+        <ul className="list-disc pl-5 text-sm">
+          {data.home.scorers.map((s, i) => (
+            <li key={i}>{s}</li>
+          ))}
+        </ul>
 
-        {/* Away */}
-        <div className="flex flex-1 flex-col items-center text-center">
-          {awayLogo && (
-            <img
-              src={awayLogo}
-              alt={fixture.away}
-              className="mb-2 h-10 w-10 rounded-full border bg-white object-contain sm:h-12 sm:w-12"
-            />
+        <p className="font-semibold text-sm mt-2">Cards:</p>
+        <ul className="list-disc pl-5 text-sm">
+          {data.home.cards.length > 0 ? (
+            data.home.cards.map((c, i) => <li key={i}>{c}</li>)
+          ) : (
+            <li>None</li>
           )}
-          <span className="text-sm font-semibold sm:text-base">
-            {fixture.away}
-          </span>
-        </div>
+        </ul>
       </div>
 
-      {/* Goals */}
-      <div className="space-y-3 rounded-2xl bg-slate-800 px-4 py-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase text-slate-300 sm:text-xs">
-            Goals - {fixture.home}
-          </p>
-          {homeGoals.length ? (
-            <ul className="mt-1 list-disc pl-4">
-              {homeGoals.map((g, i) => (
-                <li key={i}>{g}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">
-              Goal scorers will be updated soon.
-            </p>
-          )}
-        </div>
+      {/* AWAY TEAM */}
+      <div>
+        <h3 className="font-bold mb-2 text-gray-900">Away Team</h3>
 
-        <div>
-          <p className="text-[11px] font-semibold uppercase text-slate-300 sm:text-xs">
-            Goals - {fixture.away}
-          </p>
-          {awayGoals.length ? (
-            <ul className="mt-1 list-disc pl-4">
-              {awayGoals.map((g, i) => (
-                <li key={i}>{g}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">
-              Goal scorers will be updated soon.
-            </p>
-          )}
-        </div>
-      </div>
+        <p className="font-semibold text-sm">Goals:</p>
+        <ul className="list-disc pl-5 text-sm">
+          {data.away.scorers.map((s, i) => (
+            <li key={i}>{s}</li>
+          ))}
+        </ul>
 
-      {/* Cards */}
-      <div className="rounded-2xl bg-slate-800 px-4 py-3">
-        <p className="text-[11px] font-semibold uppercase text-slate-300 sm:text-xs">
-          Cards
-        </p>
-        {cards.length === 0 ? (
-          <p className="mt-1 text-[11px] text-slate-400 sm:text-xs">
-            Card information will be added soon.
-          </p>
-        ) : (
-          <ul className="mt-2 space-y-1 text-xs sm:text-sm">
-            {cards.map((c, i) => (
-              <li
-                key={i}
-                className="flex items-center justify-between gap-3"
-              >
-                <span className="truncate">
-                  {c.team === "home" ? fixture.home : fixture.away}
-                </span>
-                <span className="truncate">{c.player}</span>
-                <span
-                  className={`flex items-center gap-1 rounded-full px-2 py-[2px] text-[11px] font-semibold ${
-                    c.card === "Yellow"
-                      ? "bg-amber-400/20 text-amber-300"
-                      : "bg-red-500/20 text-red-400"
-                  }`}
-                >
-                  <span className="h-2.5 w-2.5 rounded-[3px] bg-current" />
-                  {c.card}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <p className="font-semibold text-sm mt-2">Cards:</p>
+        <ul className="list-disc pl-5 text-sm">
+          {data.away.cards.length > 0 ? (
+            data.away.cards.map((c, i) => <li key={i}>{c}</li>)
+          ) : (
+            <li>None</li>
+          )}
+        </ul>
       </div>
     </div>
   );
