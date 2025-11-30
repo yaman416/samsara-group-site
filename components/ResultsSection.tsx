@@ -23,6 +23,12 @@ type ResultMapValue = {
   awayGoals: number;
 };
 
+type ActiveMatch = {
+  fixture: Fixture;
+  homeGoals: number;
+  awayGoals: number;
+};
+
 function buildRoundTabs(): RoundTab[] {
   const rounds = Array.from(new Set(FIXTURES.map((f) => f.round))).sort(
     (a, b) => a - b,
@@ -46,6 +52,218 @@ function buildRoundTabs(): RoundTab[] {
       dateLabel,
     };
   });
+}
+
+function MatchFactsModal({
+  match,
+  onClose,
+}: {
+  match: ActiveMatch | null;
+  onClose: () => void;
+}) {
+  if (!match) return null;
+
+  const { fixture, homeGoals, awayGoals } = match;
+  const facts = MATCH_FACTS[fixture.id];
+  const homeLogo = TEAM_LOGOS[fixture.home];
+  const awayLogo = TEAM_LOGOS[fixture.away];
+
+  const hasFacts =
+    facts && (facts.goals.length > 0 || facts.cards.length > 0);
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-900 text-gray-100 shadow-2xl">
+        {/* Close button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-3 top-3 rounded-full bg-gray-800 px-2 py-1 text-xs text-gray-300 hover:bg-gray-700"
+        >
+          Close
+        </button>
+
+        {/* Main match banner */}
+        <div className="px-6 pb-5 pt-6">
+          <div className="flex items-center justify-between gap-4">
+            {/* Home team */}
+            <div className="flex flex-1 flex-col items-start gap-2">
+              <div className="flex items-center gap-2">
+                {homeLogo && (
+                  <img
+                    src={homeLogo}
+                    alt={fixture.home}
+                    className="h-9 w-9 rounded-full border border-gray-700 bg-white object-contain"
+                  />
+                )}
+                <span className="text-sm font-semibold">
+                  {fixture.home}
+                </span>
+              </div>
+            </div>
+
+            {/* Centre score block */}
+            <div className="flex flex-col items-center justify-center gap-1 text-center">
+              <div className="flex items-center gap-3 text-2xl font-semibold">
+                <span>{homeGoals}</span>
+                <span className="text-gray-400">-</span>
+                <span>{awayGoals}</span>
+              </div>
+              <span className="text-[11px] uppercase tracking-wide text-gray-400">
+                Full time
+              </span>
+              <div className="mt-1 text-[11px] text-gray-400">
+                Round {fixture.round} · {fixture.date} · {fixture.time}
+              </div>
+              <div className="text-[11px] text-gray-500">
+                {fixture.ground}
+              </div>
+            </div>
+
+            {/* Away team */}
+            <div className="flex flex-1 flex-col items-end gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-right">
+                  {fixture.away}
+                </span>
+                {awayLogo && (
+                  <img
+                    src={awayLogo}
+                    alt={fixture.away}
+                    className="h-9 w-9 rounded-full border border-gray-700 bg-white object-contain"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-px bg-gray-800" />
+
+        {/* Facts content */}
+        <div className="px-6 py-4 text-xs md:text-sm">
+          {hasFacts ? (
+            <>
+              {/* Goals */}
+              {facts.goals.length > 0 && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Home goals */}
+                  <div>
+                    <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                      Goals – {fixture.home}
+                    </div>
+                    <ul className="space-y-1">
+                      {facts.goals
+                        .filter((g: GoalEvent) => g.team === fixture.home)
+                        .map((g: GoalEvent, idx: number) => (
+                          <li key={idx} className="text-gray-100">
+                            {g.player}
+                            {g.info ? (
+                              <span className="text-gray-400">
+                                {" "}
+                                ({g.info})
+                              </span>
+                            ) : null}
+                          </li>
+                        ))}
+                      {facts.goals.filter(
+                        (g) => g.team === fixture.home,
+                      ).length === 0 && (
+                        <li className="text-gray-500">
+                          No goals recorded.
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+
+                  {/* Away goals */}
+                  <div className="md:text-right">
+                    <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                      Goals – {fixture.away}
+                    </div>
+                    <ul className="space-y-1">
+                      {facts.goals
+                        .filter((g: GoalEvent) => g.team === fixture.away)
+                        .map((g: GoalEvent, idx: number) => (
+                          <li key={idx} className="text-gray-100">
+                            {g.player}
+                            {g.info ? (
+                              <span className="text-gray-400">
+                                {" "}
+                                ({g.info})
+                              </span>
+                            ) : null}
+                          </li>
+                        ))}
+                      {facts.goals.filter(
+                        (g) => g.team === fixture.away,
+                      ).length === 0 && (
+                        <li className="text-gray-500">
+                          No goals recorded.
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Cards */}
+              {facts.cards.length > 0 && (
+                <div className="mt-4 rounded-xl bg-gray-800/80 px-4 py-3">
+                  <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-300">
+                    Cards
+                  </div>
+                  <ul className="space-y-1 text-xs md:text-sm">
+                    {facts.cards.map((c: CardEvent, idx: number) => (
+                      <li
+                        key={idx}
+                        className="flex items-center justify-between gap-3"
+                      >
+                        <span className="text-gray-200">
+                          {c.team}
+                        </span>
+                        <span className="flex-1 text-right text-gray-200">
+                          {c.player}
+                        </span>
+                        <span
+                          className={
+                            c.type === "Yellow"
+                              ? "ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-yellow-400"
+                              : "ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-red-400"
+                          }
+                        >
+                          <span className="h-2.5 w-2.5 rounded-[2px] bg-current" />
+                          {c.type}
+                        </span>
+                        {c.info && (
+                          <span className="text-[11px] text-gray-400">
+                            {c.info}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {facts.goals.length === 0 && facts.cards.length === 0 && (
+                <p className="text-xs text-gray-400">
+                  Match facts are recorded but no goals or cards have
+                  been entered yet.
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-xs text-gray-400">
+              Detailed match facts have not been added for this game
+              yet. Scoreline is still shown on the main results list.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function ResultsSection() {
@@ -77,7 +295,7 @@ export default function ResultsSection() {
     latestCompletedRound,
   );
 
-  const [openFixtureId, setOpenFixtureId] = useState<string | null>(
+  const [activeMatch, setActiveMatch] = useState<ActiveMatch | null>(
     null,
   );
 
@@ -111,20 +329,21 @@ export default function ResultsSection() {
             Match Results
           </h2>
           <p className="text-xs text-gray-500">
-            Choose a week to view full time scores and match facts.
+            Select a week to view full-time scores. Tap Match facts for
+            detailed stats.
           </p>
         </div>
         <div className="hidden sm:flex flex-col items-end text-[11px] text-gray-500">
           <span className="font-medium">
-            Latest completed: Week {latestCompletedRound}
+            Latest completed week: {latestCompletedRound}
           </span>
           {selectedTab && (
-            <span>Selected: {selectedTab.dateLabel}</span>
+            <span>Showing: {selectedTab.label}</span>
           )}
         </div>
       </div>
 
-      {/* Week tabs */}
+      {/* Week selector */}
       <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1">
         {tabs.map((tab) => {
           const isActive = tab.round === selectedRound;
@@ -132,10 +351,7 @@ export default function ResultsSection() {
           return (
             <button
               key={tab.round}
-              onClick={() => {
-                setSelectedRound(tab.round);
-                setOpenFixtureId(null);
-              }}
+              onClick={() => setSelectedRound(tab.round)}
               className={[
                 "flex flex-col items-start rounded-xl border px-3 py-2 min-w-[90px] text-left text-xs transition-colors",
                 isActive
@@ -157,7 +373,7 @@ export default function ResultsSection() {
         })}
       </div>
 
-      {/* Results list with logos and match facts */}
+      {/* Results list */}
       <div className="mt-4 space-y-2">
         {fixturesWithResults.length === 0 ? (
           <p className="text-xs text-gray-500">
@@ -172,8 +388,9 @@ export default function ResultsSection() {
               const awayLogo = TEAM_LOGOS[fixture.away];
 
               const facts = MATCH_FACTS[fixture.id];
-              const hasFacts = !!facts;
-              const isOpen = openFixtureId === fixture.id;
+              const hasFacts =
+                facts &&
+                (facts.goals.length > 0 || facts.cards.length > 0);
 
               return (
                 <div
@@ -239,98 +456,36 @@ export default function ResultsSection() {
                       <div>Round {fixture.round}</div>
                       <button
                         type="button"
-                        disabled={!hasFacts}
                         onClick={() =>
-                          setOpenFixtureId(
-                            isOpen ? null : fixture.id,
-                          )
+                          setActiveMatch({
+                            fixture,
+                            homeGoals,
+                            awayGoals,
+                          })
                         }
                         className={[
                           "mt-1 inline-flex items-center rounded-full px-2 py-[3px] text-[10px] font-semibold border transition-colors",
                           hasFacts
-                            ? isOpen
-                              ? "border-blue-600 bg-blue-600 text-white"
-                              : "border-blue-600 text-blue-600 hover:bg-blue-50"
-                            : "border-gray-300 text-gray-300 cursor-not-allowed",
+                            ? "border-blue-600 text-blue-600 hover:bg-blue-50"
+                            : "border-gray-300 text-gray-400 hover:bg-gray-50",
                         ].join(" ")}
                       >
                         Match facts
                       </button>
                     </div>
                   </div>
-
-                  {/* Facts panel */}
-                  {isOpen && hasFacts && (
-                    <div className="mt-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2 text-[11px] text-gray-700">
-                      {facts.goals.length > 0 && (
-                        <div className="mb-2">
-                          <div className="mb-1 font-semibold">
-                            Goals
-                          </div>
-                          <ul className="space-y-1">
-                            {facts.goals.map(
-                              (g: GoalEvent, idx: number) => (
-                                <li key={idx}>
-                                  <span className="font-medium">
-                                    {g.team}
-                                  </span>
-                                  {": "}
-                                  {g.player}
-                                  {g.info ? ` (${g.info})` : ""}
-                                </li>
-                              ),
-                            )}
-                          </ul>
-                        </div>
-                      )}
-
-                      {facts.cards.length > 0 && (
-                        <div>
-                          <div className="mb-1 font-semibold">
-                            Cards
-                          </div>
-                          <ul className="space-y-1">
-                            {facts.cards.map(
-                              (c: CardEvent, idx: number) => (
-                                <li key={idx}>
-                                  <span className="font-medium">
-                                    {c.team}
-                                  </span>
-                                  {": "}
-                                  {c.player}{" "}
-                                  <span
-                                    className={
-                                      c.type === "Red" ||
-                                      c.type === "Second Yellow"
-                                        ? "text-red-600 font-semibold"
-                                        : "text-yellow-600 font-semibold"
-                                    }
-                                  >
-                                    [{c.type}]
-                                  </span>
-                                  {c.info ? ` - ${c.info}` : ""}
-                                </li>
-                              ),
-                            )}
-                          </ul>
-                        </div>
-                      )}
-
-                      {facts.goals.length === 0 &&
-                        facts.cards.length === 0 && (
-                          <p className="text-gray-500">
-                            Match facts are recorded, but no goals or
-                            cards have been added yet.
-                          </p>
-                        )}
-                    </div>
-                  )}
                 </div>
               );
             },
           )
         )}
       </div>
+
+      {/* Modal */}
+      <MatchFactsModal
+        match={activeMatch}
+        onClose={() => setActiveMatch(null)}
+      />
     </section>
   );
 }
