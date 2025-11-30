@@ -2,38 +2,30 @@
 "use client";
 
 import { useState } from "react";
-import {
-  FIXTURES,
-  TEAM_LOGOS,
-  MATCH_FACTS,
-} from "@/lib/splData";
+import { FIXTURES, TEAM_LOGOS, MATCH_FACTS } from "@/lib/splData";
 import Modal from "@/components/Modal";
 
 export default function UpcomingFixturesSection() {
-  const [selectedWeek, setSelectedWeek] = useState(1);
+  const weeks = [...new Set(FIXTURES.map((f) => f.round))];
+  const [selectedWeek, setSelectedWeek] = useState(weeks[0]);
   const [openMatchId, setOpenMatchId] = useState<string | null>(null);
 
-  const weeks = [...new Set(FIXTURES.map((f) => f.round))];
+  const fixtures = FIXTURES.filter((f) => f.round === selectedWeek);
 
-  const upcomingFixtures = FIXTURES.filter(
-    (f) => f.round === selectedWeek
-  );
-
-  function getTeamLogo(team: string) {
+  function logo(team: string) {
     return TEAM_LOGOS[team] || "";
   }
 
   return (
-    <section id="fixtures" className="mt-10">
-      <h2 className="text-xl font-bold mb-3">Upcoming Fixtures</h2>
+    <section id="fixtures" className="mt-12">
+      <h2 className="text-xl font-bold mb-4">Upcoming Fixtures</h2>
 
       {/* Week Selector */}
-      <div className="flex items-center gap-3 mb-4">
-        <label className="text-sm font-semibold">Select Week</label>
+      <div className="mb-4">
         <select
-          className="border rounded-lg px-3 py-2 text-sm"
           value={selectedWeek}
           onChange={(e) => setSelectedWeek(Number(e.target.value))}
+          className="border px-3 py-2 rounded-lg text-sm"
         >
           {weeks.map((w) => (
             <option key={w} value={w}>
@@ -43,51 +35,37 @@ export default function UpcomingFixturesSection() {
         </select>
       </div>
 
-      {/* Fixtures List */}
+      {/* Fixtures */}
       <div className="space-y-4">
-        {upcomingFixtures.map((f) => (
-          <div
-            key={f.id}
-            className="bg-white rounded-xl shadow p-4 flex flex-col gap-3"
-          >
-            {/* Teams Row */}
-            <div className="flex justify-between items-center">
+        {fixtures.map((f) => (
+          <div key={f.id} className="bg-white p-4 shadow rounded-xl">
+            {/* Team Row */}
+            <div className="flex items-center justify-between">
               {/* Home */}
               <div className="flex items-center gap-2">
-                <img
-                  src={getTeamLogo(f.home)}
-                  alt={f.home}
-                  className="w-7 h-7 rounded"
-                />
+                <img src={logo(f.home)} className="w-7 h-7 rounded" alt="" />
                 <span className="font-semibold text-sm">{f.home}</span>
               </div>
 
-              <span className="text-gray-600 font-semibold text-sm">vs</span>
+              <span className="font-bold text-gray-700 text-sm">vs</span>
 
               {/* Away */}
               <div className="flex items-center gap-2">
-                <img
-                  src={getTeamLogo(f.away)}
-                  alt={f.away}
-                  className="w-7 h-7 rounded"
-                />
+                <img src={logo(f.away)} className="w-7 h-7 rounded" alt="" />
                 <span className="font-semibold text-sm">{f.away}</span>
               </div>
             </div>
 
-            {/* Details */}
-            <div className="text-xs text-gray-600">
-              <p>
-                {f.date} • {f.time}
-              </p>
-              <p>Ground: {f.ground}</p>
+            {/* Match Info */}
+            <div className="text-xs text-gray-600 mt-2">
+              {f.date} • {f.time} • {f.ground}
             </div>
 
-            {/* Match Facts button if available */}
+            {/* Match Facts button (only if data exists) */}
             {MATCH_FACTS[f.id] && (
               <button
                 onClick={() => setOpenMatchId(f.id)}
-                className="self-start bg-blue-600 text-white px-3 py-1.5 text-xs rounded-md hover:bg-blue-700"
+                className="mt-3 text-xs bg-blue-600 text-white px-3 py-1 rounded-md"
               >
                 Match Facts
               </button>
@@ -98,54 +76,52 @@ export default function UpcomingFixturesSection() {
 
       {/* Modal */}
       <Modal open={!!openMatchId} onClose={() => setOpenMatchId(null)}>
-        {openMatchId && (
-          <MatchFactsContent matchId={openMatchId} />
-        )}
+        {openMatchId && <MatchFacts matchId={openMatchId} />}
       </Modal>
     </section>
   );
 }
 
-function MatchFactsContent({ matchId }: { matchId: string }) {
-  const data = MATCH_FACTS[matchId];
-  if (!data) return <p>No data available.</p>;
+function MatchFacts({ matchId }: { matchId: string }) {
+  const d = MATCH_FACTS[matchId];
+  if (!d) return <p>No data available.</p>;
 
   return (
-    <div className="space-y-6">
-      {/* Home Team Block */}
+    <div className="text-sm space-y-5">
+      {/* HOME TEAM */}
       <div>
-        <h3 className="font-bold mb-2 text-gray-900">Home Team</h3>
-        <p className="font-semibold text-sm">Goals:</p>
-        <ul className="list-disc pl-5 text-sm">
-          {data.home.scorers.map((g, i) => (
-            <li key={i}>{g}</li>
+        <h3 className="font-bold mb-2">Home Team</h3>
+        <p className="font-semibold">Goals</p>
+        <ul className="list-disc pl-5">
+          {d.home.scorers.map((s, i) => (
+            <li key={i}>{s}</li>
           ))}
         </ul>
 
-        <p className="font-semibold text-sm mt-2">Cards:</p>
-        <ul className="list-disc pl-5 text-sm">
-          {data.home.cards.length > 0 ? (
-            data.home.cards.map((c, i) => <li key={i}>{c}</li>)
+        <p className="font-semibold mt-2">Cards</p>
+        <ul className="list-disc pl-5">
+          {d.home.cards.length ? (
+            d.home.cards.map((c, i) => <li key={i}>{c}</li>)
           ) : (
             <li>None</li>
           )}
         </ul>
       </div>
 
-      {/* Away Team Block */}
+      {/* AWAY TEAM */}
       <div>
-        <h3 className="font-bold mb-2 text-gray-900">Away Team</h3>
-        <p className="font-semibold text-sm">Goals:</p>
-        <ul className="list-disc pl-5 text-sm">
-          {data.away.scorers.map((g, i) => (
-            <li key={i}>{g}</li>
+        <h3 className="font-bold mb-2">Away Team</h3>
+        <p className="font-semibold">Goals</p>
+        <ul className="list-disc pl-5">
+          {d.away.scorers.map((s, i) => (
+            <li key={i}>{s}</li>
           ))}
         </ul>
 
-        <p className="font-semibold text-sm mt-2">Cards:</p>
-        <ul className="list-disc pl-5 text-sm">
-          {data.away.cards.length > 0 ? (
-            data.away.cards.map((c, i) => <li key={i}>{c}</li>)
+        <p className="font-semibold mt-2">Cards</p>
+        <ul className="list-disc pl-5">
+          {d.away.cards.length ? (
+            d.away.cards.map((c, i) => <li key={i}>{c}</li>)
           ) : (
             <li>None</li>
           )}
