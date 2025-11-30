@@ -10,7 +10,9 @@ export const ORG = {
   location: "Canberra, Australia",
   website: "https://www.samsaragroup.com.au",
   facebook: "https://www.facebook.com/profile.php?id=61566789173985",
+  youtube: "https://www.youtube.com/@SamsaraGroupCanberra", // updated
 };
+
 
 export const SPL_SEASON = {
   name: "Samsara Premier League (SPL) 2025-26",
@@ -746,6 +748,7 @@ export const FIXTURES: Fixture[] = [
 export const FIXTURE_MAP: Record<string, Fixture> = Object.fromEntries(
   FIXTURES.map((f) => [f.id, f]),
 );
+
 
 // Result type for clarity
 export type Result = {
