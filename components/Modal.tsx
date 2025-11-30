@@ -12,27 +12,25 @@ type ModalProps = {
 export default function Modal({ open, onClose, children }: ModalProps) {
   useEffect(() => {
     if (!open) return;
-    function handleKey(e: KeyboardEvent) {
+    function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl relative">
-        {/* Close button */}
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-3">
+      <div className="relative w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-3xl bg-slate-900 text-slate-50 shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-600 hover:text-black text-sm"
+          className="absolute right-3 top-3 rounded-full bg-slate-700/70 px-3 py-1 text-xs font-medium hover:bg-slate-600"
         >
-          ✕
+          Close
         </button>
-
-        <div className="p-5">{children}</div>
+        <div className="p-5 sm:p-6">{children}</div>
       </div>
     </div>
   );

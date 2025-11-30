@@ -1,29 +1,39 @@
 // components/FixturesResultsSection.tsx
 "use client";
 
-import { useMemo, useState } from "react";
-import { FIXTURES, RESULTS, TEAM_LOGOS, MATCH_FACTS } from "@/lib/splData";
+import { useState, useMemo } from "react";
+import {
+  FIXTURES,
+  RESULTS,
+  TEAM_LOGOS,
+  MATCH_FACTS,
+  getRounds,
+} from "@/lib/splData";
 import Modal from "@/components/Modal";
 
-type ResultMap = Record<
-  string,
-  {
-    homeGoals: number;
-    awayGoals: number;
-  }
->;
+type ResultMap = Record<string, { homeGoals: number; awayGoals: number }>;
 
 export default function FixturesResultsSection() {
-  // All weeks
-  const rounds = useMemo(
-    () =>
-      Array.from(new Set(FIXTURES.map((f) => f.round))).sort(
-        (a, b) => a - b,
-      ),
-    [],
-  );
+  const rounds = getRounds();
 
-  // Map results by fixture id
+  // Work out current / upcoming round for default
+  const today = new Date();
+
+  const nextFixture = FIXTURES.find((f) => new Date(f.date) >= today);
+  const nextUpcomingRound = nextFixture?.round ?? rounds[0];
+
+  const latestResultRound = RESULTS.reduce((max, r) => {
+    const fx = FIXTURES.find((f) => f.id === r.fixtureId);
+    if (!fx) return max;
+    return fx.round > max ? fx.round : max;
+  }, 0);
+
+  const initialRound =
+    latestResultRound > 0 ? latestResultRound : nextUpcomingRound;
+
+  const [selectedRound, setSelectedRound] = useState<number>(initialRound);
+  const [openMatchId, setOpenMatchId] = useState<string | null>(null);
+
   const resultMap: ResultMap = useMemo(
     () =>
       Object.fromEntries(
@@ -35,44 +45,12 @@ export default function FixturesResultsSection() {
     [],
   );
 
-  // Last round that has at least one result
-  const lastPlayedRound =
-    rounds
-      .slice()
-      .reverse()
-      .find((r) =>
-        FIXTURES.some((f) => f.round === r && resultMap[f.id]),
-      ) ?? rounds[0];
-
-  // Upcoming round default (first future fixture)
-  const today = new Date();
-  const firstFutureFixture = FIXTURES.find(
-    (f) => new Date(f.date) >= today,
-  );
-  const defaultUpcomingRound =
-    firstFutureFixture?.round ?? rounds[rounds.length - 1];
-
-  const [selectedUpcomingRound, setSelectedUpcomingRound] = useState(
-    defaultUpcomingRound,
-  );
-
-  // Modal
-  const [openMatchId, setOpenMatchId] = useState<string | null>(null);
-
-  const latestResults = useMemo(
+  const fixtures = useMemo(
     () =>
-      FIXTURES.filter(
-        (f) => f.round === lastPlayedRound && resultMap[f.id],
-      ).sort((a, b) => a.time.localeCompare(b.time)),
-    [lastPlayedRound, resultMap],
-  );
-
-  const upcomingFixtures = useMemo(
-    () =>
-      FIXTURES.filter((f) => f.round === selectedUpcomingRound).sort(
-        (a, b) => a.time.localeCompare(b.time),
+      FIXTURES.filter((f) => f.round === selectedRound).sort((a, b) =>
+        a.time.localeCompare(b.time),
       ),
-    [selectedUpcomingRound],
+    [selectedRound],
   );
 
   function logo(team: string) {
@@ -80,371 +58,201 @@ export default function FixturesResultsSection() {
   }
 
   return (
-    <section id="fixtures" className="mt-12 space-y-8">
-      {/* LATEST RESULTS */}
-      <div>
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <h2 className="text-xl font-bold tracking-tight">
-            Latest Results
-          </h2>
-          <span className="text-xs rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-            Week {lastPlayedRound}
-          </span>
-        </div>
-        <p className="text-xs text-gray-600 mb-3">
-          Most recent completed round. Tap Match facts to see goal scorers
-          and cards.
-        </p>
+    <section id="fixturesResults" className="mt-12">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
+        <h2 className="text-xl font-bold tracking-tight">
+          SPL Fixtures &amp; Results
+        </h2>
 
-        <div className="space-y-3">
-          {latestResults.length === 0 && (
-            <p className="text-sm text-gray-500">
-              No results recorded yet.
-            </p>
-          )}
-
-          {latestResults.map((f) => {
-            const res = resultMap[f.id]!;
-            return (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setOpenMatchId(f.id)}
-                className="w-full text-left rounded-2xl bg-slate-900 text-slate-50 px-4 py-3 sm:px-6 sm:py-4 shadow-md hover:shadow-lg transition-shadow"
-              >
-                {/* Score line similar to reference screenshot */}
-                <div className="flex items-center justify-between gap-3">
-                  {/* Home */}
-                  <div className="flex items-center gap-2 sm:gap-3 w-1/3 min-w-[30%]">
-                    <img
-                      src={logo(f.home)}
-                      alt={f.home}
-                      className="w-7 h-7 sm:w-9 sm:h-9 rounded-full border border-slate-600 bg-white"
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-xs uppercase tracking-wide text-slate-300">
-                        Home
-                      </span>
-                      <span className="text-sm sm:text-base font-semibold">
-                        {f.home}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Centre score */}
-                  <div className="flex flex-col items-center justify-center flex-1">
-                    <div className="flex items-baseline gap-2 text-2xl sm:text-3xl font-bold">
-                      <span>{res.homeGoals}</span>
-                      <span className="text-base sm:text-lg text-slate-400">
-                        -
-                      </span>
-                      <span>{res.awayGoals}</span>
-                    </div>
-                    <span className="mt-1 text-[11px] text-slate-300">
-                      Full time
-                    </span>
-                    <span className="mt-1 text-[10px] text-slate-400">
-                      Round {f.round} • {f.date} • {f.time}
-                    </span>
-                  </div>
-
-                  {/* Away */}
-                  <div className="flex items-center gap-2 sm:gap-3 justify-end w-1/3 min-w-[30%]">
-                    <div className="flex flex-col text-right">
-                      <span className="text-xs uppercase tracking-wide text-slate-300">
-                        Away
-                      </span>
-                      <span className="text-sm sm:text-base font-semibold">
-                        {f.away}
-                      </span>
-                    </div>
-                    <img
-                      src={logo(f.away)}
-                      alt={f.away}
-                      className="w-7 h-7 sm:w-9 sm:h-9 rounded-full border border-slate-600 bg-white"
-                    />
-                  </div>
-                </div>
-
-                {/* Small footer row */}
-                <div className="mt-3 flex items-center justify-between text-[11px] text-slate-300">
-                  <span>Tap for full match facts</span>
-                  <span className="rounded-full border border-slate-500 px-3 py-1 text-[11px]">
-                    Match facts
-                  </span>
-                </div>
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-gray-600">Week</label>
+          <select
+            value={selectedRound}
+            onChange={(e) => setSelectedRound(Number(e.target.value))}
+            className="border px-3 py-2 rounded-lg text-sm shadow-sm"
+          >
+            {rounds.map((r) => (
+              <option key={r} value={r}>
+                Week {r}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* UPCOMING FIXTURES */}
-      <div>
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <h3 className="text-lg font-semibold tracking-tight">
-            Upcoming Fixtures
-          </h3>
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-600">Week</label>
-            <select
-              value={selectedUpcomingRound}
-              onChange={(e) =>
-                setSelectedUpcomingRound(Number(e.target.value))
-              }
-              className="border px-3 py-2 rounded-lg text-sm shadow-sm"
+      {/* Upcoming Week pill */}
+      <p className="text-xs text-gray-600 mb-3">
+        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
+          Upcoming Week: {nextUpcomingRound}
+        </span>
+      </p>
+
+      {/* Fixtures / Results list */}
+      <div className="space-y-4">
+        {fixtures.map((f) => {
+          const res = resultMap[f.id];
+          const isFinished = !!res;
+          const hasFacts = !!MATCH_FACTS[f.id];
+
+          return (
+            <div
+              key={f.id}
+              className="bg-white p-4 shadow rounded-xl border"
             >
-              {rounds.map((r) => (
-                <option key={r} value={r}>
-                  Week {r}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+              {/* Team row */}
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                {/* Home team */}
+                <div className="flex items-center gap-2 min-w-[40%]">
+                  <img
+                    src={logo(f.home)}
+                    className="w-7 h-7 rounded-full border"
+                    alt={f.home}
+                  />
+                  <span className="font-semibold text-sm">{f.home}</span>
+                </div>
 
-        <p className="text-xs text-gray-600 mb-3">
-          Select a week to see all fixtures. Tap Match centre for details.
-        </p>
-
-        <div className="space-y-3">
-          {upcomingFixtures.map((f) => {
-            const res = resultMap[f.id];
-            const isPlayed = !!res;
-            return (
-              <div
-                key={f.id}
-                className="rounded-2xl bg-white border px-4 py-3 sm:px-5 sm:py-4 shadow-sm"
-              >
-                {/* Teams row */}
-                <div className="flex items-center justify-between gap-3">
-                  {/* Home */}
-                  <div className="flex items-center gap-2 sm:gap-3 min-w-[35%]">
-                    <img
-                      src={logo(f.home)}
-                      alt={f.home}
-                      className="w-7 h-7 sm:w-9 sm:h-9 rounded-full border bg-white"
-                    />
-                    <span className="text-sm sm:text-base font-semibold">
-                      {f.home}
-                    </span>
-                  </div>
-
-                  {/* Centre */}
-                  <div className="flex flex-col items-center flex-1 text-xs text-gray-600">
-                    {isPlayed ? (
-                      <span className="text-sm sm:text-base font-semibold text-gray-900">
-                        {res!.homeGoals} - {res!.awayGoals}
+                {/* Score / vs + meta */}
+                <div className="flex-1 text-center">
+                  {isFinished ? (
+                    <span className="text-lg font-bold">
+                      {res.homeGoals}
+                      <span className="text-[10px] text-gray-500 mx-1">
+                        FT
                       </span>
-                    ) : (
-                      <span className="text-sm font-semibold text-gray-700">
-                        vs
-                      </span>
-                    )}
-                    <span className="mt-1 text-[10px]">
-                      {f.date} • {f.time} • {f.ground}
+                      {res.awayGoals}
                     </span>
-                  </div>
-
-                  {/* Away */}
-                  <div className="flex items-center gap-2 sm:gap-3 justify-end min-w-[35%]">
-                    <span className="text-sm sm:text-base font-semibold text-right">
-                      {f.away}
+                  ) : (
+                    <span className="text-sm font-semibold text-gray-600">
+                      vs
                     </span>
-                    <img
-                      src={logo(f.away)}
-                      alt={f.away}
-                      className="w-7 h-7 sm:w-9 sm:h-9 rounded-full border bg-white"
-                    />
+                  )}
+                  <div className="text-[10px] text-gray-600 mt-1">
+                    Week {f.round} • {f.date} • {f.time}
                   </div>
                 </div>
 
-                {/* Footer row */}
-                <div className="mt-3 flex items-center justify-between text-[11px] text-gray-600">
-                  <div className="flex items-center gap-2">
-                    {!isPlayed && (
-                      <span className="rounded-full bg-green-100 text-green-700 px-2 py-0.5">
-                        Upcoming
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setOpenMatchId(f.id)}
-                    className="rounded-full border border-blue-500 px-3 py-1 text-[11px] text-blue-600 hover:bg-blue-50"
-                  >
-                    Match centre
-                  </button>
+                {/* Away team */}
+                <div className="flex items-center justify-end gap-2 min-w-[40%]">
+                  <span className="font-semibold text-sm text-right">
+                    {f.away}
+                  </span>
+                  <img
+                    src={logo(f.away)}
+                    className="w-7 h-7 rounded-full border"
+                    alt={f.away}
+                  />
                 </div>
               </div>
-            );
-          })}
-        </div>
+
+              {/* Bottom row */}
+              <div className="mt-2 flex items-center justify-between text-xs text-gray-600 flex-wrap gap-2">
+                <span>
+                  Ground: <strong>{f.ground}</strong>
+                </span>
+
+                <div className="flex items-center gap-2">
+                  {!isFinished && (
+                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[10px]">
+                      Upcoming fixture
+                    </span>
+                  )}
+
+                  {isFinished && hasFacts && (
+                    <button
+                      onClick={() => setOpenMatchId(f.id)}
+                      className="bg-blue-600 text-white text-xs px-3 py-1 rounded-lg hover:bg-blue-700"
+                    >
+                      Match Facts
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* MODAL */}
+      {/* Match Facts modal */}
       <Modal open={!!openMatchId} onClose={() => setOpenMatchId(null)}>
-        {openMatchId && <MatchCentre matchId={openMatchId} />}
+        {openMatchId && <MatchFacts matchId={openMatchId} />}
       </Modal>
     </section>
   );
 }
 
-// Match centre / facts popup
-function MatchCentre({ matchId }: { matchId: string }) {
-  const fixture = FIXTURES.find((f) => f.id === matchId);
-  const result = RESULTS.find((r) => r.fixtureId === matchId);
-  const facts = MATCH_FACTS[matchId];
+function MatchFacts({ matchId }: { matchId: string }) {
+  const d = MATCH_FACTS[matchId];
 
-  if (!fixture) {
-    return <p className="text-sm text-slate-50">Match not found.</p>;
-  }
-
-  const homeLogo = TEAM_LOGOS[fixture.home] || "";
-  const awayLogo = TEAM_LOGOS[fixture.away] || "";
-
-  const isFinished = !!result;
-  const scoreHome = result?.homeGoals ?? "-";
-  const scoreAway = result?.awayGoals ?? "-";
-
-  function renderCards(list: string[]) {
-    if (!list.length) return <li>None</li>;
-    return list.map((item, i) => {
-      const lower = item.toLowerCase();
-      const isRed = lower.includes("red");
-      const isYellow = lower.includes("yellow");
-      return (
-        <li key={i} className="flex items-center gap-2">
-          {isRed && (
-            <span className="inline-block w-2.5 h-3 rounded-[2px] bg-red-500" />
-          )}
-          {isYellow && !isRed && (
-            <span className="inline-block w-2.5 h-3 rounded-[2px] bg-yellow-400" />
-          )}
-          <span>{item}</span>
-        </li>
-      );
-    });
+  if (!d) {
+    return <p className="text-sm text-white">No match facts available.</p>;
   }
 
   return (
-    <div className="text-slate-50 text-sm space-y-6">
-      {/* Scoreboard header (similar to reference) */}
-      <div className="flex items-center justify-between gap-4">
-        {/* Home */}
-        <div className="flex items-center gap-3 w-1/3 min-w-[30%]">
-          <img
-            src={homeLogo}
-            alt={fixture.home}
-            className="w-10 h-10 rounded-full bg-white border border-slate-600"
-          />
-          <div>
-            <p className="text-[11px] uppercase tracking-wide text-slate-300">
-              Home
-            </p>
-            <p className="font-semibold text-sm sm:text-base">
-              {fixture.home}
-            </p>
-          </div>
-        </div>
+    <div className="text-sm text-white space-y-6">
+      <h3 className="text-xl font-bold mb-2">Match Facts</h3>
 
-        {/* Centre score and meta */}
-        <div className="flex flex-col items-center flex-1">
-          <div className="flex items-baseline gap-2 text-3xl font-bold">
-            <span>{scoreHome}</span>
-            <span className="text-base text-slate-400">-</span>
-            <span>{scoreAway}</span>
-          </div>
-          <p className="mt-1 text-[11px] text-slate-300">
-            {isFinished ? "Full time" : "Upcoming fixture"}
-          </p>
-          <p className="mt-1 text-[11px] text-slate-400 text-center">
-            Round {fixture.round} · {fixture.date} · {fixture.time}
-            <br />
-            {fixture.ground}
-          </p>
+      {/* Team names row */}
+      <div className="grid grid-cols-2 gap-4 mb-2">
+        <div className="text-left">
+          <p className="text-base font-semibold">{d.teamHome}</p>
         </div>
-
-        {/* Away */}
-        <div className="flex items-center gap-3 justify-end w-1/3 min-w-[30%]">
-          <div className="text-right">
-            <p className="text-[11px] uppercase tracking-wide text-slate-300">
-              Away
-            </p>
-            <p className="font-semibold text-sm sm:text-base">
-              {fixture.away}
-            </p>
-          </div>
-          <img
-            src={awayLogo}
-            alt={fixture.away}
-            className="w-10 h-10 rounded-full bg-white border border-slate-600"
-          />
+        <div className="text-right">
+          <p className="text-base font-semibold">{d.teamAway}</p>
         </div>
       </div>
 
-      {/* Content */}
-      {isFinished && facts ? (
-        <>
-          <div className="space-y-4">
-            {/* Goals */}
-            <div>
-              <p className="font-semibold text-xs tracking-wide text-slate-300 mb-1">
-                GOALS – {fixture.home.toUpperCase()}
-              </p>
-              <ul className="list-disc pl-5">
-                {facts.home.scorers.length
-                  ? facts.home.scorers.map((s, i) => <li key={i}>{s}</li>)
-                  : <li>None</li>}
-              </ul>
-            </div>
+      {/* Goals */}
+      <div>
+        <h4 className="text-sm font-semibold mb-2 uppercase tracking-wide text-slate-200">
+          Goals
+        </h4>
+        <div className="grid grid-cols-2 gap-4">
+          {/* Home goals */}
+          <ul className="list-disc pl-5 text-left">
+            {d.home.scorers.length > 0 ? (
+              d.home.scorers.map((s, i) => <li key={i}>{s}</li>)
+            ) : (
+              <li>No goals</li>
+            )}
+          </ul>
 
-            <div>
-              <p className="font-semibold text-xs tracking-wide text-slate-300 mb-1">
-                GOALS – {fixture.away.toUpperCase()}
-              </p>
-              <ul className="list-disc pl-5">
-                {facts.away.scorers.length
-                  ? facts.away.scorers.map((s, i) => <li key={i}>{s}</li>)
-                  : <li>None</li>}
-              </ul>
-            </div>
-          </div>
-
-          {/* Cards */}
-          <div className="mt-4">
-            <p className="font-semibold text-xs tracking-wide text-slate-300 mb-2">
-              CARDS
-            </p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <p className="font-semibold text-[12px] mb-1">
-                  {fixture.home}
-                </p>
-                <ul className="list-disc pl-5">{renderCards(facts.home.cards)}</ul>
-              </div>
-              <div>
-                <p className="font-semibold text-[12px] mb-1">
-                  {fixture.away}
-                </p>
-                <ul className="list-disc pl-5">{renderCards(facts.away.cards)}</ul>
-              </div>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div className="mt-3 text-[13px] text-slate-200 leading-relaxed">
-          <p>
-            This match is part of the Samsara Premier League regular season.
-            Kick off is scheduled for {fixture.time} on {fixture.date} at{" "}
-            {fixture.ground}.
-          </p>
-          <p className="mt-2 text-slate-300">
-            Line ups, live updates, and full match facts will appear here
-            after the game has been played.
-          </p>
+          {/* Away goals */}
+          <ul className="list-disc pl-5 text-right">
+            {d.away.scorers.length > 0 ? (
+              d.away.scorers.map((s, i) => <li key={i}>{s}</li>)
+            ) : (
+              <li>No goals</li>
+            )}
+          </ul>
         </div>
-      )}
+      </div>
+
+      {/* Cards */}
+      <div>
+        <h4 className="text-sm font-semibold mb-2 uppercase tracking-wide text-slate-200">
+          Cards
+        </h4>
+        <div className="grid grid-cols-2 gap-4">
+          {/* Home cards */}
+          <ul className="list-disc pl-5 text-left">
+            {d.home.cards.length > 0 ? (
+              d.home.cards.map((c, i) => <li key={i}>{c}</li>)
+            ) : (
+              <li>No cards</li>
+            )}
+          </ul>
+
+          {/* Away cards */}
+          <ul className="list-disc pl-5 text-right">
+            {d.away.cards.length > 0 ? (
+              d.away.cards.map((c, i) => <li key={i}>{c}</li>)
+            ) : (
+              <li>No cards</li>
+            )}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }

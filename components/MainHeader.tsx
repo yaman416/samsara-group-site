@@ -5,8 +5,7 @@ import { useState } from "react";
 const LINKS = [
   { key: "home", label: "Home", target: "top" },
   { key: "table", label: "League Table", target: "table" },
-  { key: "fixtures", label: "Fixtures", target: "fixtures" },
-  { key: "results", label: "Results", target: "results" },
+  { key: "fixturesResults", label: "Fixtures & Results", target: "fixturesResults" },
   { key: "sponsors", label: "Sponsors", target: "sponsors" },
 ];
 

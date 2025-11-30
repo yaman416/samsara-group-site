@@ -151,7 +151,7 @@ export default function LeagueTableSection() {
   }, []);
 
   return (
-    <section id="league-table" className="mt-10">
+    <section id="table" className="mt-10">
       <div className="rounded-3xl border bg-white shadow-sm">
         <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
           <div>
