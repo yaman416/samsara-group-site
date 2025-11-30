@@ -235,32 +235,25 @@ export default function LeagueTableSection() {
       id="table"
       className="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
     >
-      {/* Header */}
+      {/* Header without logo */}
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <img
-            src="/spl-logo.png"
-            alt="Samsara Premier League logo"
-            className="h-10 w-auto bg-white"
-          />
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">
-              League Table
-            </h2>
-            <p className="text-xs text-gray-500">
-              {SPL_SEASON.name}. Top 4 qualify for knockouts. Bottom 2 in
-              relegation zone.
-            </p>
-          </div>
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">
+            League Table
+          </h2>
+          <p className="text-xs text-gray-500">
+            {SPL_SEASON.name}. Top 4 qualify for knockouts. Bottom 2 in
+            relegation zone.
+          </p>
         </div>
         <div className="hidden sm:flex flex-col items-end text-[11px] text-gray-500">
           <div className="flex items-center gap-2">
             <span className="inline-block h-3 w-3 rounded-sm bg-emerald-100 border border-emerald-400" />
-            <span>Top 4 - knockout places</span>
+            <span>Top 4 knockout places</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
             <span className="inline-block h-3 w-3 rounded-sm bg-red-100 border border-red-400" />
-            <span>11th - 12th - relegation zone</span>
+            <span>11 and 12 relegation zone</span>
           </div>
         </div>
       </div>

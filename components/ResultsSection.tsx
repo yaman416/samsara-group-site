@@ -6,7 +6,10 @@ import {
   FIXTURES,
   RESULTS,
   TEAM_LOGOS,
+  MATCH_FACTS,
   type Fixture,
+  type GoalEvent,
+  type CardEvent,
 } from "@/lib/splData";
 
 type RoundTab = {
@@ -74,6 +77,10 @@ export default function ResultsSection() {
     latestCompletedRound,
   );
 
+  const [openFixtureId, setOpenFixtureId] = useState<string | null>(
+    null,
+  );
+
   const fixturesWithResults = useMemo(() => {
     const fixturesForRound = FIXTURES.filter(
       (f) => f.round === selectedRound,
@@ -104,7 +111,7 @@ export default function ResultsSection() {
             Match Results
           </h2>
           <p className="text-xs text-gray-500">
-            Choose a week to view full time scores.
+            Choose a week to view full time scores and match facts.
           </p>
         </div>
         <div className="hidden sm:flex flex-col items-end text-[11px] text-gray-500">
@@ -125,7 +132,10 @@ export default function ResultsSection() {
           return (
             <button
               key={tab.round}
-              onClick={() => setSelectedRound(tab.round)}
+              onClick={() => {
+                setSelectedRound(tab.round);
+                setOpenFixtureId(null);
+              }}
               className={[
                 "flex flex-col items-start rounded-xl border px-3 py-2 min-w-[90px] text-left text-xs transition-colors",
                 isActive
@@ -147,7 +157,7 @@ export default function ResultsSection() {
         })}
       </div>
 
-      {/* Results list with logos */}
+      {/* Results list with logos and match facts */}
       <div className="mt-4 space-y-2">
         {fixturesWithResults.length === 0 ? (
           <p className="text-xs text-gray-500">
@@ -161,12 +171,16 @@ export default function ResultsSection() {
               const homeLogo = TEAM_LOGOS[fixture.home];
               const awayLogo = TEAM_LOGOS[fixture.away];
 
+              const facts = MATCH_FACTS[fixture.id];
+              const hasFacts = !!facts;
+              const isOpen = openFixtureId === fixture.id;
+
               return (
                 <div
                   key={fixture.id}
                   className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs md:text-sm"
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       {/* Home */}
                       <div className="flex items-center justify-between gap-2">
@@ -219,12 +233,98 @@ export default function ResultsSection() {
                       </div>
                     </div>
 
-                    <div className="text-[11px] text-gray-500 text-right whitespace-nowrap">
+                    <div className="flex flex-col items-end gap-1 text-[11px] text-gray-500 whitespace-nowrap">
                       <div>{fixture.date}</div>
                       <div>{fixture.time}</div>
                       <div>Round {fixture.round}</div>
+                      <button
+                        type="button"
+                        disabled={!hasFacts}
+                        onClick={() =>
+                          setOpenFixtureId(
+                            isOpen ? null : fixture.id,
+                          )
+                        }
+                        className={[
+                          "mt-1 inline-flex items-center rounded-full px-2 py-[3px] text-[10px] font-semibold border transition-colors",
+                          hasFacts
+                            ? isOpen
+                              ? "border-blue-600 bg-blue-600 text-white"
+                              : "border-blue-600 text-blue-600 hover:bg-blue-50"
+                            : "border-gray-300 text-gray-300 cursor-not-allowed",
+                        ].join(" ")}
+                      >
+                        Match facts
+                      </button>
                     </div>
                   </div>
+
+                  {/* Facts panel */}
+                  {isOpen && hasFacts && (
+                    <div className="mt-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2 text-[11px] text-gray-700">
+                      {facts.goals.length > 0 && (
+                        <div className="mb-2">
+                          <div className="mb-1 font-semibold">
+                            Goals
+                          </div>
+                          <ul className="space-y-1">
+                            {facts.goals.map(
+                              (g: GoalEvent, idx: number) => (
+                                <li key={idx}>
+                                  <span className="font-medium">
+                                    {g.team}
+                                  </span>
+                                  {": "}
+                                  {g.player}
+                                  {g.info ? ` (${g.info})` : ""}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
+
+                      {facts.cards.length > 0 && (
+                        <div>
+                          <div className="mb-1 font-semibold">
+                            Cards
+                          </div>
+                          <ul className="space-y-1">
+                            {facts.cards.map(
+                              (c: CardEvent, idx: number) => (
+                                <li key={idx}>
+                                  <span className="font-medium">
+                                    {c.team}
+                                  </span>
+                                  {": "}
+                                  {c.player}{" "}
+                                  <span
+                                    className={
+                                      c.type === "Red" ||
+                                      c.type === "Second Yellow"
+                                        ? "text-red-600 font-semibold"
+                                        : "text-yellow-600 font-semibold"
+                                    }
+                                  >
+                                    [{c.type}]
+                                  </span>
+                                  {c.info ? ` - ${c.info}` : ""}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
+
+                      {facts.goals.length === 0 &&
+                        facts.cards.length === 0 && (
+                          <p className="text-gray-500">
+                            Match facts are recorded, but no goals or
+                            cards have been added yet.
+                          </p>
+                        )}
+                    </div>
+                  )}
                 </div>
               );
             },

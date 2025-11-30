@@ -873,3 +873,241 @@ export function getUpcomingFixtures(limit = 5): Fixture[] {
     })
     .slice(0, limit);
 }
+
+
+export type GoalEvent = {
+  team: string;
+  player: string;
+  info?: string;
+};
+
+export type CardEvent = {
+  team: string;
+  player: string;
+  type: "Yellow" | "Red" | "Second Yellow";
+  info?: string;
+};
+
+export const MATCH_FACTS: Record<
+  string,
+  { goals: GoalEvent[]; cards: CardEvent[] }
+> = {
+  // Week 2
+  "R2-M1": {
+    // Everest 1 - 1 Phuensum
+    goals: [
+      { team: "Everest FC", player: "Krishal Lama" },
+      { team: "Phuensum FC", player: "Sampa Tshering" },
+    ],
+    cards: [
+      {
+        team: "Phuensum FC",
+        player: "Sonam Wangchuk",
+        type: "Yellow",
+      },
+    ],
+  },
+  "R2-M2": {
+    // Druk 0 - 4 Khukuri
+    goals: [
+      { team: "Khukuri Canberra FC", player: "Roshan Lamichhane", info: "2 goals" },
+      { team: "Khukuri Canberra FC", player: "Abhishek Chapagain", info: "2 goals" },
+    ],
+    cards: [
+      {
+        team: "Druk FC",
+        player: "Tashi Norbu",
+        type: "Yellow",
+      },
+    ],
+  },
+  "R2-M3": {
+    // Thuenlam 6 - 0 Unity
+    goals: [
+      { team: "Thuenlam FC", player: "Kunzang Thinley", info: "hat-trick (3)" },
+      { team: "Thuenlam FC", player: "Tshering Dorji", info: "2 goals" },
+      { team: "Thuenlam FC", player: "Jersey No. 89", info: "name to be confirmed" },
+    ],
+    cards: [],
+  },
+  "R2-M4": {
+    // Achos 2 - 0 JA Brothers
+    goals: [
+      { team: "Achos Football Team", player: "Tshering Tobgay", info: "2 goals" },
+    ],
+    cards: [
+      {
+        team: "JA Brothers Football Club",
+        player: "Yuzan",
+        type: "Yellow",
+      },
+    ],
+  },
+  "R2-M5": {
+    // Azhas 1 - 1 QNU
+    goals: [
+      {
+        team: "Queanbeyan Nepalese United Football Club",
+        player: "Saneej Chhetri",
+      },
+      {
+        team: "Azhas FC",
+        player: "Rabten Tshegyel",
+      },
+    ],
+    cards: [
+      {
+        team: "Azhas FC",
+        player: "Thinley Gyeltshen",
+        type: "Red",
+        info: "double yellow, suspended next match",
+      },
+      {
+        team: "Azhas FC",
+        player: "Rabten Tshegyel",
+        type: "Yellow",
+      },
+      {
+        team: "Azhas FC",
+        player: "Nima Tshering",
+        type: "Yellow",
+      },
+      {
+        team: "Queanbeyan Nepalese United Football Club",
+        player: "Anil Singh Chaisir",
+        type: "Yellow",
+      },
+    ],
+  },
+  "R2-M6": {
+    // Nepal United 10 - 0 CNFC
+    goals: [
+      { team: "Nepal United FC", player: "Enoj Neupane", info: "4 goals" },
+      { team: "Nepal United FC", player: "Salav Gauchan", info: "2 goals" },
+      { team: "Nepal United FC", player: "Niraj Chhetri" },
+      { team: "Nepal United FC", player: "Nishan Khadka" },
+      { team: "Nepal United FC", player: "Dipendra Gurung", info: "2 goals" },
+    ],
+    cards: [],
+  },
+
+  // Week 3
+  "R3-M2": {
+    // CNFC 3 - 2 Unity Stars
+    goals: [
+      { team: "CNFC Canberra", player: "Sumit Ale" },
+      { team: "CNFC Canberra", player: "Manoj", info: "2 goals" },
+      { team: "Unity Stars FC", player: "Chencho Gyeltshen", info: "2 goals" },
+    ],
+    cards: [
+      {
+        team: "CNFC Canberra",
+        player: "Prawol Vaidya",
+        type: "Yellow",
+      },
+    ],
+  },
+  "R3-M6": {
+    // Azhas 3 - 1 Achos
+    goals: [
+      { team: "Azhas FC", player: "Namgay Wangchuk" },
+      { team: "Azhas FC", player: "Rabtsen Tshegyel" },
+      { team: "Azhas FC", player: "Chimi Kinzang Wangchuk" },
+      { team: "Achos Football Team", player: "Sonam Chopel" },
+    ],
+    cards: [
+      {
+        team: "Azhas FC",
+        player: "Zeyden Dorji",
+        type: "Yellow",
+      },
+      {
+        team: "Achos Football Team",
+        player: "Kelzang Jigme",
+        type: "Yellow",
+      },
+    ],
+  },
+  "R3-M3": {
+    // Druk 1 - 3 Phuensum
+    goals: [
+      { team: "Druk FC", player: "Sangay Tenzin" },
+      { team: "Phuensum FC", player: "Sonam Dorji" },
+      { team: "Phuensum FC", player: "Kinley Wangdi" },
+      { team: "Phuensum FC", player: "Sonam Wangchuk" },
+    ],
+    cards: [
+      {
+        team: "Phuensum FC",
+        player: "Namgay Tenzin",
+        type: "Red",
+        info: "straight red for dissent",
+      },
+    ],
+  },
+  "R3-M5": {
+    // Nepal United 1 - 2 Khukuri
+    goals: [
+      { team: "Nepal United FC", player: "Pujan Uperkoti" },
+      { team: "Khukuri Canberra FC", player: "Abhishek Chapagain" },
+      { team: "Khukuri Canberra FC", player: "Roshan Lamichhane" },
+    ],
+    cards: [
+      {
+        team: "Nepal United FC",
+        player: "Enoj Neupane",
+        type: "Yellow",
+      },
+      {
+        team: "Nepal United FC",
+        player: "Aakash Jung Raut",
+        type: "Yellow",
+      },
+      {
+        team: "Khukuri Canberra FC",
+        player: "Sagar Khadka",
+        type: "Yellow",
+        info: "black jersey",
+      },
+      {
+        team: "Khukuri Canberra FC",
+        player: "Protshan Basnet",
+        type: "Second Yellow",
+        info: "yellow plus red",
+      },
+    ],
+  },
+  "R3-M4": {
+    // Thuenlam 1 - 0 QNU
+    goals: [
+      { team: "Thuenlam FC", player: "Kunzang Thinley" },
+    ],
+    cards: [],
+  },
+  "R3-M1": {
+    // Everest 1 - 3 JA Brothers
+    goals: [
+      { team: "JA Brothers Football Club", player: "Dipesh Tamang" },
+      { team: "JA Brothers Football Club", player: "Ajay Shrestha" },
+      { team: "JA Brothers Football Club", player: "Alton Thakuri" },
+      { team: "Everest FC", player: "Kiran Gautam" },
+    ],
+    cards: [
+      {
+        team: "JA Brothers Football Club",
+        player: "Silas Tamang",
+        type: "Yellow",
+      },
+      {
+        team: "JA Brothers Football Club",
+        player: "Ajay Shrestha",
+        type: "Yellow",
+      },
+      {
+        team: "JA Brothers Football Club",
+        player: "Rahul Tamang",
+        type: "Yellow",
+      },
+    ],
+  },
+};
