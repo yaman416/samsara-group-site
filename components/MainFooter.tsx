@@ -2,40 +2,109 @@
 import { ORG } from "@/lib/splData";
 
 export default function MainFooter() {
+  const year = new Date().getFullYear();
+
   return (
     <footer className="mt-12 border-t bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-8 grid gap-4 md:grid-cols-3 text-xs md:text-sm text-gray-700">
-        <div>
-          <div className="font-semibold text-sm md:text-base">{ORG.name}</div>
-          <div className="text-gray-500">{ORG.tagline}</div>
+      <div className="mx-auto max-w-6xl px-4 py-8 space-y-6 md:space-y-0 md:grid md:grid-cols-4 text-xs md:text-sm text-gray-700">
+        {/* Brand / Logo */}
+        <div className="flex flex-col items-center md:items-start gap-3">
+          <div className="flex items-center gap-2">
+            <img
+              src="/samsara-logo-light.png"
+              alt="Samsara Group logo"
+              className="h-8 w-auto"
+            />
+          </div>
+          <p/>
+          <p className="text-[11px] md:text-xs text-gray-500 max-w-xs text-center md:text-left">
+            Community led organisation in Canberra supporting
+            communities through culture, <br/>sport, 
+            and events.
+          </p>
         </div>
-        <div className="space-y-1">
+
+        {/* Contact */}
+        <div className="flex flex-col items-center md:items-start gap-1">
+          <p className="font-semibold text-xs uppercase tracking-wide text-gray-500">
+            Contact
+          </p>
           <p>
             Email:{" "}
-            <a className="text-blue-600 underline" href={`mailto:${ORG.email}`}>
+            <a
+              className="text-blue-600 hover:text-blue-700 underline"
+              href={`mailto:${ORG.email}`}
+            >
               {ORG.email}
             </a>
           </p>
           <p>Phone: {ORG.phone}</p>
-          <p>
-            Website:{" "}
-            <a className="text-blue-600 underline" href={ORG.website}>
-              {ORG.website}
-            </a>
-          </p>
+          <p>Location: {ORG.location}</p>
         </div>
-        <div className="space-y-1">
-          <p>
-            Facebook:{" "}
-            <a className="text-blue-600 underline" href={ORG.facebook} target="_blank" rel="noreferrer">
-              Visit page
-            </a>
+
+        {/* Quick links */}
+        <div className="flex flex-col items-center md:items-start gap-1">
+          <p className="font-semibold text-xs uppercase tracking-wide text-gray-500">
+            Quick links
           </p>
-          <a href="/privacy-policy" className="text-xs text-gray-500 hover:underline">
+          <button
+            onClick={() => document.getElementById("top")?.scrollIntoView({ behavior: "smooth" })}
+            className="text-gray-700 hover:text-blue-700 text-left"
+          >
+            Home
+          </button>
+          <button
+            onClick={() =>
+              document.getElementById("table")?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="text-gray-700 hover:text-blue-700 text-left"
+          >
+            League Table
+          </button>
+          <button
+            onClick={() =>
+              document.getElementById("fixturesResults")?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="text-gray-700 hover:text-blue-700 text-left"
+          >
+            Fixtures and Results
+          </button>
+          <button
+            onClick={() =>
+              document.getElementById("sponsors")?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="text-gray-700 hover:text-blue-700 text-left"
+          >
+            Sponsors
+          </button>
+          <a
+            href="/privacy-policy"
+            className="mt-1 text-[11px] text-gray-500 hover:underline"
+          >
             Privacy Policy
           </a>
-          <p className="text-gray-500">
-            © {new Date().getFullYear()} {ORG.name}. All rights reserved.
+        </div>
+
+        {/* Social / Legal */}
+        <div className="flex flex-col items-center md:items-start gap-2">
+          <p className="font-semibold text-xs uppercase tracking-wide text-gray-500">
+            Connect
+          </p>
+          <a
+            href={ORG.facebook}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-blue-600 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-600 hover:text-white transition"
+          >
+            {/* Simple Facebook icon using SVG */}
+            <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-white text-[10px]">
+              f
+            </span>
+            <span>Follow on Facebook</span>
+          </a>
+
+          <p className="mt-2 text-[11px] text-gray-500 text-center md:text-left">
+            © {year} {ORG.name}. All rights reserved.
           </p>
         </div>
       </div>

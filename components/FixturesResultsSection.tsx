@@ -114,7 +114,7 @@ export default function FixturesResultsSection() {
                     <span className="text-lg font-bold">
                       {res.homeGoals}
                       <span className="text-[10px] text-gray-500 mx-1">
-                        FT
+                         FT 
                       </span>
                       {res.awayGoals}
                     </span>
