@@ -6,10 +6,10 @@ import MainHeader from "@/components/MainHeader";
 import HeroSection from "@/components/HeroSection";
 import FeaturedEventsSection from "@/components/FeaturedEventsSection";
 import LeagueTableSection from "@/components/LeagueTableSection";
-import UpcomingFixturesSection from "@/components/UpcomingFixturesSection";
-import ResultsSection from "@/components/ResultsSection";
 import SponsorsSection from "@/components/SponsorsSection";
 import MainFooter from "@/components/MainFooter";
+import FixturesResultsSection from "@/components/FixturesResultsSection";
+
 
 type SectionKey = "home" | "table" | "fixtures" | "results" | "sponsors";
 
@@ -23,8 +23,7 @@ export default function HomePage() {
         <HeroSection />
         <FeaturedEventsSection />
         <LeagueTableSection />
-        <UpcomingFixturesSection />
-        <ResultsSection />
+        <FixturesResultsSection/>
         <SponsorsSection />
       </main>
       <MainFooter />
