@@ -4,135 +4,156 @@
 import { useMemo, useState } from "react";
 import { FIXTURES, type Fixture } from "@/lib/splData";
 
-function getAllWeeks(fixtures: Fixture[]): number[] {
-  const set = new Set<number>();
-  fixtures.forEach((f) => set.add(f.round));
-  return Array.from(set).sort((a, b) => a - b);
+type RoundTab = {
+  round: number;
+  label: string;
+  dateLabel: string;
+};
+
+function buildRoundTabs(): RoundTab[] {
+  const rounds = Array.from(new Set(FIXTURES.map((f) => f.round))).sort(
+    (a, b) => a - b,
+  );
+
+  return rounds.map((round) => {
+    const fixtures = FIXTURES.filter((f) => f.round === round);
+    const first = fixtures[0];
+    let dateLabel = `Week ${round}`;
+    if (first) {
+      const d = new Date(first.date + "T00:00:00");
+      dateLabel = d.toLocaleDateString("en-AU", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+      });
+    }
+    return {
+      round,
+      label: `Week ${round}`,
+      dateLabel,
+    };
+  });
 }
 
-function getUpcomingWeek(fixtures: Fixture[]): number {
+function findUpcomingRound(): number {
   const today = new Date();
-  const upcoming = fixtures.filter((f) => new Date(f.date) >= today);
-  if (upcoming.length === 0) return 1;
-  return Math.min(...upcoming.map((f) => f.round));
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  ).getTime();
+
+  let upcoming = 1;
+  let minFuture = Number.POSITIVE_INFINITY;
+
+  for (const f of FIXTURES) {
+    const t = new Date(f.date + "T00:00:00").getTime();
+    if (t >= todayStart && t < minFuture) {
+      minFuture = t;
+      upcoming = f.round;
+    }
+  }
+
+  return upcoming;
 }
 
 export default function UpcomingFixturesSection() {
-  const weeks = useMemo(() => getAllWeeks(FIXTURES), []);
-  const upcomingWeek = useMemo(() => getUpcomingWeek(FIXTURES), []);
-  const [selectedWeek, setSelectedWeek] = useState(upcomingWeek);
+  const tabs = useMemo(() => buildRoundTabs(), []);
+  const upcomingRound = useMemo(() => findUpcomingRound(), []);
+  const [selectedRound, setSelectedRound] = useState<number>(upcomingRound);
 
-  const fixturesForWeek = FIXTURES.filter((f) => f.round === selectedWeek);
+  const fixturesForRound = useMemo(
+    () =>
+      FIXTURES.filter((f) => f.round === selectedRound).sort((a, b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        return a.time.localeCompare(b.time);
+      }),
+    [selectedRound],
+  );
+
+  const selectedTab = tabs.find((t) => t.round === selectedRound);
 
   return (
-    <section id="fixtures" className="mt-10 space-y-4">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+    <section
+      id="fixtures"
+      className="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+    >
+      <div className="flex items-center justify-between gap-2">
         <div>
-          <h2 className="text-lg md:text-xl font-semibold flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-600 text-sm">
-              🗓
-            </span>
-            Fixtures
+          <h2 className="text-lg font-semibold tracking-tight">
+            Upcoming Fixtures
           </h2>
-          <p className="text-xs md:text-sm text-gray-500">
-            Match schedule for all 11 weeks of Samsara Premier League.
+          <p className="text-xs text-gray-500">
+            Highlighted week shows the next scheduled round.
           </p>
         </div>
-
-        <div className="flex flex-col items-start md:items-end gap-1">
-          <div className="flex items-center gap-2 text-xs md:text-sm">
-            <span className="text-gray-500">Upcoming match week:</span>
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700 font-medium">
-              Week {upcomingWeek}
-            </span>
-          </div>
-
-          {/* Week dropdown */}
-          <label className="flex items-center gap-2 text-xs md:text-sm text-gray-600">
-            <span>View fixtures for</span>
-            <select
-              value={selectedWeek}
-              onChange={(e) => setSelectedWeek(Number(e.target.value))}
-              className="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {weeks.map((w) => (
-                <option key={w} value={w}>
-                  Week {w}
-                  {w === upcomingWeek ? " - Upcoming" : ""}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="hidden sm:flex flex-col items-end text-[11px] text-gray-500">
+          <span className="font-medium">
+            Upcoming week: Week {upcomingRound}
+          </span>
+          {selectedTab && (
+            <span>Selected: {selectedTab.dateLabel}</span>
+          )}
         </div>
       </div>
 
-      {/* Fixture cards */}
-      <div className="rounded-2xl border bg-white shadow-sm p-3 md:p-4 space-y-3">
-        <div className="flex justify-between items-center text-xs md:text-sm text-gray-500">
-          <span>
-            Week {selectedWeek} fixtures
-          </span>
-          <span className="hidden md:inline">
-            Times in Canberra local time.
-          </span>
-        </div>
-
-        {fixturesForWeek.length === 0 && (
-          <p className="text-xs md:text-sm text-gray-500">
-            No fixtures available for this week yet.
-          </p>
-        )}
-
-        <div className="grid gap-3 md:gap-4">
-          {fixturesForWeek.map((m) => (
-            <div
-              key={m.id}
-              className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gradient-to-r from-slate-50 to-white px-3 py-2 md:px-4 md:py-3"
+      {/* Week tabs */}
+      <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1">
+        {tabs.map((tab) => {
+          const isActive = tab.round === selectedRound;
+          const isUpcoming = tab.round === upcomingRound;
+          return (
+            <button
+              key={tab.round}
+              onClick={() => setSelectedRound(tab.round)}
+              className={[
+                "flex flex-col items-start rounded-xl border px-3 py-2 min-w-[90px] text-left text-xs transition-colors",
+                isActive
+                  ? "border-blue-500 bg-blue-50 text-blue-800"
+                  : "border-gray-200 bg-gray-50 text-gray-700 hover:border-blue-400 hover:bg-blue-50/60",
+              ].join(" ")}
             >
-              {/* Time and date */}
-              <div className="flex flex-row md:flex-col items-center md:items-start gap-2 md:w-40">
-                <div className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[11px] md:text-xs text-blue-700 font-medium">
-                  {new Date(m.date).toLocaleDateString("en-AU", {
-                    day: "numeric",
-                    month: "short",
-                  })}
-                </div>
-                <div className="text-xs md:text-sm text-gray-700 font-medium">
-                  {m.time}
+              <span className="font-semibold">{tab.label}</span>
+              <span className="text-[11px] text-gray-500">
+                {tab.dateLabel}
+              </span>
+              {isUpcoming && (
+                <span className="mt-1 inline-flex items-center rounded-full bg-green-100 px-2 py-[2px] text-[10px] font-semibold text-green-700">
+                  Upcoming
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Fixtures list */}
+      <div className="mt-4 space-y-2">
+        {fixturesForRound.length === 0 ? (
+          <p className="text-xs text-gray-500">
+            No fixtures scheduled for this week.
+          </p>
+        ) : (
+          fixturesForRound.map((f: Fixture) => (
+            <div
+              key={f.id}
+              className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs md:text-sm"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-semibold text-gray-800">
+                  {f.home} <span className="text-gray-500">vs</span> {f.away}
                 </div>
                 <div className="text-[11px] text-gray-500">
-                  {m.ground}
+                  {f.date} · {f.time}
                 </div>
               </div>
-
-              {/* Teams */}
-              <div className="flex-1 flex flex-col md:flex-row items-center md:items-center justify-center gap-2 md:gap-4">
-                <div className="flex items-center justify-end gap-2 w-full md:w-auto">
-                  <span className="hidden sm:inline-block h-7 w-7 rounded-full bg-blue-100" />
-                  <span className="text-xs md:text-sm font-semibold text-gray-800 text-right">
-                    {m.home}
-                  </span>
-                </div>
-
-                <div className="text-[11px] md:text-xs text-gray-500 font-semibold">
-                  vs
-                </div>
-
-                <div className="flex items-center justify-start gap-2 w-full md:w-auto">
-                  <span className="text-xs md:text-sm font-semibold text-gray-800">
-                    {m.away}
-                  </span>
-                  <span className="hidden sm:inline-block h-7 w-7 rounded-full bg-emerald-100" />
-                </div>
+              <div className="flex items-center justify-between gap-2 text-[11px] text-gray-500">
+                <span>Round {f.round}</span>
+                <span>Ground: {f.ground}</span>
               </div>
             </div>
-          ))}
-        </div>
-
-        <p className="text-[11px] md:text-xs text-gray-400 pt-1">
-          Fixture dates and times are subject to ground availability and weather.
-        </p>
+          ))
+        )}
       </div>
     </section>
   );
