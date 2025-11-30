@@ -1,92 +1,92 @@
-// components/MainHeader.tsx
 "use client";
 
-import { ORG } from "@/lib/splData";
+import { useState } from "react";
 
-type SectionKey = "home" | "table" | "fixtures" | "results" | "sponsors";
-
-type Props = {
-  active: SectionKey;
-  onChange: (key: SectionKey) => void;
-};
-
-const sectionIds: Record<SectionKey, string> = {
-  home: "top",
-  table: "league-table",
-  fixtures: "fixtures",
-  results: "results",
-  sponsors: "sponsors",
-};
-
-const TABS: { key: SectionKey; label: string }[] = [
-  { key: "home", label: "Home" },
-  { key: "table", label: "League Table" },
-  { key: "fixtures", label: "Fixtures" },
-  { key: "results", label: "Results" },
-  { key: "sponsors", label: "Sponsors" },
+const LINKS = [
+  { key: "home", label: "Home", target: "top" },
+  { key: "table", label: "League Table", target: "table" },
+  { key: "fixtures", label: "Fixtures", target: "fixtures" },
+  { key: "results", label: "Results", target: "results" },
+  { key: "sponsors", label: "Sponsors", target: "sponsors" },
 ];
 
-export default function MainHeader({ active, onChange }: Props) {
-  function handleClick(key: SectionKey) {
-    onChange(key);
-    const id = sectionIds[key];
+export default function MainHeader({ active, onChange }: any) {
+  const [open, setOpen] = useState(false);
+
+  function scrollTo(id: string) {
     const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    setOpen(false);
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        {/* Logo + name */}
-        <div className="flex items-center gap-2">
-          <img
-            src="/logo.png"
-            alt="Samsara Group"
-            className="h-7 w-auto md:h-8"
-          />
-          <span className="hidden text-sm font-semibold text-slate-800 sm:inline">
-            {ORG.name}
-          </span>
+    <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+      <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+        
+        {/* LOGO */}
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => scrollTo("top")}>
+          <img src="/logo.png" className="w-9 h-9" alt="Samsara Logo" />
+          <span className="font-bold text-lg">Samsara Group</span>
         </div>
 
-        {/* Facebook follow */}
-        <a
-          href={ORG.facebook}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-blue-600 bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-blue-700"
-        >
-          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-[11px] font-bold text-blue-600">
-            f
-          </span>
-          <span>Follow</span>
-        </a>
+        {/* DESKTOP MENU */}
+        <nav className="hidden md:flex items-center gap-6">
+          {LINKS.map(link => (
+            <button
+              key={link.key}
+              onClick={() => {
+                onChange(link.key);
+                scrollTo(link.target);
+              }}
+              className={`text-sm font-medium ${
+                active === link.key ? "text-blue-600" : "text-gray-700 hover:text-black"
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
+
+          {/* FACEBOOK */}
+          <a
+            href="https://www.facebook.com/profile.php?id=61566789173985"
+            target="_blank"
+            className="bg-blue-600 text-white text-xs px-3 py-1 rounded-md"
+          >
+            Follow on Facebook
+          </a>
+        </nav>
+
+        {/* MOBILE BUTTON */}
+        <button onClick={() => setOpen(!open)} className="md:hidden">
+          <span className="text-xl">☰</span>
+        </button>
       </div>
 
-      {/* Tabs */}
-      <div className="mx-auto max-w-6xl px-4 pb-2">
-        <div className="flex gap-2 overflow-x-auto pb-1 text-xs sm:text-sm no-scrollbar">
-          {TABS.map((tab) => {
-            const isActive = tab.key === active;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => handleClick(tab.key)}
-                className={[
-                  "whitespace-nowrap rounded-full px-4 py-2 font-medium transition-colors",
-                  isActive
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200",
-                ].join(" ")}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
+      {/* MOBILE MENU */}
+      {open && (
+        <div className="md:hidden border-t bg-white px-4 py-3 space-y-3">
+          {LINKS.map(link => (
+            <button
+              key={link.key}
+              onClick={() => {
+                onChange(link.key);
+                scrollTo(link.target);
+              }}
+              className="block w-full text-left text-sm py-2 border-b"
+            >
+              {link.label}
+            </button>
+          ))}
+
+          <a
+            href="https://www.facebook.com/profile.php?id=61566789173985"
+            target="_blank"
+            className="block text-sm text-blue-600 font-medium pt-2"
+          >
+            Follow on Facebook
+          </a>
         </div>
-      </div>
+      )}
     </header>
   );
 }
