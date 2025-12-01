@@ -3,7 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "The Samsara Group - Canberra",
+  title: "Samsara Group - Canberra",
   description: "Fostering Community, Empowering Growth",
 };
 

@@ -14,7 +14,7 @@ export const ORG = {
 
 export const SPL_SEASON = {
   name: "Samsara Premier League (SPL) 2025-26",
-  organiser: "The Samsara Group - Canberra",
+  organiser: "Samsara Group - Canberra",
   venue: "Nicholls Synthetic Soccer Field, Canberra",
   startDate: "2025-11-15",
 };
