@@ -11,9 +11,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3987524290120583"
-     crossOrigin="anonymous"></script>
+        {/* Google AdSense Verification Script */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3987524290120583"
+          crossOrigin="anonymous"
+        ></script>
       </head>
+
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased overflow-x-hidden">
         {children}
       </body>
