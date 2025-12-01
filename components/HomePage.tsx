@@ -19,6 +19,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden">
       <MainHeader active={section} onChange={setSection} />
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossOrigin="anonymous"></script>
       <main className="flex-1 mx-auto max-w-6xl w-full px-4 pb-10">
         <HeroSection />
         <FeaturedEventsSection />
