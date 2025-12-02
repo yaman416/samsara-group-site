@@ -1,7 +1,7 @@
 // components/FixturesResultsSection.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import {
   FIXTURES,
   RESULTS,
@@ -55,7 +55,7 @@ export default function FixturesResultsSection() {
   return (
     <section id="fixturesResults" className="mt-12">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-bold tracking-tight">
           SPL Fixtures & Results
         </h2>
@@ -66,7 +66,7 @@ export default function FixturesResultsSection() {
           <select
             value={selectedRound}
             onChange={(e) => setSelectedRound(Number(e.target.value))}
-            className="border px-3 py-2 rounded-lg text-sm shadow-sm"
+            className="rounded-lg border px-3 py-2 text-sm shadow-sm"
           >
             {rounds.map((r) => (
               <option key={r} value={r}>
@@ -78,8 +78,8 @@ export default function FixturesResultsSection() {
       </div>
 
       {/* Upcoming Week Indicator */}
-      <p className="text-xs text-gray-600 mb-3">
-        <span className="px-3 py-1 rounded-full border border-red-500 text-red-600">
+      <p className="mb-3 text-xs text-gray-600">
+        <span className="rounded-full border border-red-500 px-3 py-1 text-red-600">
           Upcoming Week: {nextUpcomingRound}
         </span>
       </p>
@@ -94,18 +94,18 @@ export default function FixturesResultsSection() {
           return (
             <div
               key={f.id}
-              className="bg-white p-4 shadow rounded-xl border"
+              className="rounded-xl border bg-white p-4 shadow"
             >
               {/* Team Row */}
-              <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 {/* Home */}
-                <div className="flex items-center gap-2 min-w-[40%]">
+                <div className="flex min-w-[40%] items-center gap-2">
                   <img
                     src={logo(f.home)}
-                    className="w-7 h-7 rounded-full border"
+                    className="h-7 w-7 rounded-full border"
                     alt={f.home}
                   />
-                  <span className="font-semibold text-sm">{f.home}</span>
+                  <span className="text-sm font-semibold">{f.home}</span>
                 </div>
 
                 {/* Centre */}
@@ -113,8 +113,8 @@ export default function FixturesResultsSection() {
                   {isFinished ? (
                     <span className="text-lg font-bold">
                       {res.homeGoals}
-                      <span className="text-[10px] text-gray-500 mx-1">
-                         FT 
+                      <span className="mx-1 text-[10px] text-gray-500">
+                        FT
                       </span>
                       {res.awayGoals}
                     </span>
@@ -123,41 +123,49 @@ export default function FixturesResultsSection() {
                       vs
                     </span>
                   )}
-                  <div className="text-[10px] text-gray-600 mt-1">
+                  <div className="mt-1 text-[10px] text-gray-600">
                     Week {f.round} • {f.date} • {f.time}
                   </div>
                 </div>
 
                 {/* Away */}
-                <div className="flex items-center justify-end gap-2 min-w-[40%]">
-                  <span className="font-semibold text-sm text-right">
+                <div className="flex min-w-[40%] items-center justify-end gap-2">
+                  <span className="text-right text-sm font-semibold">
                     {f.away}
                   </span>
                   <img
                     src={logo(f.away)}
-                    className="w-7 h-7 rounded-full border"
+                    className="h-7 w-7 rounded-full border"
                     alt={f.away}
                   />
                 </div>
               </div>
 
               {/* Match info row */}
-              <div className="mt-2 flex items-center justify-between text-xs text-gray-600 flex-wrap gap-2">
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600">
                 <span>
                   Ground: <strong>{f.ground}</strong>
                 </span>
 
                 <div className="flex items-center gap-2">
                   {!isFinished && (
-                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[10px]">
+                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] text-green-700">
                       Upcoming fixture
                     </span>
                   )}
 
                   {isFinished && hasFacts && (
                     <button
-                      onClick={() => setOpenMatchId(f.id)}
-                      className="bg-blue-600 text-white text-xs px-3 py-1 rounded-lg hover:bg-blue-700"
+                      onClick={() => {
+                        // Open modal immediately in a light state
+                        setOpenMatchId("loading-" + f.id);
+
+                        // Allow UI to update, then render heavy content
+                        setTimeout(() => {
+                          setOpenMatchId(f.id);
+                        }, 50);
+                      }}
+                      className="rounded-lg bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700"
                     >
                       Match Facts
                     </button>
@@ -171,7 +179,13 @@ export default function FixturesResultsSection() {
 
       {/* Modal */}
       <Modal open={!!openMatchId} onClose={() => setOpenMatchId(null)}>
-        {openMatchId && <MatchFacts matchId={openMatchId} />}
+        {openMatchId ? (
+          openMatchId.startsWith("loading-") ? (
+            <p className="text-sm text-slate-50">Loading match details...</p>
+          ) : (
+            <MemoMatchFacts matchId={openMatchId} />
+          )
+        ) : null}
       </Modal>
     </section>
   );
@@ -188,11 +202,11 @@ function CardIcons({ text }: { text: string }) {
   if (!icons.length) return null;
 
   return (
-    <span className="inline-flex items-center gap-1 mr-1">
+    <span className="mr-1 inline-flex items-center gap-1">
       {icons.map((type, idx) => (
         <span
           key={idx}
-          className={`inline-block w-2.5 h-3 rounded-[2px] ${
+          className={`inline-block h-3 w-2.5 rounded-[2px] ${
             type === "yellow" ? "bg-yellow-300" : "bg-red-500"
           }`}
         />
@@ -216,25 +230,25 @@ function MatchFacts({ matchId }: { matchId: string }) {
   const awayLogo = TEAM_LOGOS[awayTeam] || "";
 
   return (
-    <div className="text-sm text-slate-50 space-y-6">
+    <div className="space-y-6 text-sm text-slate-50">
       {/* Header: teams, logos, score */}
-      <div className="flex items-center justify-between gap-3 mb-2">
+      <div className="mb-2 flex items-center justify-between gap-3">
         {/* Home */}
-        <div className="flex items-center gap-2 min-w-[35%]">
+        <div className="flex min-w-[35%] items-center gap-2">
           {homeLogo && (
             <img
               src={homeLogo}
               alt={homeTeam}
-              className="w-9 h-9 rounded-full border border-white/20"
+              className="h-9 w-9 rounded-full border border-white/20"
             />
           )}
-          <span className="font-semibold text-sm">{homeTeam}</span>
+          <span className="text-sm font-semibold">{homeTeam}</span>
         </div>
 
         {/* Score + meta */}
-        <div className="flex flex-col items-center justify-center flex-1">
+        <div className="flex flex-1 flex-col items-center justify-center">
           {res && (
-            <p className="text-2xl font-bold leading-none mb-1">
+            <p className="mb-1 text-2xl font-bold leading-none">
               {res.homeGoals} - {res.awayGoals}
             </p>
           )}
@@ -244,13 +258,15 @@ function MatchFacts({ matchId }: { matchId: string }) {
         </div>
 
         {/* Away */}
-        <div className="flex items-center gap-2 justify-end min-w-[35%]">
-          <span className="font-semibold text-sm text-right">{awayTeam}</span>
+        <div className="flex min-w-[35%] items-center justify-end gap-2">
+          <span className="text-right text-sm font-semibold">
+            {awayTeam}
+          </span>
           {awayLogo && (
             <img
               src={awayLogo}
               alt={awayTeam}
-              className="w-9 h-9 rounded-full border border-white/20"
+              className="h-9 w-9 rounded-full border border-white/20"
             />
           )}
         </div>
@@ -258,7 +274,7 @@ function MatchFacts({ matchId }: { matchId: string }) {
 
       {/* Goals */}
       <div>
-        <h4 className="uppercase tracking-wide text-[11px] text-slate-400 mb-2">
+        <h4 className="mb-2 text-[11px] uppercase tracking-wide text-slate-400">
           Goals
         </h4>
         <div className="grid grid-cols-2 gap-4">
@@ -272,7 +288,7 @@ function MatchFacts({ matchId }: { matchId: string }) {
                 </li>
               ))
             ) : (
-              <li className="text-slate-400 text-xs">No goals</li>
+              <li className="text-xs text-slate-400">No goals</li>
             )}
           </ul>
 
@@ -282,14 +298,14 @@ function MatchFacts({ matchId }: { matchId: string }) {
               d.away.scorers.map((s, i) => (
                 <li
                   key={i}
-                  className="flex items-center gap-1 justify-end"
+                  className="flex items-center justify-end gap-1"
                 >
                   <span>{s}</span>
                   <span className="ml-1">⚽</span>
                 </li>
               ))
             ) : (
-              <li className="text-slate-400 text-xs">No goals</li>
+              <li className="text-xs text-slate-400">No goals</li>
             )}
           </ul>
         </div>
@@ -297,7 +313,7 @@ function MatchFacts({ matchId }: { matchId: string }) {
 
       {/* Cards */}
       <div>
-        <h4 className="uppercase tracking-wide text-[11px] text-slate-400 mb-2">
+        <h4 className="mb-2 text-[11px] uppercase tracking-wide text-slate-400">
           Cards
         </h4>
         <div className="grid grid-cols-2 gap-4">
@@ -311,7 +327,7 @@ function MatchFacts({ matchId }: { matchId: string }) {
                 </li>
               ))
             ) : (
-              <li className="text-slate-400 text-xs">No cards</li>
+              <li className="text-xs text-slate-400">No cards</li>
             )}
           </ul>
 
@@ -321,14 +337,14 @@ function MatchFacts({ matchId }: { matchId: string }) {
               d.away.cards.map((c, i) => (
                 <li
                   key={i}
-                  className="flex items-center gap-1 justify-end"
+                  className="flex items-center justify-end gap-1"
                 >
                   <span>{c}</span>
                   <CardIcons text={c} />
                 </li>
               ))
             ) : (
-              <li className="text-slate-400 text-xs">No cards</li>
+              <li className="text-xs text-slate-400">No cards</li>
             )}
           </ul>
         </div>
@@ -336,3 +352,5 @@ function MatchFacts({ matchId }: { matchId: string }) {
     </div>
   );
 }
+
+const MemoMatchFacts = memo(MatchFacts);
