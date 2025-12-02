@@ -17,9 +17,9 @@ export default function MainFooter() {
             />
           </div>
           <p/>
-          <p className="text-[11px] md:text-xs text-gray-500 max-w-xs text-center md:text-left">
+          <p className="text-[10px] md:text-xs text-gray-500 max-w-xs text-center md:text-left">
             Community led organisation in Canberra supporting
-            communities through culture, <br/>sport, 
+            communities through culture, sport, 
             and events.
           </p>
         </div>
