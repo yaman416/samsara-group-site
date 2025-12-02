@@ -9,6 +9,7 @@ import LeagueTableSection from "@/components/LeagueTableSection";
 import SponsorsSection from "@/components/SponsorsSection";
 import MainFooter from "@/components/MainFooter";
 import FixturesResultsSection from "@/components/FixturesResultsSection";
+import DownloadsSection from "@/components/DownloadsSection";
 
 
 type SectionKey = "home" | "table" | "fixtures" | "results" | "sponsors";
@@ -25,6 +26,7 @@ export default function HomePage() {
         <FeaturedEventsSection />
         <LeagueTableSection />
         <FixturesResultsSection/>
+        <DownloadsSection />
         <SponsorsSection />
       </main>
       <MainFooter />
