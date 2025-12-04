@@ -46,7 +46,7 @@ export default function SponsorsSection() {
   if (!ALL_SPONSORS.length) return null;
 
   return (
-    <section id="sponsors" className="mt-10">
+    <section id="sponsors" className="mt-12 mb-4">
       <div className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8">
         {/* Heading */}
         <div className="text-center">
