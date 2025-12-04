@@ -43,7 +43,7 @@ export default function DisclaimerPage() {
           correct it promptly.
         </p>
 
-        <p className="font-medium">Email: info@samsaragroupcanberra.com</p>
+        <p className="font-medium">Email: samsaragroup.cbr@gmail.com</p>
 
       </div>
       <GoBackButton />

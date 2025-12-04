@@ -14,7 +14,7 @@ export default function ContactPage() {
       <div className="mt-8 space-y-6 text-sm text-slate-700 leading-relaxed">
 
         <h2 className="text-lg font-semibold text-slate-900">Email</h2>
-        <p>info@samsaragroupcanberra.com</p>
+        <p>samsaragroup.cbr@gmail.com</p>
 
         <h2 className="text-lg font-semibold text-slate-900">Location</h2>
         <p>Canberra, Australia</p>

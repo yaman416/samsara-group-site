@@ -55,7 +55,7 @@ export default function TermsPage() {
           For questions regarding these Terms, contact:
         </p>
 
-        <p className="font-medium">Email: info@samsaragroupcanberra.com</p>
+        <p className="font-medium">Email: samsaragroup.cbr@gmail.com</p>
 
       </div>
       <GoBackButton />

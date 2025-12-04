@@ -75,7 +75,7 @@ export default function PrivacyPolicyPage() {
           If you have any questions regarding this Privacy Policy, please contact us at:
         </p>
         <p className="font-medium">
-          Email: info@samsaragroupcanberra.com
+          Email: samsaragroup.cbr@gmail.com
         </p>
       </div>
       <GoBackButton />

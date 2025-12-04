@@ -1,8 +1,22 @@
+// components/MainHeader.tsx
 "use client";
 
+import { useState } from "react";
 import { SPL_SEASON } from "@/lib/splData";
 
-// Smooth scrolling helper
+type MainHeaderProps = {
+  active?: string;
+  onChange?: (key: string) => void;
+};
+
+const LINKS = [
+  { key: "home", label: "About Us", target: "about" },
+  { key: "table", label: "League Table", target: "table" },
+  { key: "fixturesResults", label: "Fixtures & Results", target: "fixturesResults" },
+  { key: "downloads", label: "Downloads", target: "downloads" },
+  { key: "sponsors", label: "Sponsors", target: "sponsors" },
+];
+
 function scrollToSection(id: string) {
   if (typeof document === "undefined") return;
   const el = document.getElementById(id);
@@ -10,71 +24,99 @@ function scrollToSection(id: string) {
   el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-const NAV = [
-  { label: "About Us", id: "about" },
-  { label: "Table", id: "table" },
-  { label: "Fixtures", id: "fixturesResults" },
-  { label: "Downloads", id: "downloads" },
-  { label: "Sponsors", id: "sponsors" },
-];
+export default function MainHeader({ active, onChange }: MainHeaderProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-export default function MainHeader() {
+  const handleClick = (key: string, target: string) => {
+    if (onChange) onChange(key);
+    scrollToSection(target);
+    setMobileOpen(false);
+  };
+
   return (
     <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        
-        {/* Left: Logo + Title */}
+      <div className="mx-auto flex max-w-6xl items-center px-4 py-3">
+        {/* LEFT: logo + label */}
         <div className="flex items-center gap-3">
-          {/* Your actual logo */}
           <img
             src="/logo.png"
-            alt="Samsara Group Canberra"
+            alt="Samsara Group Canberra logo"
             className="h-9 w-9"
           />
-
           <div className="leading-tight">
             <p className="text-sm font-semibold text-slate-900">
-              Samsara Group
+              Samsara Group Canberra
             </p>
           </div>
         </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-3 md:flex">
-          {NAV.map((item) => (
+        {/* CENTER: main nav (desktop / tablet only) */}
+        <nav className="hidden flex-1 items-center justify-center gap-3 md:flex">
+          {LINKS.map((link) => (
             <button
-              key={item.id}
-              onClick={() => scrollToSection(item.id)}
-              className="rounded-full px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100 hover:text-orange-600"
+              key={link.key}
+              type="button"
+              onClick={() => handleClick(link.key, link.target)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                active === link.key
+                  ? "bg-orange-50 text-orange-700"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-orange-600"
+              }`}
             >
-              {item.label}
+              {link.label}
             </button>
           ))}
+        </nav>
 
-          {/* CTA Button */}
+        {/* RIGHT: YouTube + hamburger (hamburger only on small screens) */}
+        <div className="ml-auto flex items-center gap-2">
+          {/* Watch live – always visible */}
           <a
             href="https://www.youtube.com/@SamsaraGroupCanberra"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 rounded-full bg-orange-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-orange-700"
+            className="inline-flex items-center gap-1 rounded-full bg-red-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-red-700"
           >
             <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/20 text-[9px]">
               ▶
             </span>
-            Watch live
+            <span>Watch live</span>
           </a>
-        </nav>
 
-        {/* Mobile button */}
-        <div className="flex items-center md:hidden">
+          {/* Hamburger – really small screens only */}
           <button
-            onClick={() => scrollToSection("fixturesResults")}
-            className="rounded-full bg-orange-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-orange-700"
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="inline-flex items-center justify-center rounded-full border px-2 py-1 text-xs text-slate-700 md:hidden"
+            aria-label="Open menu"
           >
-            Fixtures
+            <span className="mr-1 text-[11px]">Menu</span>
+            <span className="flex flex-col gap-[3px]">
+              <span className="block h-[2px] w-3 rounded bg-slate-700" />
+              <span className="block h-[2px] w-3 rounded bg-slate-700" />
+              <span className="block h-[2px] w-3 rounded bg-slate-700" />
+            </span>
           </button>
         </div>
       </div>
+
+      {/* MOBILE MENU: only appears when hamburger open, and only on small screens */}
+      {mobileOpen && (
+        <div className="border-t bg-white md:hidden">
+          <div className="mx-auto max-w-6xl space-y-2 px-4 py-3">
+            {LINKS.map((link) => (
+              <button
+                key={link.key}
+                type="button"
+                onClick={() => handleClick(link.key, link.target)}
+                className="block w-full rounded-lg px-2 py-2 text-left text-xs font-medium text-slate-700 hover:bg-gray-100"
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
