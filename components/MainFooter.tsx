@@ -4,7 +4,7 @@ export default function MainFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-4 border-t bg-white">
+    <footer className="mt-2 border-t bg-white">
       <div className="mx-auto max-w-4xl px-4 py-10 lg:py-12">
 
         {/* TOP: Center entire block */}
