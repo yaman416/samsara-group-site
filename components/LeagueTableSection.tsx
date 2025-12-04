@@ -9,6 +9,7 @@ import {
   type TableRow,
 } from "@/lib/splData";
 import { useMemo } from "react";
+import { ListOrdered } from "lucide-react";
 
 type FormCode = "W" | "D" | "L";
 
@@ -152,19 +153,20 @@ export default function LeagueTableSection() {
 
   return (
     <section id="table" className="mt-10">
-      <div className="rounded-3xl border bg-white shadow-sm">
-        <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-900">
-              League Table
-            </h2>
-            <p className="text-xs text-slate-500 sm:text-sm">
-              Samsara Premier League (SPL) 2025-26 - after Week {latestRound}
-            </p>
-          </div>
+      <div className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8">
+        {/* Heading to match theme */}
+        <div className="text-center mb-4">
+          <h2 className="inline-flex items-center justify-center gap-2 text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
+            <ListOrdered size={22} className="text-orange-600" />
+            <span>League Table</span>
+          </h2>
+          <p className="mt-2 text-xs md:text-sm text-gray-600 max-w-2xl mx-auto">
+            Samsara Premier League (SPL) 2025 to 2026 standings after Week{" "}
+            {latestRound}. Table updates after each completed match.
+          </p>
         </div>
 
-        <div className="-mx-2 overflow-x-auto px-2 pb-2 sm:pb-4">
+        <div className="-mx-2 overflow-x-auto px-2 pb-2 sm:pb-4 mt-2">
           <table className="min-w-full text-left text-xs sm:text-sm">
             <thead>
               <tr className="border-b bg-slate-50 text-[11px] uppercase text-slate-500 sm:text-xs">
@@ -215,9 +217,7 @@ export default function LeagueTableSection() {
                       <span>{row.position}</span>{" "}
                       <span className={`ml-1 text-[10px] ${movementClass}`}>
                         {movementSymbol}{" "}
-                        {row.movement !== 0
-                          ? Math.abs(row.movement)
-                          : ""}
+                        {row.movement !== 0 ? Math.abs(row.movement) : ""}
                       </span>
                     </td>
                     <td className="flex items-center gap-2 px-3 py-2">
@@ -286,7 +286,7 @@ export default function LeagueTableSection() {
           </table>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 border-t px-4 py-3 text-[11px] text-slate-500 sm:px-6 sm:text-xs">
+        <div className="flex flex-wrap items-center gap-3 border-t px-4 py-3 text-[11px] text-slate-500 sm:px-6 sm:text-xs mt-2">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded bg-emerald-100 border border-emerald-400" />
             Top 4 advance to knockouts

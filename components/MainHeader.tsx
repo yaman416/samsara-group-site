@@ -1,91 +1,80 @@
 "use client";
 
-import { useState } from "react";
+import { SPL_SEASON } from "@/lib/splData";
 
-const LINKS = [
-  { key: "home", label: "Home", target: "top" },
-  { key: "table", label: "League Table", target: "table" },
-  { key: "fixturesResults", label: "Fixtures & Results", target: "fixturesResults" },
-  { key: "sponsors", label: "Sponsors", target: "sponsors" },
+// Smooth scrolling helper
+function scrollToSection(id: string) {
+  if (typeof document === "undefined") return;
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+const NAV = [
+  { label: "About Us", id: "about" },
+  { label: "Table", id: "table" },
+  { label: "Fixtures", id: "fixturesResults" },
+  { label: "Downloads", id: "downloads" },
+  { label: "Sponsors", id: "sponsors" },
 ];
 
-export default function MainHeader({ active, onChange }: any) {
-  const [open, setOpen] = useState(false);
-
-  function scrollTo(id: string) {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    setOpen(false);
-  }
-
+export default function MainHeader() {
   return (
-    <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
-      <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+    <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         
-        {/* LOGO */}
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => scrollTo("top")}>
-          <img src="/logo.png" className="w-9 h-9" alt="Samsara Logo" />
-          <span className="font-bold text-lg">Samsara Group</span>
+        {/* Left: Logo + Title */}
+        <div className="flex items-center gap-3">
+          {/* Your actual logo */}
+          <img
+            src="/logo.png"
+            alt="Samsara Group Canberra"
+            className="h-9 w-9"
+          />
+
+          <div className="leading-tight">
+            <p className="text-sm font-semibold text-slate-900">
+              Samsara Group
+            </p>
+          </div>
         </div>
 
-        {/* DESKTOP MENU */}
-        <nav className="hidden md:flex items-center gap-6">
-          {LINKS.map(link => (
+        {/* Desktop Navigation */}
+        <nav className="hidden items-center gap-3 md:flex">
+          {NAV.map((item) => (
             <button
-              key={link.key}
-              onClick={() => {
-                onChange(link.key);
-                scrollTo(link.target);
-              }}
-              className={`text-sm font-medium ${
-                active === link.key ? "text-blue-600" : "text-gray-700 hover:text-black"
-              }`}
+              key={item.id}
+              onClick={() => scrollToSection(item.id)}
+              className="rounded-full px-3 py-1 text-xs font-medium text-gray-700 transition hover:bg-gray-100 hover:text-orange-600"
             >
-              {link.label}
+              {item.label}
             </button>
           ))}
 
-          {/* FACEBOOK */}
+          {/* CTA Button */}
           <a
-            href="https://www.facebook.com/profile.php?id=61566789173985"
+            href="https://www.youtube.com/@SamsaraGroupCanberra"
             target="_blank"
-            className="bg-blue-600 text-white text-xs px-3 py-1 rounded-md"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 rounded-full bg-orange-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-orange-700"
           >
-            Follow on Facebook
+            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/20 text-[9px]">
+              ▶
+            </span>
+            Watch live
           </a>
         </nav>
 
-        {/* MOBILE BUTTON */}
-        <button onClick={() => setOpen(!open)} className="md:hidden">
-          <span className="text-xl">☰</span>
-        </button>
-      </div>
-
-      {/* MOBILE MENU */}
-      {open && (
-        <div className="md:hidden border-t bg-white px-4 py-3 space-y-3">
-          {LINKS.map(link => (
-            <button
-              key={link.key}
-              onClick={() => {
-                onChange(link.key);
-                scrollTo(link.target);
-              }}
-              className="block w-full text-left text-sm py-2 border-b"
-            >
-              {link.label}
-            </button>
-          ))}
-
-          <a
-            href="https://www.facebook.com/profile.php?id=61566789173985"
-            target="_blank"
-            className="block text-sm text-blue-600 font-medium pt-2"
+        {/* Mobile button */}
+        <div className="flex items-center md:hidden">
+          <button
+            onClick={() => scrollToSection("fixturesResults")}
+            className="rounded-full bg-orange-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-orange-700"
           >
-            Follow on Facebook
-          </a>
+            Fixtures
+          </button>
         </div>
-      )}
+      </div>
     </header>
   );
 }

@@ -2,7 +2,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SPL_SEASON } from "@/lib/splData";
+import { ORG, SPL_SEASON } from "@/lib/splData";
+import { Users } from "lucide-react";
 
 const IMAGES = [
   "/hero-1.jpg",
@@ -19,163 +20,213 @@ const IMAGES = [
   "/hero-12.jpg",
 ];
 
-const LABELS = [
+const TEAMS = [
   "Nepal United FC",
   "Thuenlam FC",
   "Khukuri Canberra FC",
-  "Queanbeyan Nepalese United Football Club",
+  "Queanbeyan Nepalese United FC",
   "Azhas FC",
-  "CNFC Canberra",
+  "Canberra Nepalese FC - CNFC",
   "Druk FC",
   "Everest FC",
-  "JA Brothers Football Club",
-  "Achos Football Team",
+  "JA Brothers FC",
+  "Achos FC",
   "Phuensum FC",
   "Unity Stars FC",
 ];
 
+const SLIDE_DURATION = 5000; // 5 seconds
+
 export default function HeroSection() {
   const [index, setIndex] = useState(0);
 
+  // Auto rotate slides
   useEffect(() => {
     if (IMAGES.length <= 1) return;
     const id = setInterval(() => {
       setIndex((prev) => (prev + 1) % IMAGES.length);
-    }, 5000);
+    }, SLIDE_DURATION);
     return () => clearInterval(id);
   }, []);
 
+  const seasonStart = new Date(SPL_SEASON.startDate);
+
+  function goPrev() {
+    setIndex((prev) => (prev - 1 + IMAGES.length) % IMAGES.length);
+  }
+
+  function goNext() {
+    setIndex((prev) => (prev + 1) % IMAGES.length);
+  }
+
+  function handleDotClick(i: number) {
+    setIndex(i);
+  }
+
   return (
-    <section id="top" className="mt-6 space-y-8">
-      {/* Full width image slider */}
-      <div className="relative h-80 overflow-hidden rounded-3xl border bg-slate-100 sm:h-96 md:h-[520px]">
+    <section className="mt-4 space-y-8">
+      {/* Image slider with team names only */}
+      <div className="relative min-h-[340px] overflow-hidden rounded-3xl border bg-slate-900 shadow-sm sm:min-h-[420px] md:min-h-[500px]">
+        {/* Background image */}
         <img
           src={IMAGES[index]}
-          alt={LABELS[index]}
-          className="h-full w-full object-cover"
+          alt={TEAMS[index]}
+          className="absolute inset-0 h-full w-full object-cover"
         />
 
-        {/* Dark gradient overlay at bottom for text readability */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent" />
+        {/* Bottom gradient for readability */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
 
-        {/* Tag and caption */}
-        <div className="absolute left-4 right-4 bottom-4 flex flex-col gap-2 sm:left-6 sm:right-6 sm:bottom-5">
-          <div className="inline-flex items-center gap-2 self-start rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-slate-800 shadow-sm">
-            <span>Samsara Premier League</span>
-            <span className="text-[10px] uppercase tracking-wide">
-              SPL 2025-26
-            </span>
+        {/* Bottom content: label + dots */}
+        <div className="absolute inset-x-0 bottom-7 flex flex-col items-center gap-3 px-4 text-center">
+          {/* Slider label */}
+          <p className="rounded-full bg-black/70 px-4 py-1 text-[11px] font-medium text-white">
+            Participating Teams - SBA Samsara Premier League 2025-26
+          </p>
+
+          {/* Team name */}
+          <div className="inline-flex max-w-xl items-center justify-center rounded-2xl bg-black/75 px-4 py-2 text-sm font-semibold text-white sm:text-base md:text-lg">
+            {TEAMS[index]}
           </div>
 
-          <div className="max-w-md rounded-2xl bg-black/60 px-3 py-2 text-xs text-white sm:px-4 sm:py-3 sm:text-sm">
-            <p className="font-semibold">{LABELS[index]}</p>
-            <p className="text-[11px] text-slate-200">
-              Community football in Canberra at {SPL_SEASON.venue}
-            </p>
+          {/* Dots */}
+          <div className="flex items-center justify-center gap-1.5">
+            {IMAGES.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => handleDotClick(i)}
+                className={`h-1.5 w-5 rounded-full transition ${
+                  i === index ? "bg-white" : "bg-white/40"
+                }`}
+                aria-label={`Show team ${i + 1}`}
+              />
+            ))}
           </div>
         </div>
 
-        {/* Slider dots */}
-        <div className="absolute inset-x-0 top-3 flex justify-center gap-1.5">
-          {IMAGES.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIndex(i)}
-              className={`h-1.5 w-6 rounded-full transition ${
-                i === index ? "bg-white" : "bg-white/50"
-              }`}
-              aria-label={`Show image ${i + 1}`}
-            />
-          ))}
-        </div>
+        {/* Prev / next arrows */}
+        <button
+          type="button"
+          onClick={goPrev}
+          className="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-lg text-white hover:bg-black/60"
+          aria-label="Previous team"
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          onClick={goNext}
+          className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-lg text-white hover:bg-black/60"
+          aria-label="Next team"
+        >
+          ›
+        </button>
       </div>
 
-      {/* About section full width */}
-      <div className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6 md:p-8">
-        {/* Heading row */}
-        <div className="flex flex-col gap-3 border-b pb-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
-              Samsara Group Canberra
-            </h1>
-            <p className="mt-1 text-xs text-slate-600 md:text-sm">
-              Volunteer led community organisation supporting Nepalese and
-              Bhutanese communities in Canberra.
-            </p>
-          </div>
+      {/* About us section under slider */}
+     {/* ABOUT US – focus on Samsara Group */}
+      <div
+        className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8"
+        id="about"
+      >
+        <h2 className="text-center text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
+          <span className="inline-flex items-center justify-center gap-2">
+            <Users size={22} className="text-orange-600" />
+            <span>About Samsara Group Canberra</span>
+          </span>
+        </h2>
 
-          <div className="flex flex-wrap gap-2 text-[11px] md:text-xs">
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-              Community events and culture
-            </span>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-              Youth and sport
-            </span>
-          </div>
-        </div>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-xs text-gray-600 md:text-sm">
+          {ORG.name} is a volunteer led community group in Canberra. We were formed to
+          support Nepalese and Bhutanese individuals and families who are living,
+          studying, and working in the region. Our focus is community, wellbeing, and
+          connection rather than just sport.
+        </p>
 
-        {/* Content grid */}
-        <div className="mt-4 grid gap-6 md:grid-cols-[minmax(0,1.7fr)_minmax(0,1.1fr)] md:items-start">
-          {/* Left: main about text */}
-          <div className="space-y-4 text-xs text-slate-700 md:text-sm">
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {/* Who we are */}
+          <div className="space-y-3 text-sm text-slate-700">
+            <h3 className="font-semibold text-slate-900">Who we are</h3>
             <p>
-              The Samsara Group creates welcoming spaces where people can
-              connect, celebrate, and support each other. Our work focuses on
-              bringing Nepalese and Bhutanese communities together in Canberra.
+              Samsara Group Canberra is run by volunteers from the local community.
+              We bring together students, families, and workers from different
+              backgrounds who share a common connection to Nepal and Bhutan.
             </p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs md:text-sm text-slate-600">
+              <li>Community based, not for profit</li>
+              <li>Led by volunteers who live in Canberra</li>
+              <li>Open and welcoming to new members and supporters</li>
+            </ul>
+          </div>
 
-            <div>
-              <p className="font-semibold">What we do</p>
-              <ul className="mt-1 list-disc space-y-1 pl-4">
-                <li>Host cultural events and community gatherings</li>
-                <li>Support youth through volunteering and leadership</li>
-                <li>Run community sport, including the Samsara Premier League</li>
-              </ul>
+          {/* What we do */}
+          <div className="space-y-3 text-sm text-slate-700">
+            <h3 className="font-semibold text-slate-900">What we do</h3>
+            <p>
+              Our activities focus on bringing people together in a positive and
+              practical way. Sport is a big part of this, but we also support social,
+              cultural, and wellbeing projects through the year.
+            </p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs md:text-sm text-slate-600">
+              <li>Organise regular community football and friendly tournaments</li>
+              <li>Coordinate events where families and friends can meet and connect</li>
+              <li>Support new arrivals with information, contacts, and community links</li>
+              <li>Run the Samsara Premier League as our main football program</li>
+            </ul>
+          </div>
+
+          {/* Featured Event – keep SPL info here only */}
+          <div className="md:col-span-2 mt-6 rounded-2xl border bg-white px-4 py-5 shadow-sm sm:px-5">
+
+            {/* Centered title row */}
+            <div className="mb-3 flex items-center justify-center gap-2">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-orange-100">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-orange-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8 21h8m-4-4v4m5-19H7v5a5 5 5 0 005 5 5 5 0 005-5V2z"
+                  />
+                </svg>
+              </span>
+              <h3 className="text-base font-extrabold tracking-tight text-slate-900">
+                Featured Event: Samsara Premier League 2025-26
+              </h3>
             </div>
 
-            <p className="text-xs text-slate-600 md:text-sm">
-              Our volunteers, clubs, and partners work together to deliver safe,
-              organised, and family friendly events throughout the year.
-            </p>
-          </div>
-
-          {/* Right: key info and button */}
-          <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-xs text-slate-700 md:text-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-              Flagship program
-            </p>
-            <p className="font-semibold">
-              {SPL_SEASON.name}
-            </p>
-            <p className="text-slate-600">
-              Venue: <span className="font-medium">{SPL_SEASON.venue}</span>
-            </p>
-            <p className="text-slate-600">
-              Season start:{" "}
-              <span className="font-medium">
-                {new Date(SPL_SEASON.startDate).toLocaleDateString()}
-              </span>
+            {/* Left-aligned content below */}
+            <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+              The Samsara Premier League is the flagship football competition coordinated by
+              {` ${ORG.name}`}. Twelve community clubs take part in organised match weeks at
+              {` ${SPL_SEASON.venue}`}. Match results, standings, and fixtures are updated after
+              each round.
             </p>
 
-            <a
-              href="https://www.youtube.com/@SamsaraGroupCanberra"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-red-700 md:text-sm"
-            >
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[11px]">
-                ▶
-              </span>
-              <span>Watch Samsara Premier League live on YouTube</span>
-            </a>
+            <ul className="mt-3 space-y-1.5 text-xs md:text-sm text-slate-600">
+              <li>• Twelve teams representing Nepalese and Bhutanese communities</li>
+              <li>• Structured match weeks and a full league table</li>
+              <li>• Match facts and final scores verified by SPL officials</li>
+              <li>• Rulebook and format available under Downloads</li>
+            </ul>
 
-            <p className="mt-1 text-[11px] text-slate-500">
-              Match weeks, results, and the league table are updated below as
-              the season progresses.
-            </p>
+            <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-xs md:text-sm text-orange-800">
+              <strong className="text-orange-700">Note:</strong> The SPL is a volunteer led
+              competition built on respect, fairness, and community spirit.
+            </div>
           </div>
         </div>
       </div>
+
+
+
     </section>
   );
 }

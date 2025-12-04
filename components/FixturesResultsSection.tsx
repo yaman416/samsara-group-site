@@ -10,6 +10,7 @@ import {
   getRounds,
 } from "@/lib/splData";
 import Modal from "@/components/Modal";
+import { ListOrdered } from "lucide-react";
 
 type ResultMap = Record<string, { homeGoals: number; awayGoals: number }>;
 
@@ -54,127 +55,142 @@ export default function FixturesResultsSection() {
 
   return (
     <section id="fixturesResults" className="mt-12">
-      {/* Header */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold tracking-tight">
-          SPL Fixtures & Results
-        </h2>
-
-        {/* Week Selector */}
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-600">Week</label>
-          <select
-            value={selectedRound}
-            onChange={(e) => setSelectedRound(Number(e.target.value))}
-            className="rounded-lg border px-3 py-2 text-sm shadow-sm"
-          >
-            {rounds.map((r) => (
-              <option key={r} value={r}>
-                Week {r}
-              </option>
-            ))}
-          </select>
+      <div className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8">
+        {/* Heading to match theme */}
+        <div className="mb-5 text-center">
+          <h2 className="inline-flex items-center justify-center gap-2 text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
+            <ListOrdered size={22} className="text-orange-600" />
+            <span>SPL Fixtures &amp; Results</span>
+          </h2>
+          <p className="mt-2 mx-auto max-w-2xl text-xs text-gray-600 md:text-sm">
+            Weekly fixtures, final scores, and match facts for the Samsara
+            Premier League.
+          </p>
         </div>
-      </div>
 
-      {/* Upcoming Week Indicator */}
-      <p className="mb-3 text-xs text-gray-600">
-        <span className="rounded-full border border-red-500 px-3 py-1 text-red-600">
-          Upcoming Week: {nextUpcomingRound}
-        </span>
-      </p>
-
-      {/* Fixtures list */}
-      <div className="space-y-4">
-        {fixtures.map((f) => {
-          const res = resultMap[f.id];
-          const isFinished = !!res;
-          const hasFacts = !!MATCH_FACTS[f.id];
-
-          return (
-            <div
-              key={f.id}
-              className="rounded-xl border bg-white p-4 shadow"
+        {/* Week selector row */}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-600">Week</span>
+            <select
+              value={selectedRound}
+              onChange={(e) => setSelectedRound(Number(e.target.value))}
+              className="rounded-lg border px-3 py-2 text-sm shadow-sm"
             >
-              {/* Team Row */}
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                {/* Home */}
-                <div className="flex min-w-[40%] items-center gap-2">
-                  <img
-                    src={logo(f.home)}
-                    className="h-7 w-7 rounded-full border"
-                    alt={f.home}
-                  />
-                  <span className="text-sm font-semibold">{f.home}</span>
-                </div>
+              {rounds.map((r) => (
+                <option key={r} value={r}>
+                  Week {r}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-                {/* Centre */}
-                <div className="flex-1 text-center">
-                  {isFinished ? (
-                    <span className="text-lg font-bold">
-                      {res.homeGoals}
-                      <span className="mx-1 text-[10px] text-gray-500">
-                        FT
+        {/* Upcoming Week Indicator */}
+        <div className="mb-3 text-center text-xs text-gray-600">
+          <span className="rounded-full border border-orange-600 px-3 py-1 text-orange-600">
+            Upcoming Week: {nextUpcomingRound}
+          </span>
+        </div>
+
+        {/* Short description */}
+        <p className="mb-5 text-center text-xs text-gray-600 md:text-sm">
+          Fixtures are updated weekly. Final scores and match facts are added
+          after each match is completed and confirmed by the organisers.
+        </p>
+
+        {/* Fixtures list */}
+        <div className="space-y-4">
+          {fixtures.map((f) => {
+            const res = resultMap[f.id];
+            const isFinished = !!res;
+            const hasFacts = !!MATCH_FACTS[f.id];
+
+            return (
+              <div
+                key={f.id}
+                className="rounded-xl border bg-white p-4 shadow"
+              >
+                {/* Team Row */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  {/* Home */}
+                  <div className="flex min-w-[40%] items-center gap-2">
+                    <img
+                      src={logo(f.home)}
+                      className="h-7 w-7 rounded-full border"
+                      alt={f.home}
+                    />
+                    <span className="text-sm font-semibold">{f.home}</span>
+                  </div>
+
+                  {/* Centre */}
+                  <div className="flex-1 text-center">
+                    {isFinished ? (
+                      <span className="text-lg font-bold">
+                        {res.homeGoals}
+                        <span className="mx-1 text-[10px] text-gray-500">
+                          FT
+                        </span>
+                        {res.awayGoals}
                       </span>
-                      {res.awayGoals}
+                    ) : (
+                      <span className="text-sm font-semibold text-gray-600">
+                        vs
+                      </span>
+                    )}
+                    <div className="mt-1 text-[10px] text-gray-600">
+                      Week {f.round} • {f.date} • {f.time}
+                    </div>
+                  </div>
+
+                  {/* Away */}
+                  <div className="flex min-w-[40%] items-center justify-end gap-2">
+                    <span className="text-right text-sm font-semibold">
+                      {f.away}
                     </span>
-                  ) : (
-                    <span className="text-sm font-semibold text-gray-600">
-                      vs
-                    </span>
-                  )}
-                  <div className="mt-1 text-[10px] text-gray-600">
-                    Week {f.round} • {f.date} • {f.time}
+                    <img
+                      src={logo(f.away)}
+                      className="h-7 w-7 rounded-full border"
+                      alt={f.away}
+                    />
                   </div>
                 </div>
 
-                {/* Away */}
-                <div className="flex min-w-[40%] items-center justify-end gap-2">
-                  <span className="text-right text-sm font-semibold">
-                    {f.away}
+                {/* Match info row */}
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600">
+                  <span>
+                    Ground: <strong>{f.ground}</strong>
                   </span>
-                  <img
-                    src={logo(f.away)}
-                    className="h-7 w-7 rounded-full border"
-                    alt={f.away}
-                  />
+
+                  <div className="flex items-center gap-2">
+                    {!isFinished && (
+                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] text-green-700">
+                        Upcoming fixture
+                      </span>
+                    )}
+
+                    {isFinished && hasFacts && (
+                      <button
+                        onClick={() => {
+                          // Open modal immediately in a light state
+                          setOpenMatchId("loading-" + f.id);
+
+                          // Allow UI to update, then render heavy content
+                          setTimeout(() => {
+                            setOpenMatchId(f.id);
+                          }, 50);
+                        }}
+                        className="rounded-lg bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700"
+                      >
+                        Match Facts
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-
-              {/* Match info row */}
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600">
-                <span>
-                  Ground: <strong>{f.ground}</strong>
-                </span>
-
-                <div className="flex items-center gap-2">
-                  {!isFinished && (
-                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] text-green-700">
-                      Upcoming fixture
-                    </span>
-                  )}
-
-                  {isFinished && hasFacts && (
-                    <button
-                      onClick={() => {
-                        // Open modal immediately in a light state
-                        setOpenMatchId("loading-" + f.id);
-
-                        // Allow UI to update, then render heavy content
-                        setTimeout(() => {
-                          setOpenMatchId(f.id);
-                        }, 50);
-                      }}
-                      className="rounded-lg bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700"
-                    >
-                      Match Facts
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* Modal */}

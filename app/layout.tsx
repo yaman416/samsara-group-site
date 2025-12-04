@@ -1,6 +1,8 @@
 // app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
+import CookieConsent from "@/components/CookieConsent";
+
 
 export const metadata: Metadata = {
   title: "Samsara Group - Canberra",
@@ -22,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased overflow-x-hidden">
         {children}
+        <CookieConsent />
       </body>
     </html>
   );
