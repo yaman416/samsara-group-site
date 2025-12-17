@@ -19,6 +19,8 @@ type RowWithForm = TableRow & {
   movement: number;
 };
 
+const WITHDRAWN_TEAM = "Nepal United FC";
+
 function computeTableUpToRound(roundLimit: number) {
   const teamNames = TEAMS;
   const base: Record<string, TableRow & { form: FormCode[] }> = {};
@@ -137,15 +139,26 @@ export default function LeagueTableSection() {
     const previous =
       maxRound > 1 ? computeTableUpToRound(maxRound - 1) : null;
 
+    // Filter out withdrawn team from both current and previous
+    const currentFiltered = current.filter((r) => r.name !== WITHDRAWN_TEAM);
+    const previousFiltered = previous
+      ? previous.filter((r) => r.name !== WITHDRAWN_TEAM)
+      : null;
+
+    // Build previous positions map from filtered previous table
     const prevPos = new Map<string, number>();
-    if (previous) {
-      previous.forEach((r) => prevPos.set(r.name, r.position));
+    if (previousFiltered) {
+      previousFiltered.forEach((r, idx) => {
+        prevPos.set(r.name, idx + 1);
+      });
     }
 
-    const withMovement = current.map((row) => {
-      const prev = prevPos.get(row.name) ?? row.position;
-      const movement = prev - row.position;
-      return { ...row, movement };
+    // Recalculate positions after filtering, then calculate movement vs filtered previous
+    const withMovement = currentFiltered.map((row, idx) => {
+      const newPosition = idx + 1;
+      const prev = prevPos.get(row.name) ?? newPosition;
+      const movement = prev - newPosition;
+      return { ...row, position: newPosition, movement };
     });
 
     return { latestRound: maxRound, rows: withMovement };
@@ -243,24 +256,18 @@ export default function LeagueTableSection() {
                     <td className="px-2 py-2 text-center">{row.won}</td>
                     <td className="px-2 py-2 text-center">{row.drawn}</td>
                     <td className="px-2 py-2 text-center">{row.lost}</td>
-                    <td className="px-2 py-2 text-center">
-                      {row.goalsFor}
-                    </td>
+                    <td className="px-2 py-2 text-center">{row.goalsFor}</td>
                     <td className="px-2 py-2 text-center">
                       {row.goalsAgainst}
                     </td>
-                    <td className="px-2 py-2 text-center">
-                      {row.goalDiff}
-                    </td>
+                    <td className="px-2 py-2 text-center">{row.goalDiff}</td>
                     <td className="px-2 py-2 text-center font-semibold">
                       {row.points}
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex justify-end gap-1">
                         {recentForm.length === 0 ? (
-                          <span className="text-[10px] text-slate-400">
-                            -
-                          </span>
+                          <span className="text-[10px] text-slate-400">-</span>
                         ) : (
                           recentForm.map((code, i) => (
                             <span

@@ -2,13 +2,7 @@
 "use client";
 
 import { useState, useMemo, memo } from "react";
-import {
-  FIXTURES,
-  RESULTS,
-  TEAM_LOGOS,
-  MATCH_FACTS,
-  getRounds,
-} from "@/lib/splData";
+import { FIXTURES, RESULTS, TEAM_LOGOS, MATCH_FACTS, getRounds } from "@/lib/splData";
 import Modal from "@/components/Modal";
 import { ListOrdered } from "lucide-react";
 
@@ -17,11 +11,8 @@ type ResultMap = Record<string, { homeGoals: number; awayGoals: number }>;
 export default function FixturesResultsSection() {
   const rounds = getRounds();
 
-  // Detect next upcoming round and use it as default selection
   const today = new Date();
-  const firstUpcomingFixture = FIXTURES.find(
-    (f) => new Date(f.date) >= today,
-  );
+  const firstUpcomingFixture = FIXTURES.find((f) => new Date(f.date) >= today);
   const defaultRound = firstUpcomingFixture ? firstUpcomingFixture.round : rounds[0];
 
   const [selectedRound, setSelectedRound] = useState<number>(defaultRound);
@@ -30,45 +21,39 @@ export default function FixturesResultsSection() {
   const resultMap: ResultMap = useMemo(
     () =>
       Object.fromEntries(
-        RESULTS.map((r) => [
-          r.fixtureId,
-          { homeGoals: r.homeGoals, awayGoals: r.awayGoals },
-        ]),
+        RESULTS.map((r) => [r.fixtureId, { homeGoals: r.homeGoals, awayGoals: r.awayGoals }]),
       ),
     [],
   );
 
   const fixtures = useMemo(
-    () =>
-      FIXTURES.filter((f) => f.round === selectedRound).sort((a, b) =>
-        a.time.localeCompare(b.time),
-      ),
+    () => FIXTURES.filter((f) => f.round === selectedRound).sort((a, b) => a.time.localeCompare(b.time)),
     [selectedRound],
   );
 
-  const nextUpcomingRound =
-    firstUpcomingFixture?.round || rounds[0];
+  const nextUpcomingRound = firstUpcomingFixture?.round || rounds[0];
 
   function logo(team: string) {
     return TEAM_LOGOS[team] || "";
   }
 
+  function isBye(team: string) {
+    return team.toUpperCase() === "BYE";
+  }
+
   return (
     <section id="fixturesResults" className="mt-12">
       <div className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8">
-        {/* Heading to match theme */}
         <div className="mb-5 text-center">
           <h2 className="inline-flex items-center justify-center gap-2 text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
             <ListOrdered size={22} className="text-orange-600" />
             <span>SPL Fixtures &amp; Results</span>
           </h2>
           <p className="mt-2 mx-auto max-w-2xl text-xs text-gray-600 md:text-sm">
-            Weekly fixtures, final scores, and match facts for the Samsara
-            Premier League.
+            Weekly fixtures, final scores, and match facts for the Samsara Premier League.
           </p>
         </div>
 
-        {/* Week selector row */}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-600">Week</span>
@@ -86,41 +71,41 @@ export default function FixturesResultsSection() {
           </div>
         </div>
 
-        {/* Upcoming Week Indicator */}
         <div className="mb-3 text-center text-xs text-gray-600">
           <span className="rounded-full border border-orange-600 px-3 py-1 text-orange-600">
             Upcoming Week: {nextUpcomingRound}
           </span>
         </div>
 
-        {/* Short description */}
         <p className="mb-5 text-center text-xs text-gray-600 md:text-sm">
-          Fixtures are updated weekly. Final scores and match facts are added
-          after each match is completed and confirmed by the organisers.
+          Fixtures are updated weekly. Final scores and match facts are added after each match is completed and confirmed by the organisers.
         </p>
 
-        {/* Fixtures list */}
         <div className="space-y-4">
           {fixtures.map((f) => {
             const res = resultMap[f.id];
             const isFinished = !!res;
             const hasFacts = !!MATCH_FACTS[f.id];
 
+            const homeLogo = logo(f.home);
+            const awayLogo = logo(f.away);
+
             return (
-              <div
-                key={f.id}
-                className="rounded-xl border bg-white p-4 shadow"
-              >
-                {/* Team Row */}
+              <div key={f.id} className="rounded-xl border bg-white p-4 shadow">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   {/* Home */}
                   <div className="flex min-w-[40%] items-center gap-2">
-                    <img
-                      src={logo(f.home)}
-                      className="h-7 w-7 rounded-full border"
-                      alt={f.home}
-                    />
+                    {homeLogo ? (
+                      <img src={homeLogo} className="h-7 w-7 rounded-full border" alt={f.home} />
+                    ) : (
+                      <div className="h-7 w-7 rounded-full border bg-slate-100" />
+                    )}
                     <span className="text-sm font-semibold">{f.home}</span>
+                    {isBye(f.home) && (
+                      <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-700">
+                        BYE
+                      </span>
+                    )}
                   </div>
 
                   {/* Centre */}
@@ -128,15 +113,11 @@ export default function FixturesResultsSection() {
                     {isFinished ? (
                       <span className="text-lg font-bold">
                         {res.homeGoals}
-                        <span className="mx-1 text-[10px] text-gray-500">
-                          FT
-                        </span>
+                        <span className="mx-1 text-[10px] text-gray-500">FT</span>
                         {res.awayGoals}
                       </span>
                     ) : (
-                      <span className="text-sm font-semibold text-gray-600">
-                        vs
-                      </span>
+                      <span className="text-sm font-semibold text-gray-600">vs</span>
                     )}
                     <div className="mt-1 text-[10px] text-gray-600">
                       Week {f.round} • {f.date} • {f.time}
@@ -145,18 +126,20 @@ export default function FixturesResultsSection() {
 
                   {/* Away */}
                   <div className="flex min-w-[40%] items-center justify-end gap-2">
-                    <span className="text-right text-sm font-semibold">
-                      {f.away}
-                    </span>
-                    <img
-                      src={logo(f.away)}
-                      className="h-7 w-7 rounded-full border"
-                      alt={f.away}
-                    />
+                    {isBye(f.away) && (
+                      <span className="mr-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-700">
+                        BYE
+                      </span>
+                    )}
+                    <span className="text-right text-sm font-semibold">{f.away}</span>
+                    {awayLogo ? (
+                      <img src={awayLogo} className="h-7 w-7 rounded-full border" alt={f.away} />
+                    ) : (
+                      <div className="h-7 w-7 rounded-full border bg-slate-100" />
+                    )}
                   </div>
                 </div>
 
-                {/* Match info row */}
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600">
                   <span>
                     Ground: <strong>{f.ground}</strong>
@@ -172,13 +155,8 @@ export default function FixturesResultsSection() {
                     {isFinished && hasFacts && (
                       <button
                         onClick={() => {
-                          // Open modal immediately in a light state
                           setOpenMatchId("loading-" + f.id);
-
-                          // Allow UI to update, then render heavy content
-                          setTimeout(() => {
-                            setOpenMatchId(f.id);
-                          }, 50);
+                          setTimeout(() => setOpenMatchId(f.id), 50);
                         }}
                         className="rounded-lg bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700"
                       >
@@ -193,7 +171,6 @@ export default function FixturesResultsSection() {
         </div>
       </div>
 
-      {/* Modal */}
       <Modal open={!!openMatchId} onClose={() => setOpenMatchId(null)}>
         {openMatchId ? (
           openMatchId.startsWith("loading-") ? (
@@ -207,7 +184,6 @@ export default function FixturesResultsSection() {
   );
 }
 
-/* Small helper to render yellow/red card blocks */
 function CardIcons({ text }: { text: string }) {
   const lower = text.toLowerCase();
   const icons: ("yellow" | "red")[] = [];
@@ -247,9 +223,7 @@ function MatchFacts({ matchId }: { matchId: string }) {
 
   return (
     <div className="space-y-6 text-sm text-slate-50">
-      {/* Header: teams, logos, score */}
       <div className="mb-2 flex items-center justify-between gap-3">
-        {/* Home */}
         <div className="flex min-w-[35%] items-center gap-2">
           {homeLogo && (
             <img
@@ -261,7 +235,6 @@ function MatchFacts({ matchId }: { matchId: string }) {
           <span className="text-sm font-semibold">{homeTeam}</span>
         </div>
 
-        {/* Score + meta */}
         <div className="flex flex-1 flex-col items-center justify-center">
           {res && (
             <p className="mb-1 text-2xl font-bold leading-none">
@@ -273,11 +246,8 @@ function MatchFacts({ matchId }: { matchId: string }) {
           </p>
         </div>
 
-        {/* Away */}
         <div className="flex min-w-[35%] items-center justify-end gap-2">
-          <span className="text-right text-sm font-semibold">
-            {awayTeam}
-          </span>
+          <span className="text-right text-sm font-semibold">{awayTeam}</span>
           {awayLogo && (
             <img
               src={awayLogo}
@@ -288,13 +258,9 @@ function MatchFacts({ matchId }: { matchId: string }) {
         </div>
       </div>
 
-      {/* Goals */}
       <div>
-        <h4 className="mb-2 text-[11px] uppercase tracking-wide text-slate-400">
-          Goals
-        </h4>
+        <h4 className="mb-2 text-[11px] uppercase tracking-wide text-slate-400">Goals</h4>
         <div className="grid grid-cols-2 gap-4">
-          {/* Home goals */}
           <ul className="space-y-1 text-left">
             {d.home.scorers.length ? (
               d.home.scorers.map((s, i) => (
@@ -308,14 +274,10 @@ function MatchFacts({ matchId }: { matchId: string }) {
             )}
           </ul>
 
-          {/* Away goals */}
           <ul className="space-y-1 text-right">
             {d.away.scorers.length ? (
               d.away.scorers.map((s, i) => (
-                <li
-                  key={i}
-                  className="flex items-center justify-end gap-1"
-                >
+                <li key={i} className="flex items-center justify-end gap-1">
                   <span>{s}</span>
                   <span className="ml-1">⚽</span>
                 </li>
@@ -327,13 +289,9 @@ function MatchFacts({ matchId }: { matchId: string }) {
         </div>
       </div>
 
-      {/* Cards */}
       <div>
-        <h4 className="mb-2 text-[11px] uppercase tracking-wide text-slate-400">
-          Cards
-        </h4>
+        <h4 className="mb-2 text-[11px] uppercase tracking-wide text-slate-400">Cards</h4>
         <div className="grid grid-cols-2 gap-4">
-          {/* Home cards */}
           <ul className="space-y-1 text-left">
             {d.home.cards.length ? (
               d.home.cards.map((c, i) => (
@@ -347,14 +305,10 @@ function MatchFacts({ matchId }: { matchId: string }) {
             )}
           </ul>
 
-          {/* Away cards */}
           <ul className="space-y-1 text-right">
             {d.away.cards.length ? (
               d.away.cards.map((c, i) => (
-                <li
-                  key={i}
-                  className="flex items-center justify-end gap-1"
-                >
+                <li key={i} className="flex items-center justify-end gap-1">
                   <span>{c}</span>
                   <CardIcons text={c} />
                 </li>

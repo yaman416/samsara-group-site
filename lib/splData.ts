@@ -1,4 +1,6 @@
 // lib/splData.ts
+// Keep ALL records and fixtures/results exactly as-is.
+// Only change: remove Nepal United FC from the league table output (11 teams).
 
 export const ORG = {
   name: "Samsara Group",
@@ -415,8 +417,8 @@ export const FIXTURES: Fixture[] = [
     round: 6,
     date: "2025-12-20",
     time: "3:30 PM",
-    home: "Nepal United FC",
-    away: "Queanbeyan Nepalese UFC",
+    home: "Queanbeyan Nepalese UFC",
+    away: "BYE",
     ground: "Ground 2",
   },
   {
@@ -507,8 +509,8 @@ export const FIXTURES: Fixture[] = [
     round: 7,
     date: "2026-01-10",
     time: "6:30 PM",
-    home: "Nepal United FC",
-    away: "JA Brothers Football Club",
+    home: "JA Brothers Football Club",
+    away: "BYE",
     ground: "Ground 2",
   },
 
@@ -518,8 +520,8 @@ export const FIXTURES: Fixture[] = [
     round: 8,
     date: "2026-01-17",
     time: "3:30 PM",
-    home: "Nepal United FC",
-    away: "Achos Football Team",
+    home: "Achos Football Team",
+    away: "BYE",
     ground: "Ground 1",
   },
   {
@@ -619,8 +621,8 @@ export const FIXTURES: Fixture[] = [
     round: 9,
     date: "2026-01-31",
     time: "6:30 PM",
-    home: "Nepal United FC",
-    away: "Azhas FC",
+    home: "Azhas FC",
+    away: "BYE",
     ground: "Ground 2",
   },
 
@@ -657,8 +659,8 @@ export const FIXTURES: Fixture[] = [
     round: 10,
     date: "2026-02-07",
     time: "5:00 PM",
-    home: "Nepal United FC",
-    away: "Everest FC",
+    home: "Everest FC",
+    away: "BYE",
     ground: "Ground 2",
   },
   {
@@ -695,8 +697,8 @@ export const FIXTURES: Fixture[] = [
     round: 11,
     date: "2026-02-14",
     time: "3:30 PM",
-    home: "Nepal United FC",
-    away: "Thuenlam FC",
+    home: "Thuenlam FC",
+    away: "BYE",
     ground: "Ground 2",
   },
   {
@@ -770,6 +772,14 @@ export const RESULTS = [
   { fixtureId: "R4-M4", homeGoals: 9, awayGoals: 1 }, // Nepal United 9-1 Unity
   { fixtureId: "R4-M5", homeGoals: 2, awayGoals: 1 }, // Thuenlam 2-1 Achos
   { fixtureId: "R4-M6", homeGoals: 3, awayGoals: 0 }, // Khukuri 3-0 Phuensum
+
+  // Week 5
+  { fixtureId: "R5-M1", homeGoals: 1, awayGoals: 5 }, // CNFC 1-5 Achos
+  { fixtureId: "R5-M2", homeGoals: 0, awayGoals: 4 }, // Unity 0-4 QNU
+  { fixtureId: "R5-M3", homeGoals: 0, awayGoals: 3 }, // Nepal United 0-3 Phuensum (Match awarded)
+  { fixtureId: "R5-M4", homeGoals: 0, awayGoals: 0 }, // Khukuri 0-0 JA Brothers
+  { fixtureId: "R5-M5", homeGoals: 1, awayGoals: 3 }, // Druk 1-3 Azhas
+  { fixtureId: "R5-M6", homeGoals: 2, awayGoals: 1 }, // Thuenlam 2-1 Everest
 ];
 
 export type TableRow = {
@@ -844,7 +854,9 @@ export function computeLeagueTable(): TableRow[] {
       a.name.localeCompare(b.name),
   );
 
-  return rows;
+  // ONLY CHANGE: remove Nepal United FC from the table output
+  return rows.filter((r) => r.name !== "Nepal United FC");
+
 }
 
 export function getUpcomingFixtures(limit = 5): Fixture[] {
@@ -864,7 +876,7 @@ export function getRounds(): number[] {
   return [...new Set(FIXTURES.map((f) => f.round))].sort((a, b) => a - b);
 }
 
-// ---------- MATCH FACTS (Weeks 1–4) ----------
+// ---------- MATCH FACTS (Weeks 1–5) ----------
 
 export type MatchFactsSide = {
   teamName: string;
@@ -882,8 +894,6 @@ export type MatchFactsRecord = Record<
 
 export const MATCH_FACTS: MatchFactsRecord = {
   // -------- WEEK 1 --------
-
-  // R1-M1: Nepal United FC 9 - 1 Druk FC
   "R1-M1": {
     home: {
       teamName: "Nepal United FC",
@@ -894,14 +904,9 @@ export const MATCH_FACTS: MatchFactsRecord = {
       ],
       cards: [],
     },
-    away: {
-      teamName: "Druk FC",
-      scorers: [],
-      cards: [],
-    },
+    away: { teamName: "Druk FC", scorers: [], cards: [] },
   },
 
-  // R1-M2: Thuenlam FC 4 - 1 CNFC Canberra
   "R1-M2": {
     home: {
       teamName: "Thuenlam FC",
@@ -920,142 +925,67 @@ export const MATCH_FACTS: MatchFactsRecord = {
     },
   },
 
-  // R1-M3: Everest FC 0 - 2 Khukuri Canberra FC
   "R1-M3": {
-    home: {
-      teamName: "Everest FC",
-      scorers: [],
-      cards: ["Bijay Bhandari - Yellow"],
-    },
+    home: { teamName: "Everest FC", scorers: [], cards: ["Bijay Bhandari - Yellow"] },
     away: {
       teamName: "Khukuri Canberra FC",
-      scorers: [
-        "Sagar Khadka - 1 goal",
-        "Roshan Lamichhane - 1 goal",
-      ],
-      cards: [
-        "Anup Shrestha - Yellow",
-        "Protshan Basnet - Yellow",
-      ],
+      scorers: ["Sagar Khadka - 1 goal", "Roshan Lamichhane - 1 goal"],
+      cards: ["Anup Shrestha - Yellow", "Protshan Basnet - Yellow"],
     },
   },
 
-  // R1-M4: Azhas FC 3 - 1 Unity Stars FC
   "R1-M4": {
     home: {
       teamName: "Azhas FC",
-      scorers: [
-        "Karma Nima - 2 goals",
-        "Tshultrim Juney - 1 goal",
-      ],
+      scorers: ["Karma Nima - 2 goals", "Tshultrim Juney - 1 goal"],
       cards: ["Tshering Dhendup - Yellow"],
     },
-    away: {
-      teamName: "Unity Stars FC",
-      scorers: [],
-      cards: [],
-    },
+    away: { teamName: "Unity Stars FC", scorers: [], cards: [] },
   },
 
-  // R1-M5: Achos Football Team 1 - 0 Phuensum FC
   "R1-M5": {
     home: {
       teamName: "Achos Football Team",
       scorers: ["Tshering Tobgyel - 1 goal"],
       cards: ["Pelzang - Yellow"],
     },
-    away: {
-      teamName: "Phuensum FC",
-      scorers: [],
-      cards: [],
-    },
+    away: { teamName: "Phuensum FC", scorers: [], cards: [] },
   },
 
-  // R1-M6: JA Brothers FC 0 - 2 Queanbeyan Nepalese UFC
   "R1-M6": {
     home: {
       teamName: "JA Brothers Football Club",
       scorers: [],
-      cards: [
-        "Angel Prasai - Yellow",
-        "Darshan Gautam - Yellow",
-      ],
+      cards: ["Angel Prasai - Yellow", "Darshan Gautam - Yellow"],
     },
     away: {
       teamName: "Queanbeyan Nepalese UFC",
-      scorers: [
-        "Sushant Shrestha - 1 goal",
-        "Namgay - 1 goal",
-      ],
+      scorers: ["Sushant Shrestha - 1 goal", "Namgay - 1 goal"],
       cards: ["Bishal Kharel - Yellow"],
     },
   },
 
   // -------- WEEK 2 --------
-
-  // R2-M1: Everest FC 1 - 1 Phuensum FC
   "R2-M1": {
-    home: {
-      teamName: "Everest FC",
-      scorers: ["Krishal Lama - 1 goal"],
-      cards: [],
-    },
-    away: {
-      teamName: "Phuensum FC",
-      scorers: ["Sampa Tshering - 1 goal"],
-      cards: ["Sonam Wangchuk - Yellow"],
-    },
+    home: { teamName: "Everest FC", scorers: ["Krishal Lama - 1 goal"], cards: [] },
+    away: { teamName: "Phuensum FC", scorers: ["Sampa Tshering - 1 goal"], cards: ["Sonam Wangchuk - Yellow"] },
   },
 
-  // R2-M2: Druk FC 0 - 4 Khukuri Canberra FC
   "R2-M2": {
-    home: {
-      teamName: "Druk FC",
-      scorers: [],
-      cards: ["Tashi Norbu - Yellow"],
-    },
-    away: {
-      teamName: "Khukuri Canberra FC",
-      scorers: [
-        "Roshan Lamichhane - 2 goals",
-        "Abhishek Chapagain - 2 goals",
-      ],
-      cards: [],
-    },
+    home: { teamName: "Druk FC", scorers: [], cards: ["Tashi Norbu - Yellow"] },
+    away: { teamName: "Khukuri Canberra FC", scorers: ["Roshan Lamichhane - 2 goals", "Abhishek Chapagain - 2 goals"], cards: [] },
   },
 
-  // R2-M3: Thuenlam FC 6 - 0 Unity Stars FC
   "R2-M3": {
-    home: {
-      teamName: "Thuenlam FC",
-      scorers: [
-        "Tshering Dorji - 2 goals",
-        "Kunzang Thinley - 3 goals",
-      ],
-      cards: [],
-    },
-    away: {
-      teamName: "Unity Stars FC",
-      scorers: [],
-      cards: ["Bishal Ghimire - Yellow"],
-    },
+    home: { teamName: "Thuenlam FC", scorers: ["Tshering Dorji - 2 goals", "Kunzang Thinley - 3 goals"], cards: [] },
+    away: { teamName: "Unity Stars FC", scorers: [], cards: ["Bishal Ghimire - Yellow"] },
   },
 
-  // R2-M4: Achos Football Team 2 - 0 JA Brothers FC
   "R2-M4": {
-    home: {
-      teamName: "Achos Football Team",
-      scorers: ["Tshering Tobgyel - 2 goals"],
-      cards: [],
-    },
-    away: {
-      teamName: "JA Brothers Football Club",
-      scorers: [],
-      cards: ["Yuzan Ghimire - Yellow"],
-    },
+    home: { teamName: "Achos Football Team", scorers: ["Tshering Tobgyel - 2 goals"], cards: [] },
+    away: { teamName: "JA Brothers Football Club", scorers: [], cards: ["Yuzan Ghimire - Yellow"] },
   },
 
-  // R2-M5: Azhas FC 1 - 1 Queanbeyan Nepalese UFC
   "R2-M5": {
     home: {
       teamName: "Azhas FC",
@@ -1066,14 +996,9 @@ export const MATCH_FACTS: MatchFactsRecord = {
         "Thinley Gyaltshen - Second yellow and red",
       ],
     },
-    away: {
-      teamName: "Queanbeyan Nepalese UFC",
-      scorers: ["Saneej Chhetri - 1 goal"],
-      cards: [],
-    },
+    away: { teamName: "Queanbeyan Nepalese UFC", scorers: ["Saneej Chhetri - 1 goal"], cards: [] },
   },
 
-  // R2-M6: Nepal United FC 10 - 0 CNFC Canberra
   "R2-M6": {
     home: {
       teamName: "Nepal United FC",
@@ -1086,22 +1011,12 @@ export const MATCH_FACTS: MatchFactsRecord = {
       ],
       cards: [],
     },
-    away: {
-      teamName: "CNFC Canberra",
-      scorers: [],
-      cards: [],
-    },
+    away: { teamName: "CNFC Canberra", scorers: [], cards: [] },
   },
 
   // -------- WEEK 3 --------
-
-  // R3-M1: Everest FC 1 - 3 JA Brothers FC
   "R3-M1": {
-    home: {
-      teamName: "Everest FC",
-      scorers: ["Kiran Gautam - 1 goal"],
-      cards: [],
-    },
+    home: { teamName: "Everest FC", scorers: ["Kiran Gautam - 1 goal"], cards: [] },
     away: {
       teamName: "JA Brothers Football Club",
       scorers: [
@@ -1109,163 +1024,55 @@ export const MATCH_FACTS: MatchFactsRecord = {
         "Ajay Shrestha - 1 goal",
         "Alton Thakuri - 1 goal",
       ],
-      cards: [
-        "Ajay Shrestha - Yellow",
-        "Silas Tamang - Yellow",
-        "Rahul Tamang - Yellow",
-      ],
+      cards: ["Ajay Shrestha - Yellow", "Silas Tamang - Yellow", "Rahul Tamang - Yellow"],
     },
   },
 
-  // R3-M2: CNFC Canberra 3 - 2 Unity Stars FC
   "R3-M2": {
-    home: {
-      teamName: "CNFC Canberra",
-      scorers: [
-        "Sumit Ale - 1 goal",
-        "Manoj - 2 goals",
-      ],
-      cards: ["Prawol Vaidya - Yellow"],
-    },
-    away: {
-      teamName: "Unity Stars FC",
-      scorers: ["Panda - 2 goals"],
-      cards: [],
-    },
+    home: { teamName: "CNFC Canberra", scorers: ["Sumit Ale - 1 goal", "Manoj - 2 goals"], cards: ["Prawol Vaidya - Yellow"] },
+    away: { teamName: "Unity Stars FC", scorers: ["Panda - 2 goals"], cards: [] },
   },
 
-  // R3-M3: Druk FC 1 - 3 Phuensum FC
   "R3-M3": {
-    home: {
-      teamName: "Druk FC",
-      scorers: ["Sangay Tenzin - 1 goal"],
-      cards: [],
-    },
+    home: { teamName: "Druk FC", scorers: ["Sangay Tenzin - 1 goal"], cards: [] },
     away: {
       teamName: "Phuensum FC",
-      scorers: [
-        "Sonam Dorji - 1 goal",
-        "Kinley Wangdi - 1 goal",
-        "Sonam Wangchuk - 1 goal",
-      ],
+      scorers: ["Sonam Dorji - 1 goal", "Kinley Wangdi - 1 goal", "Sonam Wangchuk - 1 goal"],
       cards: ["Namgay Tenzin - Straight red (dissent)"],
     },
   },
 
-  // R3-M4: Thuenlam FC 1 - 0 QNUFC
   "R3-M4": {
-    home: {
-      teamName: "Thuenlam FC",
-      scorers: ["Kunzang Thinley - 1 goal"],
-      cards: [],
-    },
-    away: {
-      teamName: "Queanbeyan Nepalese UFC",
-      scorers: [],
-      cards: [],
-    },
+    home: { teamName: "Thuenlam FC", scorers: ["Kunzang Thinley - 1 goal"], cards: [] },
+    away: { teamName: "Queanbeyan Nepalese UFC", scorers: [], cards: [] },
   },
 
-  // R3-M5: Nepal United FC 1 - 2 Khukuri Canberra FC
   "R3-M5": {
-    home: {
-      teamName: "Nepal United FC",
-      scorers: ["Pujan Uparkoti - 1 goal"],
-      cards: [
-        "Enoj Neupane - Yellow",
-        "Aakash Jung Raut - Yellow",
-      ],
-    },
-    away: {
-      teamName: "Khukuri Canberra FC",
-      scorers: [
-        "Abhishek Chapagain - 1 goal",
-        "Roshan Lamichhane - 1 goal",
-      ],
-      cards: [
-        "Sagar Khadka - Yellow",
-        "Protshan Basnet - Second yellow and red",
-      ],
-    },
+    home: { teamName: "Nepal United FC", scorers: ["Pujan Uparkoti - 1 goal"], cards: ["Enoj Neupane - Yellow", "Aakash Jung Raut - Yellow"] },
+    away: { teamName: "Khukuri Canberra FC", scorers: ["Abhishek Chapagain - 1 goal", "Roshan Lamichhane - 1 goal"], cards: ["Sagar Khadka - Yellow", "Protshan Basnet - Second yellow and red"] },
   },
 
-  // R3-M6: Azhas FC 3 - 1 Achos Football Team
   "R3-M6": {
-    home: {
-      teamName: "Azhas FC",
-      scorers: [
-        "Chimi K Wangchuk - 1 goal",
-        "Rabten Tshegyel - 1 goal",
-        "Namgay Wangchuk - 1 goal",
-      ],
-      cards: ["Zayden Dorji - Yellow"],
-    },
-    away: {
-      teamName: "Achos Football Team",
-      scorers: ["Sonam Chopen - 1 goal"],
-      cards: ["Kelzang Jigme - Yellow"],
-    },
+    home: { teamName: "Azhas FC", scorers: ["Chimi K Wangchuk - 1 goal", "Rabten Tshegyel - 1 goal", "Namgay Wangchuk - 1 goal"], cards: ["Zayden Dorji - Yellow"] },
+    away: { teamName: "Achos Football Team", scorers: ["Sonam Chopen - 1 goal"], cards: ["Kelzang Jigme - Yellow"] },
   },
 
   // -------- WEEK 4 --------
-
-  // R4-M1: Druk FC 1 - 1 JA Brothers FC
   "R4-M1": {
-    home: {
-      teamName: "Druk FC",
-      scorers: ["Tenzi Dorji - 1 goal"],
-      cards: ["Sonam Wangdi - Yellow"],
-    },
-    away: {
-      teamName: "JA Brothers Football Club",
-      scorers: ["Darshan Gautam - 1 goal"],
-      cards: [
-        "Angel Prasai - Yellow",
-        "Alton Thakuri - Yellow",
-        "Silas Tamang - Yellow",
-      ],
-    },
+    home: { teamName: "Druk FC", scorers: ["Tenzi Dorji - 1 goal"], cards: ["Sonam Wangdi - Yellow"] },
+    away: { teamName: "JA Brothers Football Club", scorers: ["Darshan Gautam - 1 goal"], cards: ["Angel Prasai - Yellow", "Alton Thakuri - Yellow", "Silas Tamang - Yellow"] },
   },
 
-  // R4-M2: CNFC Canberra 1 - 0 Queanbeyan Nepalese UFC
   "R4-M2": {
-    home: {
-      teamName: "CNFC Canberra",
-      scorers: ["Sumit Ale - 1 goal"],
-      cards: [],
-    },
-    away: {
-      teamName: "Queanbeyan Nepalese UFC",
-      scorers: [],
-      cards: ["Jenish Gautam - Second yellow and red"],
-    },
+    home: { teamName: "CNFC Canberra", scorers: ["Sumit Ale - 1 goal"], cards: [] },
+    away: { teamName: "Queanbeyan Nepalese UFC", scorers: [], cards: ["Jenish Gautam - Second yellow and red"] },
   },
 
-  // R4-M3: Everest FC 2 - 2 Azhas FC
   "R4-M3": {
-    home: {
-      teamName: "Everest FC",
-      scorers: [
-        "Bikki - 1 goal",
-        "Piya - 1 goal",
-      ],
-      cards: ["Bikki - Yellow"],
-    },
-    away: {
-      teamName: "Azhas FC",
-      scorers: [
-        "Jigme Norbu - 1 goal",
-        "Jampel Dorji - 1 goal",
-      ],
-      cards: [
-        "Thinley Gyaltshen - Yellow",
-        "Chimi K Wangchuk - Yellow",
-        "Rabten Tshegyel - Yellow",
-      ],
-    },
+    home: { teamName: "Everest FC", scorers: ["Bikki - 1 goal", "Piya - 1 goal"], cards: ["Bikki - Yellow"] },
+    away: { teamName: "Azhas FC", scorers: ["Jigme Norbu - 1 goal", "Jampel Dorji - 1 goal"], cards: ["Thinley Gyaltshen - Yellow", "Chimi K Wangchuk - Yellow", "Rabten Tshegyel - Yellow"] },
   },
 
-  // R4-M4: Nepal United FC 9 - 1 Unity Stars FC
   "R4-M4": {
     home: {
       teamName: "Nepal United FC",
@@ -1279,48 +1086,47 @@ export const MATCH_FACTS: MatchFactsRecord = {
       ],
       cards: [],
     },
-    away: {
-      teamName: "Unity Stars FC",
-      scorers: ["Baby - 1 goal"],
-      cards: [],
-    },
+    away: { teamName: "Unity Stars FC", scorers: ["Baby - 1 goal"], cards: [] },
   },
 
-  // R4-M5: Thuenlam FC 2 - 1 Achos Football Team
   "R4-M5": {
-    home: {
-      teamName: "Thuenlam FC",
-      scorers: [
-        "Loday Wangchuk - 1 goal",
-        "Tshering Dorji - 1 goal",
-      ],
-      cards: ["Loday Wangchuk - Yellow"],
-    },
-    away: {
-      teamName: "Achos Football Team",
-      scorers: ["Kelzang Jigme - 1 goal"],
-      cards: [
-        "Samten Wangchuk - Yellow",
-        "Kuenzang Dorji - Yellow",
-      ],
-    },
+    home: { teamName: "Thuenlam FC", scorers: ["Loday Wangchuk - 1 goal", "Tshering Dorji - 1 goal"], cards: ["Loday Wangchuk - Yellow"] },
+    away: { teamName: "Achos Football Team", scorers: ["Kelzang Jigme - 1 goal"], cards: ["Samten Wangchuk - Yellow", "Kuenzang Dorji - Yellow"] },
   },
 
-  // R4-M6: Khukuri Canberra FC 3 - 0 Phuensum FC
   "R4-M6": {
-    home: {
-      teamName: "Khukuri Canberra FC",
-      scorers: [
-        "Ravi Pandey - 1 goal",
-        "Roshan Lamichhane - 1 goal",
-        "Aawesh Dhakal - 1 goal",
-      ],
-      cards: ["Sagar Khadka - Yellow"],
-    },
-    away: {
-      teamName: "Phuensum FC",
-      scorers: [],
-      cards: [],
-    },
+    home: { teamName: "Khukuri Canberra FC", scorers: ["Ravi Pandey - 1 goal", "Roshan Lamichhane - 1 goal", "Aawesh Dhakal - 1 goal"], cards: ["Sagar Khadka - Yellow"] },
+    away: { teamName: "Phuensum FC", scorers: [], cards: [] },
+  },
+
+  // -------- WEEK 5 --------
+  "R5-M1": {
+    home: { teamName: "CNFC Canberra", scorers: ["Bishal Ghimire (#13) - 1 goal"], cards: ["Sudeep Gurung (#2) - Yellow"] },
+    away: { teamName: "Achos Football Team", scorers: ["Tshering Tobgay (#13) - 4 goals", "Ugyen Phuntsho (#16) - 1 goal"], cards: [] },
+  },
+
+  "R5-M2": {
+    home: { teamName: "Unity Stars FC", scorers: [], cards: [] },
+    away: { teamName: "Queanbeyan Nepalese UFC", scorers: ["Sushant Shrestha (#77) - 3 goals", "Namgay (#9) - 1 goal"], cards: [] },
+  },
+
+  "R5-M3": {
+    home: { teamName: "Nepal United FC", scorers: [], cards: ["Match abandoned due to safety concerns. Result awarded 0-3 to Phuensum FC."] },
+    away: { teamName: "Phuensum FC", scorers: [], cards: ["Match abandoned due to safety concerns. Result awarded 3-0 to Phuensum FC."] },
+  },
+
+  "R5-M4": {
+    home: { teamName: "Khukuri Canberra FC", scorers: [], cards: [] },
+    away: { teamName: "JA Brothers Football Club", scorers: [], cards: ["Rajan Lama (#21) - Yellow", "Silas Tamang (#2) - Yellow"] },
+  },
+
+  "R5-M5": {
+    home: { teamName: "Druk FC", scorers: ["Sonam Wangdi (#15) - 1 goal"], cards: [] },
+    away: { teamName: "Azhas FC", scorers: ["Karma Nima (#4) - 3 goals"], cards: [] },
+  },
+
+  "R5-M6": {
+    home: { teamName: "Thuenlam FC", scorers: ["Chekey Wangchuk (#10) - 2 goals"], cards: ["Kinley Wangchuk (Thuenlam FC, #11) - Yellow"] },
+    away: { teamName: "Everest FC", scorers: ["Krishal Lama (#9) - 1 goal"], cards: ["Chiny (Everest FC, #24) - Yellow"] },
   },
 };
