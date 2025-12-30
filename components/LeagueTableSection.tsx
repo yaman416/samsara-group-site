@@ -19,7 +19,9 @@ type RowWithForm = TableRow & {
   movement: number;
 };
 
-const WITHDRAWN_TEAM = "Nepal United FC";
+function isBye(name: string) {
+  return name.trim().toUpperCase() === "BYE";
+}
 
 function computeTableUpToRound(roundLimit: number) {
   const teamNames = TEAMS;
@@ -61,6 +63,36 @@ function computeTableUpToRound(roundLimit: number) {
     if (f.round > roundLimit) continue;
     const r = resultMap[f.id];
     if (!r) continue;
+
+    const homeIsBye = isBye(f.home);
+    const awayIsBye = isBye(f.away);
+
+    // ONLY CHANGE: handle BYE fixtures so the real team receives MP, GF, PTS, and Form
+    if (homeIsBye && !awayIsBye) {
+      const away = base[f.away];
+      if (!away) continue;
+
+      away.played += 1;
+      away.won += 1;
+      away.points += 3;
+      away.goalsFor += r.awayGoals;
+      away.goalsAgainst += r.homeGoals;
+      away.form.push("W");
+      continue;
+    }
+
+    if (awayIsBye && !homeIsBye) {
+      const home = base[f.home];
+      if (!home) continue;
+
+      home.played += 1;
+      home.won += 1;
+      home.points += 3;
+      home.goalsFor += r.homeGoals;
+      home.goalsAgainst += r.awayGoals;
+      home.form.push("W");
+      continue;
+    }
 
     const home = base[f.home];
     const away = base[f.away];
@@ -139,35 +171,37 @@ export default function LeagueTableSection() {
     const previous =
       maxRound > 1 ? computeTableUpToRound(maxRound - 1) : null;
 
-    // Filter out withdrawn team from both current and previous
-    const currentFiltered = current.filter((r) => r.name !== WITHDRAWN_TEAM);
-    const previousFiltered = previous
-      ? previous.filter((r) => r.name !== WITHDRAWN_TEAM)
-      : null;
-
-    // Build previous positions map from filtered previous table
     const prevPos = new Map<string, number>();
-    if (previousFiltered) {
-      previousFiltered.forEach((r, idx) => {
-        prevPos.set(r.name, idx + 1);
-      });
+    if (previous) {
+      previous.forEach((r) => prevPos.set(r.name, r.position));
     }
 
-    // Recalculate positions after filtering, then calculate movement vs filtered previous
-    const withMovement = currentFiltered.map((row, idx) => {
-      const newPosition = idx + 1;
-      const prev = prevPos.get(row.name) ?? newPosition;
-      const movement = prev - newPosition;
-      return { ...row, position: newPosition, movement };
+    const withMovement = current.map((row) => {
+      const prev = prevPos.get(row.name) ?? row.position;
+      const movement = prev - row.position;
+      return { ...row, movement };
     });
 
     return { latestRound: maxRound, rows: withMovement };
   }, []);
 
+  // Hide Nepal United FC in table display only
+  const visibleRows = useMemo(
+    () => rows.filter((r) => r.name !== "Nepal United FC"),
+    [rows],
+  );
+
+  // Re-number positions after filtering so you still have 1 to 11
+  const renumberedRows = useMemo(() => {
+    return visibleRows.map((r, idx) => ({
+      ...r,
+      position: idx + 1,
+    }));
+  }, [visibleRows]);
+
   return (
     <section id="table" className="mt-10">
       <div className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8">
-        {/* Heading to match theme */}
         <div className="text-center mb-4">
           <h2 className="inline-flex items-center justify-center gap-2 text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
             <ListOrdered size={22} className="text-orange-600" />
@@ -197,11 +231,11 @@ export default function LeagueTableSection() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => {
+              {renumberedRows.map((row) => {
                 const logo = TEAM_LOGOS[row.name];
                 const recentForm = row.form.slice(-5);
                 const isTop4 = row.position <= 4;
-                const isBottom2 = row.position >= 11;
+                const isBottom2 = row.position >= 10;
 
                 const bg =
                   row.played === 0
@@ -222,10 +256,7 @@ export default function LeagueTableSection() {
                     : "text-slate-400";
 
                 return (
-                  <tr
-                    key={row.name}
-                    className={`${bg} text-[11px] sm:text-xs`}
-                  >
+                  <tr key={row.name} className={`${bg} text-[11px] sm:text-xs`}>
                     <td className="whitespace-nowrap px-3 py-2 font-semibold text-slate-800">
                       <span>{row.position}</span>{" "}
                       <span className={`ml-1 text-[10px] ${movementClass}`}>
@@ -257,9 +288,7 @@ export default function LeagueTableSection() {
                     <td className="px-2 py-2 text-center">{row.drawn}</td>
                     <td className="px-2 py-2 text-center">{row.lost}</td>
                     <td className="px-2 py-2 text-center">{row.goalsFor}</td>
-                    <td className="px-2 py-2 text-center">
-                      {row.goalsAgainst}
-                    </td>
+                    <td className="px-2 py-2 text-center">{row.goalsAgainst}</td>
                     <td className="px-2 py-2 text-center">{row.goalDiff}</td>
                     <td className="px-2 py-2 text-center font-semibold">
                       {row.points}
