@@ -780,6 +780,14 @@ export const RESULTS = [
   { fixtureId: "R5-M4", homeGoals: 0, awayGoals: 0 }, // Khukuri 0-0 JA Brothers
   { fixtureId: "R5-M5", homeGoals: 1, awayGoals: 3 }, // Druk 1-3 Azhas
   { fixtureId: "R5-M6", homeGoals: 2, awayGoals: 1 }, // Thuenlam 2-1 Everest
+
+  // Week 6
+  { fixtureId: "PASTE_ID_DRUK_V_THUENLAM", homeGoals: 1, awayGoals: 3 },
+  { fixtureId: "PASTE_ID_CNFC_V_EVEREST", homeGoals: 1, awayGoals: 4 },
+  { fixtureId: "PASTE_ID_KHUKURI_V_AZHAS", homeGoals: 0, awayGoals: 1 },
+  { fixtureId: "PASTE_ID_UNITY_V_ACHOS", homeGoals: 1, awayGoals: 5 },
+  { fixtureId: "PASTE_ID_PHUENSUM_V_JA", homeGoals: 1, awayGoals: 2 },
+  { fixtureId: "PASTE_ID_QNUFC_V_BYE", homeGoals: 3, awayGoals: 0 },
 ];
 
 export type TableRow = {
@@ -1129,4 +1137,39 @@ export const MATCH_FACTS: MatchFactsRecord = {
     home: { teamName: "Thuenlam FC", scorers: ["Chekey Wangchuk (#10) - 2 goals"], cards: ["Kinley Wangchuk (Thuenlam FC, #11) - Yellow"] },
     away: { teamName: "Everest FC", scorers: ["Krishal Lama (#9) - 1 goal"], cards: ["Chiny (Everest FC, #24) - Yellow"] },
   },
+
+
+  // -------- WEEK 6 --------
+  "R6-M1": {
+    home: { teamName: "Druk FC", scorers: ["Sonam Wangdi - 1 goal"], cards: [] },
+    away: { teamName: "Thuenlam FC", scorers: ["Kunzang Thinley - 2 goals", "Kinley Wangchuk - 1 goal"], cards: [] },
+  },
+
+  "R6-M2": {
+    home: { teamName: "CNFC Canberra", scorers: ["Sumit Ale - 1 goal"], cards: [] },
+    away: { teamName: "Everest FC", scorers: ["Krishal Lama - 2 goals", "Nixon - 1 goal", "Peakay - 1 goal"], cards: [] },
+  },
+
+  "R6-M3": {
+    home: { teamName: "Khukuri Canberra FC", scorers: [], cards: ["Bikash Khadka - Red", "Sagar Khadka - Yellow"] },
+    away: { teamName: "Azhas FC", scorers: ["Chimi K Wangchuk - 1 goal"], cards: ["Tandin Wangyel - Yellow", "Chimi K Wangchuk - Yellow"] },
+  },
+
+  "R6-M4": {
+    home: { teamName: "Unity Stars FC", scorers: ["Sangay Wangchuk - 1 goal"], cards: [] },
+    away: { teamName: "Achos Football Team", scorers: ["Tshering Tobgyel - 1 goal", "Sonam Chopen - 1 goal", "Ugyen Phuntsho - 1 goal", "Sonam Dhendup - 1 goal", "Tshewang Dorji - 1 goal"], cards: [] },
+  },
+
+  "R6-M5": {
+    home: { teamName: "Phuensum FC", scorers: ["Pema Dorji - 1 goal"], cards: [] },
+    away: { teamName: "JA Brothers Football Club", scorers: ["Thaman Gurung - 1 goal", "Miraj Marikhu - 1 goal"], cards: [] },
+  },
+
+  "R6-M6": {
+    home: { teamName: "Queanbeyan Nepalese United Football Club", scorers: ["BYE fixture - awarded 3-0 win"], cards: [] },
+    away: { teamName: "BYE", scorers: [], cards: [] },
+  },
+
+
+
 };
