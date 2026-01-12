@@ -1,10 +1,6 @@
 // lib/splData.ts
 // Keep ALL records and fixtures/results exactly as-is.
-// Only changes in this version:
-// 1) Week 6 RESULTS use correct fixtureIds (R6-M1 to R6-M6).
-// 2) computeLeagueTable correctly counts BYE fixtures (gives points/goals to the real team).
-// 3) Nepal United FC is removed from the league table output only.
-// 4) MATCH_FACTS includes Week 6, including Queanbeyan Nepalese UFC 3-0 BYE.
+// Only update: add Week 7 results and match facts, and fix Week 6 RESULTS ids (no placeholders).
 
 export const ORG = {
   name: "Samsara Group",
@@ -127,92 +123,620 @@ export type Fixture = {
 
 export const FIXTURES: Fixture[] = [
   // Round 1 - 15 Nov 2025
-  { id: "R1-M1", round: 1, date: "2025-11-15", time: "3:30 PM", home: "Nepal United FC", away: "Druk FC", ground: "Ground 1" },
-  { id: "R1-M2", round: 1, date: "2025-11-15", time: "3:30 PM", home: "Thuenlam FC", away: "CNFC Canberra", ground: "Ground 2" },
-  { id: "R1-M3", round: 1, date: "2025-11-15", time: "5:00 PM", home: "Everest FC", away: "Khukuri Canberra FC", ground: "Ground 1" },
-  { id: "R1-M4", round: 1, date: "2025-11-15", time: "5:00 PM", home: "Azhas FC", away: "Unity Stars FC", ground: "Ground 2" },
-  { id: "R1-M5", round: 1, date: "2025-11-15", time: "6:30 PM", home: "Achos Football Team", away: "Phuensum FC", ground: "Ground 1" },
-  { id: "R1-M6", round: 1, date: "2025-11-15", time: "6:30 PM", home: "JA Brothers Football Club", away: "Queanbeyan Nepalese UFC", ground: "Ground 2" },
+  {
+    id: "R1-M1",
+    round: 1,
+    date: "2025-11-15",
+    time: "3:30 PM",
+    home: "Nepal United FC",
+    away: "Druk FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R1-M2",
+    round: 1,
+    date: "2025-11-15",
+    time: "3:30 PM",
+    home: "Thuenlam FC",
+    away: "CNFC Canberra",
+    ground: "Ground 2",
+  },
+  {
+    id: "R1-M3",
+    round: 1,
+    date: "2025-11-15",
+    time: "5:00 PM",
+    home: "Everest FC",
+    away: "Khukuri Canberra FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R1-M4",
+    round: 1,
+    date: "2025-11-15",
+    time: "5:00 PM",
+    home: "Azhas FC",
+    away: "Unity Stars FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R1-M5",
+    round: 1,
+    date: "2025-11-15",
+    time: "6:30 PM",
+    home: "Achos Football Team",
+    away: "Phuensum FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R1-M6",
+    round: 1,
+    date: "2025-11-15",
+    time: "6:30 PM",
+    home: "JA Brothers Football Club",
+    away: "Queanbeyan Nepalese UFC",
+    ground: "Ground 2",
+  },
 
   // Round 2 - 22 Nov 2025
-  { id: "R2-M1", round: 2, date: "2025-11-22", time: "3:30 PM", home: "Everest FC", away: "Phuensum FC", ground: "Ground 1" },
-  { id: "R2-M2", round: 2, date: "2025-11-22", time: "3:30 PM", home: "Druk FC", away: "Khukuri Canberra FC", ground: "Ground 2" },
-  { id: "R2-M3", round: 2, date: "2025-11-22", time: "5:00 PM", home: "Thuenlam FC", away: "Unity Stars FC", ground: "Ground 1" },
-  { id: "R2-M4", round: 2, date: "2025-11-22", time: "5:00 PM", home: "Achos Football Team", away: "JA Brothers Football Club", ground: "Ground 2" },
-  { id: "R2-M5", round: 2, date: "2025-11-22", time: "6:30 PM", home: "Azhas FC", away: "Queanbeyan Nepalese UFC", ground: "Ground 1" },
-  { id: "R2-M6", round: 2, date: "2025-11-22", time: "6:30 PM", home: "Nepal United FC", away: "CNFC Canberra", ground: "Ground 2" },
+  {
+    id: "R2-M1",
+    round: 2,
+    date: "2025-11-22",
+    time: "3:30 PM",
+    home: "Everest FC",
+    away: "Phuensum FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R2-M2",
+    round: 2,
+    date: "2025-11-22",
+    time: "3:30 PM",
+    home: "Druk FC",
+    away: "Khukuri Canberra FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R2-M3",
+    round: 2,
+    date: "2025-11-22",
+    time: "5:00 PM",
+    home: "Thuenlam FC",
+    away: "Unity Stars FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R2-M4",
+    round: 2,
+    date: "2025-11-22",
+    time: "5:00 PM",
+    home: "Achos Football Team",
+    away: "JA Brothers Football Club",
+    ground: "Ground 2",
+  },
+  {
+    id: "R2-M5",
+    round: 2,
+    date: "2025-11-22",
+    time: "6:30 PM",
+    home: "Azhas FC",
+    away: "Queanbeyan Nepalese UFC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R2-M6",
+    round: 2,
+    date: "2025-11-22",
+    time: "6:30 PM",
+    home: "Nepal United FC",
+    away: "CNFC Canberra",
+    ground: "Ground 2",
+  },
 
   // Round 3 - 29 Nov 2025
-  { id: "R3-M1", round: 3, date: "2025-11-29", time: "3:30 PM", home: "Everest FC", away: "JA Brothers Football Club", ground: "Ground 1" },
-  { id: "R3-M2", round: 3, date: "2025-11-29", time: "3:30 PM", home: "CNFC Canberra", away: "Unity Stars FC", ground: "Ground 2" },
-  { id: "R3-M3", round: 3, date: "2025-11-29", time: "5:00 PM", home: "Druk FC", away: "Phuensum FC", ground: "Ground 1" },
-  { id: "R3-M4", round: 3, date: "2025-11-29", time: "5:00 PM", home: "Thuenlam FC", away: "Queanbeyan Nepalese UFC", ground: "Ground 2" },
-  { id: "R3-M5", round: 3, date: "2025-11-29", time: "6:30 PM", home: "Nepal United FC", away: "Khukuri Canberra FC", ground: "Ground 1" },
-  { id: "R3-M6", round: 3, date: "2025-11-29", time: "6:30 PM", home: "Azhas FC", away: "Achos Football Team", ground: "Ground 2" },
+  {
+    id: "R3-M1",
+    round: 3,
+    date: "2025-11-29",
+    time: "3:30 PM",
+    home: "Everest FC",
+    away: "JA Brothers Football Club",
+    ground: "Ground 1",
+  },
+  {
+    id: "R3-M2",
+    round: 3,
+    date: "2025-11-29",
+    time: "3:30 PM",
+    home: "CNFC Canberra",
+    away: "Unity Stars FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R3-M3",
+    round: 3,
+    date: "2025-11-29",
+    time: "5:00 PM",
+    home: "Druk FC",
+    away: "Phuensum FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R3-M4",
+    round: 3,
+    date: "2025-11-29",
+    time: "5:00 PM",
+    home: "Thuenlam FC",
+    away: "Queanbeyan Nepalese UFC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R3-M5",
+    round: 3,
+    date: "2025-11-29",
+    time: "6:30 PM",
+    home: "Nepal United FC",
+    away: "Khukuri Canberra FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R3-M6",
+    round: 3,
+    date: "2025-11-29",
+    time: "6:30 PM",
+    home: "Azhas FC",
+    away: "Achos Football Team",
+    ground: "Ground 2",
+  },
 
   // Round 4 - 6 Dec 2025
-  { id: "R4-M1", round: 4, date: "2025-12-06", time: "3:30 PM", home: "Druk FC", away: "JA Brothers Football Club", ground: "Ground 1" },
-  { id: "R4-M2", round: 4, date: "2025-12-06", time: "3:30 PM", home: "CNFC Canberra", away: "Queanbeyan Nepalese UFC", ground: "Ground 2" },
-  { id: "R4-M3", round: 4, date: "2025-12-06", time: "5:00 PM", home: "Everest FC", away: "Azhas FC", ground: "Ground 1" },
-  { id: "R4-M4", round: 4, date: "2025-12-06", time: "5:00 PM", home: "Nepal United FC", away: "Unity Stars FC", ground: "Ground 2" },
-  { id: "R4-M5", round: 4, date: "2025-12-06", time: "6:30 PM", home: "Thuenlam FC", away: "Achos Football Team", ground: "Ground 1" },
-  { id: "R4-M6", round: 4, date: "2025-12-06", time: "6:30 PM", home: "Khukuri Canberra FC", away: "Phuensum FC", ground: "Ground 2" },
+  {
+    id: "R4-M1",
+    round: 4,
+    date: "2025-12-06",
+    time: "3:30 PM",
+    home: "Druk FC",
+    away: "JA Brothers Football Club",
+    ground: "Ground 1",
+  },
+  {
+    id: "R4-M2",
+    round: 4,
+    date: "2025-12-06",
+    time: "3:30 PM",
+    home: "CNFC Canberra",
+    away: "Queanbeyan Nepalese UFC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R4-M3",
+    round: 4,
+    date: "2025-12-06",
+    time: "5:00 PM",
+    home: "Everest FC",
+    away: "Azhas FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R4-M4",
+    round: 4,
+    date: "2025-12-06",
+    time: "5:00 PM",
+    home: "Nepal United FC",
+    away: "Unity Stars FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R4-M5",
+    round: 4,
+    date: "2025-12-06",
+    time: "6:30 PM",
+    home: "Thuenlam FC",
+    away: "Achos Football Team",
+    ground: "Ground 1",
+  },
+  {
+    id: "R4-M6",
+    round: 4,
+    date: "2025-12-06",
+    time: "6:30 PM",
+    home: "Khukuri Canberra FC",
+    away: "Phuensum FC",
+    ground: "Ground 2",
+  },
 
   // Round 5 - 13 Dec 2025
-  { id: "R5-M1", round: 5, date: "2025-12-13", time: "3:30 PM", home: "CNFC Canberra", away: "Achos Football Team", ground: "Ground 1" },
-  { id: "R5-M2", round: 5, date: "2025-12-13", time: "3:30 PM", home: "Unity Stars FC", away: "Queanbeyan Nepalese UFC", ground: "Ground 2" },
-  { id: "R5-M3", round: 5, date: "2025-12-13", time: "5:00 PM", home: "Nepal United FC", away: "Phuensum FC", ground: "Ground 1" },
-  { id: "R5-M4", round: 5, date: "2025-12-13", time: "5:00 PM", home: "Khukuri Canberra FC", away: "JA Brothers Football Club", ground: "Ground 2" },
-  { id: "R5-M5", round: 5, date: "2025-12-13", time: "6:30 PM", home: "Druk FC", away: "Azhas FC", ground: "Ground 1" },
-  { id: "R5-M6", round: 5, date: "2025-12-13", time: "6:30 PM", home: "Thuenlam FC", away: "Everest FC", ground: "Ground 2" },
+  {
+    id: "R5-M1",
+    round: 5,
+    date: "2025-12-13",
+    time: "3:30 PM",
+    home: "CNFC Canberra",
+    away: "Achos Football Team",
+    ground: "Ground 1",
+  },
+  {
+    id: "R5-M2",
+    round: 5,
+    date: "2025-12-13",
+    time: "3:30 PM",
+    home: "Unity Stars FC",
+    away: "Queanbeyan Nepalese UFC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R5-M3",
+    round: 5,
+    date: "2025-12-13",
+    time: "5:00 PM",
+    home: "Nepal United FC",
+    away: "Phuensum FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R5-M4",
+    round: 5,
+    date: "2025-12-13",
+    time: "5:00 PM",
+    home: "Khukuri Canberra FC",
+    away: "JA Brothers Football Club",
+    ground: "Ground 2",
+  },
+  {
+    id: "R5-M5",
+    round: 5,
+    date: "2025-12-13",
+    time: "6:30 PM",
+    home: "Druk FC",
+    away: "Azhas FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R5-M6",
+    round: 5,
+    date: "2025-12-13",
+    time: "6:30 PM",
+    home: "Thuenlam FC",
+    away: "Everest FC",
+    ground: "Ground 2",
+  },
 
   // Round 6 - 20 Dec 2025
-  { id: "R6-M1", round: 6, date: "2025-12-20", time: "3:30 PM", home: "Phuensum FC", away: "JA Brothers Football Club", ground: "Ground 1" },
-  { id: "R6-M2", round: 6, date: "2025-12-20", time: "3:30 PM", home: "Queanbeyan Nepalese UFC", away: "BYE", ground: "Ground 2" },
-  { id: "R6-M3", round: 6, date: "2025-12-20", time: "5:00 PM", home: "Unity Stars FC", away: "Achos Football Team", ground: "Ground 1" },
-  { id: "R6-M4", round: 6, date: "2025-12-20", time: "5:00 PM", home: "Khukuri Canberra FC", away: "Azhas FC", ground: "Ground 2" },
-  { id: "R6-M5", round: 6, date: "2025-12-20", time: "6:30 PM", home: "CNFC Canberra", away: "Everest FC", ground: "Ground 1" },
-  { id: "R6-M6", round: 6, date: "2025-12-20", time: "6:30 PM", home: "Druk FC", away: "Thuenlam FC", ground: "Ground 2" },
+  {
+    id: "R6-M1",
+    round: 6,
+    date: "2025-12-20",
+    time: "3:30 PM",
+    home: "Phuensum FC",
+    away: "JA Brothers Football Club",
+    ground: "Ground 1",
+  },
+  {
+    id: "R6-M2",
+    round: 6,
+    date: "2025-12-20",
+    time: "3:30 PM",
+    home: "Queanbeyan Nepalese UFC",
+    away: "BYE",
+    ground: "Ground 2",
+  },
+  {
+    id: "R6-M3",
+    round: 6,
+    date: "2025-12-20",
+    time: "5:00 PM",
+    home: "Unity Stars FC",
+    away: "Achos Football Team",
+    ground: "Ground 1",
+  },
+  {
+    id: "R6-M4",
+    round: 6,
+    date: "2025-12-20",
+    time: "5:00 PM",
+    home: "Khukuri Canberra FC",
+    away: "Azhas FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R6-M5",
+    round: 6,
+    date: "2025-12-20",
+    time: "6:30 PM",
+    home: "CNFC Canberra",
+    away: "Everest FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R6-M6",
+    round: 6,
+    date: "2025-12-20",
+    time: "6:30 PM",
+    home: "Druk FC",
+    away: "Thuenlam FC",
+    ground: "Ground 2",
+  },
 
   // Round 7 - 10 Jan 2026
-  { id: "R7-M1", round: 7, date: "2026-01-10", time: "3:30 PM", home: "Phuensum FC", away: "Azhas FC", ground: "Ground 1" },
-  { id: "R7-M2", round: 7, date: "2026-01-10", time: "3:30 PM", home: "Khukuri Canberra FC", away: "Thuenlam FC", ground: "Ground 2" },
-  { id: "R7-M3", round: 7, date: "2026-01-10", time: "5:00 PM", home: "CNFC Canberra", away: "Druk FC", ground: "Ground 1" },
-  { id: "R7-M4", round: 7, date: "2026-01-10", time: "5:00 PM", home: "Unity Stars FC", away: "Everest FC", ground: "Ground 2" },
-  { id: "R7-M5", round: 7, date: "2026-01-10", time: "6:30 PM", home: "Queanbeyan Nepalese UFC", away: "Achos Football Team", ground: "Ground 1" },
-  { id: "R7-M6", round: 7, date: "2026-01-10", time: "6:30 PM", home: "JA Brothers Football Club", away: "BYE", ground: "Ground 2" },
+  {
+    id: "R7-M1",
+    round: 7,
+    date: "2026-01-10",
+    time: "3:30 PM",
+    home: "Phuensum FC",
+    away: "Azhas FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R7-M2",
+    round: 7,
+    date: "2026-01-10",
+    time: "3:30 PM",
+    home: "Khukuri Canberra FC",
+    away: "Thuenlam FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R7-M3",
+    round: 7,
+    date: "2026-01-10",
+    time: "5:00 PM",
+    home: "CNFC Canberra",
+    away: "Druk FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R7-M4",
+    round: 7,
+    date: "2026-01-10",
+    time: "5:00 PM",
+    home: "Unity Stars FC",
+    away: "Everest FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R7-M5",
+    round: 7,
+    date: "2026-01-10",
+    time: "6:30 PM",
+    home: "Queanbeyan Nepalese UFC",
+    away: "Achos Football Team",
+    ground: "Ground 1",
+  },
+  {
+    id: "R7-M6",
+    round: 7,
+    date: "2026-01-10",
+    time: "6:30 PM",
+    home: "JA Brothers Football Club",
+    away: "BYE",
+    ground: "Ground 2",
+  },
 
   // Round 8 - 17 Jan 2026
-  { id: "R8-M1", round: 8, date: "2026-01-17", time: "3:30 PM", home: "Achos Football Team", away: "BYE", ground: "Ground 1" },
-  { id: "R8-M2", round: 8, date: "2026-01-17", time: "3:30 PM", home: "JA Brothers Football Club", away: "Azhas FC", ground: "Ground 2" },
-  { id: "R8-M3", round: 8, date: "2026-01-17", time: "5:00 PM", home: "Queanbeyan Nepalese UFC", away: "Everest FC", ground: "Ground 1" },
-  { id: "R8-M4", round: 8, date: "2026-01-17", time: "5:00 PM", home: "Phuensum FC", away: "Thuenlam FC", ground: "Ground 2" },
-  { id: "R8-M5", round: 8, date: "2026-01-17", time: "6:30 PM", home: "Unity Stars FC", away: "Druk FC", ground: "Ground 1" },
-  { id: "R8-M6", round: 8, date: "2026-01-17", time: "6:30 PM", home: "Khukuri Canberra FC", away: "CNFC Canberra", ground: "Ground 2" },
+  {
+    id: "R8-M1",
+    round: 8,
+    date: "2026-01-17",
+    time: "3:30 PM",
+    home: "Achos Football Team",
+    away: "BYE",
+    ground: "Ground 1",
+  },
+  {
+    id: "R8-M2",
+    round: 8,
+    date: "2026-01-17",
+    time: "3:30 PM",
+    home: "JA Brothers Football Club",
+    away: "Azhas FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R8-M3",
+    round: 8,
+    date: "2026-01-17",
+    time: "5:00 PM",
+    home: "Queanbeyan Nepalese UFC",
+    away: "Everest FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R8-M4",
+    round: 8,
+    date: "2026-01-17",
+    time: "5:00 PM",
+    home: "Phuensum FC",
+    away: "Thuenlam FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R8-M5",
+    round: 8,
+    date: "2026-01-17",
+    time: "6:30 PM",
+    home: "Unity Stars FC",
+    away: "Druk FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R8-M6",
+    round: 8,
+    date: "2026-01-17",
+    time: "6:30 PM",
+    home: "Khukuri Canberra FC",
+    away: "CNFC Canberra",
+    ground: "Ground 2",
+  },
 
   // Round 9 - 31 Jan 2026
-  { id: "R9-M1", round: 9, date: "2026-01-31", time: "3:30 PM", home: "Achos Football Team", away: "Everest FC", ground: "Ground 1" },
-  { id: "R9-M2", round: 9, date: "2026-01-31", time: "3:30 PM", home: "Unity Stars FC", away: "Khukuri Canberra FC", ground: "Ground 2" },
-  { id: "R9-M3", round: 9, date: "2026-01-31", time: "5:00 PM", home: "JA Brothers Football Club", away: "Thuenlam FC", ground: "Ground 1" },
-  { id: "R9-M4", round: 9, date: "2026-01-31", time: "5:00 PM", home: "Queanbeyan Nepalese UFC", away: "Druk FC", ground: "Ground 2" },
-  { id: "R9-M5", round: 9, date: "2026-01-31", time: "6:30 PM", home: "Phuensum FC", away: "CNFC Canberra", ground: "Ground 1" },
-  { id: "R9-M6", round: 9, date: "2026-01-31", time: "6:30 PM", home: "Azhas FC", away: "BYE", ground: "Ground 2" },
+  {
+    id: "R9-M1",
+    round: 9,
+    date: "2026-01-31",
+    time: "3:30 PM",
+    home: "Achos Football Team",
+    away: "Everest FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R9-M2",
+    round: 9,
+    date: "2026-01-31",
+    time: "3:30 PM",
+    home: "Unity Stars FC",
+    away: "Khukuri Canberra FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R9-M3",
+    round: 9,
+    date: "2026-01-31",
+    time: "5:00 PM",
+    home: "JA Brothers Football Club",
+    away: "Thuenlam FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R9-M4",
+    round: 9,
+    date: "2026-01-31",
+    time: "5:00 PM",
+    home: "Queanbeyan Nepalese UFC",
+    away: "Druk FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R9-M5",
+    round: 9,
+    date: "2026-01-31",
+    time: "6:30 PM",
+    home: "Phuensum FC",
+    away: "CNFC Canberra",
+    ground: "Ground 1",
+  },
+  {
+    id: "R9-M6",
+    round: 9,
+    date: "2026-01-31",
+    time: "6:30 PM",
+    home: "Azhas FC",
+    away: "BYE",
+    ground: "Ground 2",
+  },
 
   // Round 10 - 7 Feb 2026
-  { id: "R10-M1", round: 10, date: "2026-02-07", time: "3:30 PM", home: "Achos Football Team", away: "Druk FC", ground: "Ground 1" },
-  { id: "R10-M2", round: 10, date: "2026-02-07", time: "3:30 PM", home: "Azhas FC", away: "Thuenlam FC", ground: "Ground 2" },
-  { id: "R10-M3", round: 10, date: "2026-02-07", time: "5:00 PM", home: "JA Brothers Football Club", away: "CNFC Canberra", ground: "Ground 1" },
-  { id: "R10-M4", round: 10, date: "2026-02-07", time: "5:00 PM", home: "Everest FC", away: "BYE", ground: "Ground 2" },
-  { id: "R10-M5", round: 10, date: "2026-02-07", time: "6:30 PM", home: "Queanbeyan Nepalese UFC", away: "Khukuri Canberra FC", ground: "Ground 1" },
-  { id: "R10-M6", round: 10, date: "2026-02-07", time: "6:30 PM", home: "Phuensum FC", away: "Unity Stars FC", ground: "Ground 2" },
+  {
+    id: "R10-M1",
+    round: 10,
+    date: "2026-02-07",
+    time: "3:30 PM",
+    home: "Achos Football Team",
+    away: "Druk FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R10-M2",
+    round: 10,
+    date: "2026-02-07",
+    time: "3:30 PM",
+    home: "Azhas FC",
+    away: "Thuenlam FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R10-M3",
+    round: 10,
+    date: "2026-02-07",
+    time: "5:00 PM",
+    home: "JA Brothers Football Club",
+    away: "CNFC Canberra",
+    ground: "Ground 1",
+  },
+  {
+    id: "R10-M4",
+    round: 10,
+    date: "2026-02-07",
+    time: "5:00 PM",
+    home: "Everest FC",
+    away: "BYE",
+    ground: "Ground 2",
+  },
+  {
+    id: "R10-M5",
+    round: 10,
+    date: "2026-02-07",
+    time: "6:30 PM",
+    home: "Queanbeyan Nepalese UFC",
+    away: "Khukuri Canberra FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R10-M6",
+    round: 10,
+    date: "2026-02-07",
+    time: "6:30 PM",
+    home: "Phuensum FC",
+    away: "Unity Stars FC",
+    ground: "Ground 2",
+  },
 
   // Round 11 - 14 Feb 2026
-  { id: "R11-M1", round: 11, date: "2026-02-14", time: "3:30 PM", home: "Queanbeyan Nepalese UFC", away: "Phuensum FC", ground: "Ground 1" },
-  { id: "R11-M2", round: 11, date: "2026-02-14", time: "3:30 PM", home: "Thuenlam FC", away: "BYE", ground: "Ground 2" },
-  { id: "R11-M3", round: 11, date: "2026-02-14", time: "5:00 PM", home: "Azhas FC", away: "CNFC Canberra", ground: "Ground 1" },
-  { id: "R11-M4", round: 11, date: "2026-02-14", time: "5:00 PM", home: "Achos Football Team", away: "Khukuri Canberra FC", ground: "Ground 2" },
-  { id: "R11-M5", round: 11, date: "2026-02-14", time: "6:30 PM", home: "JA Brothers Football Club", away: "Unity Stars FC", ground: "Ground 1" },
-  { id: "R11-M6", round: 11, date: "2026-02-14", time: "6:30 PM", home: "Everest FC", away: "Druk FC", ground: "Ground 2" },
+  {
+    id: "R11-M1",
+    round: 11,
+    date: "2026-02-14",
+    time: "3:30 PM",
+    home: "Queanbeyan Nepalese UFC",
+    away: "Phuensum FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R11-M2",
+    round: 11,
+    date: "2026-02-14",
+    time: "3:30 PM",
+    home: "Thuenlam FC",
+    away: "BYE",
+    ground: "Ground 2",
+  },
+  {
+    id: "R11-M3",
+    round: 11,
+    date: "2026-02-14",
+    time: "5:00 PM",
+    home: "Azhas FC",
+    away: "CNFC Canberra",
+    ground: "Ground 1",
+  },
+  {
+    id: "R11-M4",
+    round: 11,
+    date: "2026-02-14",
+    time: "5:00 PM",
+    home: "Achos Football Team",
+    away: "Khukuri Canberra FC",
+    ground: "Ground 2",
+  },
+  {
+    id: "R11-M5",
+    round: 11,
+    date: "2026-02-14",
+    time: "6:30 PM",
+    home: "JA Brothers Football Club",
+    away: "Unity Stars FC",
+    ground: "Ground 1",
+  },
+  {
+    id: "R11-M6",
+    round: 11,
+    date: "2026-02-14",
+    time: "6:30 PM",
+    home: "Everest FC",
+    away: "Druk FC",
+    ground: "Ground 2",
+  },
 ];
 
 // Results for the league table
@@ -265,6 +789,13 @@ export const RESULTS = [
   { fixtureId: "R6-M5", homeGoals: 1, awayGoals: 4 }, // CNFC 1-4 Everest
   { fixtureId: "R6-M6", homeGoals: 1, awayGoals: 3 }, // Druk 1-3 Thuenlam
 
+  // Week 7
+  { fixtureId: "R7-M1", homeGoals: 0, awayGoals: 0 }, // Phuensum 0-0 Azhas
+  { fixtureId: "R7-M2", homeGoals: 6, awayGoals: 0 }, // Khukuri 6-0 Thuenlam
+  { fixtureId: "R7-M3", homeGoals: 3, awayGoals: 3 }, // CNFC 3-3 Druk
+  { fixtureId: "R7-M4", homeGoals: 0, awayGoals: 2 }, // Unity 0-2 Everest
+  { fixtureId: "R7-M5", homeGoals: 0, awayGoals: 2 }, // Queanbeyan 0-2 Achos
+  { fixtureId: "R7-M6", homeGoals: 3, awayGoals: 0 }, // JA Brothers 3-0 BYE
 ];
 
 export type TableRow = {
@@ -278,10 +809,6 @@ export type TableRow = {
   goalDiff: number;
   points: number;
 };
-
-function isBye(name: string) {
-  return name.trim().toUpperCase() === "BYE";
-}
 
 export function computeLeagueTable(): TableRow[] {
   const index = Object.fromEntries(TEAMS.map((t, i) => [t, i]));
@@ -302,38 +829,6 @@ export function computeLeagueTable(): TableRow[] {
   for (const f of FIXTURES) {
     const r = resultMap[f.id];
     if (!r) continue;
-
-    const homeIsBye = isBye(f.home);
-    const awayIsBye = isBye(f.away);
-
-    // BYE handling: award result to the real team only
-    if (homeIsBye && !awayIsBye) {
-      const ai = index[f.away];
-      if (ai === undefined) continue;
-      const away = rows[ai];
-
-      away.played += 1;
-      away.won += 1;
-      away.goalsFor += r.awayGoals;
-      away.goalsAgainst += r.homeGoals;
-      away.goalDiff = away.goalsFor - away.goalsAgainst;
-      away.points += 3;
-      continue;
-    }
-
-    if (awayIsBye && !homeIsBye) {
-      const hi = index[f.home];
-      if (hi === undefined) continue;
-      const home = rows[hi];
-
-      home.played += 1;
-      home.won += 1;
-      home.goalsFor += r.homeGoals;
-      home.goalsAgainst += r.awayGoals;
-      home.goalDiff = home.goalsFor - home.goalsAgainst;
-      home.points += 3;
-      continue;
-    }
 
     const hi = index[f.home];
     const ai = index[f.away];
@@ -375,7 +870,7 @@ export function computeLeagueTable(): TableRow[] {
       a.name.localeCompare(b.name),
   );
 
-  // Hide withdrawn team from table output only
+  // ONLY CHANGE: remove Nepal United FC from the table output
   return rows.filter((r) => r.name !== "Nepal United FC");
 }
 
@@ -396,7 +891,7 @@ export function getRounds(): number[] {
   return [...new Set(FIXTURES.map((f) => f.round))].sort((a, b) => a - b);
 }
 
-// ---------- MATCH FACTS (Weeks 1–6) ----------
+// ---------- MATCH FACTS (Weeks 1–7) ----------
 
 export type MatchFactsSide = {
   teamName: string;
@@ -417,7 +912,11 @@ export const MATCH_FACTS: MatchFactsRecord = {
   "R1-M1": {
     home: {
       teamName: "Nepal United FC",
-      scorers: ["Sanjok Rai - 6 goals", "Niraj Chhetri - 1 goal", "Enoj Neupane - 2 goals"],
+      scorers: [
+        "Sanjok Rai - 6 goals",
+        "Niraj Chhetri - 1 goal",
+        "Enoj Neupane - 2 goals",
+      ],
       cards: [],
     },
     away: { teamName: "Druk FC", scorers: [], cards: [] },
@@ -426,66 +925,141 @@ export const MATCH_FACTS: MatchFactsRecord = {
   "R1-M2": {
     home: {
       teamName: "Thuenlam FC",
-      scorers: ["Pema Tshulthrim - 1 goal", "Penden Tshewang - 1 goal", "Kunzang Thinley - 1 goal", "Tshering Dorji - 1 goal"],
+      scorers: [
+        "Pema Tshulthrim - 1 goal",
+        "Penden Tshewang - 1 goal",
+        "Kunzang Thinley - 1 goal",
+        "Tshering Dorji - 1 goal",
+      ],
       cards: [],
     },
-    away: { teamName: "CNFC Canberra", scorers: ["Sumin Bhattarai - 1 goal"], cards: ["Bishal Ghimire - Yellow"] },
+    away: {
+      teamName: "CNFC Canberra",
+      scorers: ["Sumin Bhattarai - 1 goal"],
+      cards: ["Bishal Ghimire - Yellow"],
+    },
   },
 
   "R1-M3": {
-    home: { teamName: "Everest FC", scorers: [], cards: ["Bijay Bhandari - Yellow"] },
-    away: { teamName: "Khukuri Canberra FC", scorers: ["Sagar Khadka - 1 goal", "Roshan Lamichhane - 1 goal"], cards: ["Anup Shrestha - Yellow", "Protshan Basnet - Yellow"] },
+    home: {
+      teamName: "Everest FC",
+      scorers: [],
+      cards: ["Bijay Bhandari - Yellow"],
+    },
+    away: {
+      teamName: "Khukuri Canberra FC",
+      scorers: ["Sagar Khadka - 1 goal", "Roshan Lamichhane - 1 goal"],
+      cards: ["Anup Shrestha - Yellow", "Protshan Basnet - Yellow"],
+    },
   },
 
   "R1-M4": {
-    home: { teamName: "Azhas FC", scorers: ["Karma Nima - 2 goals", "Tshultrim Juney - 1 goal"], cards: ["Tshering Dhendup - Yellow"] },
+    home: {
+      teamName: "Azhas FC",
+      scorers: ["Karma Nima - 2 goals", "Tshultrim Juney - 1 goal"],
+      cards: ["Tshering Dhendup - Yellow"],
+    },
     away: { teamName: "Unity Stars FC", scorers: [], cards: [] },
   },
 
   "R1-M5": {
-    home: { teamName: "Achos Football Team", scorers: ["Tshering Tobgyel - 1 goal"], cards: ["Pelzang - Yellow"] },
+    home: {
+      teamName: "Achos Football Team",
+      scorers: ["Tshering Tobgyel - 1 goal"],
+      cards: ["Pelzang - Yellow"],
+    },
     away: { teamName: "Phuensum FC", scorers: [], cards: [] },
   },
 
   "R1-M6": {
-    home: { teamName: "JA Brothers Football Club", scorers: [], cards: ["Angel Prasai - Yellow", "Darshan Gautam - Yellow"] },
-    away: { teamName: "Queanbeyan Nepalese UFC", scorers: ["Sushant Shrestha - 1 goal", "Namgay - 1 goal"], cards: ["Bishal Kharel - Yellow"] },
+    home: {
+      teamName: "JA Brothers Football Club",
+      scorers: [],
+      cards: ["Angel Prasai - Yellow", "Darshan Gautam - Yellow"],
+    },
+    away: {
+      teamName: "Queanbeyan Nepalese UFC",
+      scorers: ["Sushant Shrestha - 1 goal", "Namgay - 1 goal"],
+      cards: ["Bishal Kharel - Yellow"],
+    },
   },
 
   // -------- WEEK 2 --------
   "R2-M1": {
-    home: { teamName: "Everest FC", scorers: ["Krishal Lama - 1 goal"], cards: [] },
-    away: { teamName: "Phuensum FC", scorers: ["Sampa Tshering - 1 goal"], cards: ["Sonam Wangchuk - Yellow"] },
+    home: {
+      teamName: "Everest FC",
+      scorers: ["Krishal Lama - 1 goal"],
+      cards: [],
+    },
+    away: {
+      teamName: "Phuensum FC",
+      scorers: ["Sampa Tshering - 1 goal"],
+      cards: ["Sonam Wangchuk - Yellow"],
+    },
   },
 
   "R2-M2": {
     home: { teamName: "Druk FC", scorers: [], cards: ["Tashi Norbu - Yellow"] },
-    away: { teamName: "Khukuri Canberra FC", scorers: ["Roshan Lamichhane - 2 goals", "Abhishek Chapagain - 2 goals"], cards: [] },
+    away: {
+      teamName: "Khukuri Canberra FC",
+      scorers: ["Roshan Lamichhane - 2 goals", "Abhishek Chapagain - 2 goals"],
+      cards: [],
+    },
   },
 
   "R2-M3": {
-    home: { teamName: "Thuenlam FC", scorers: ["Tshering Dorji - 2 goals", "Kunzang Thinley - 3 goals"], cards: [] },
-    away: { teamName: "Unity Stars FC", scorers: [], cards: ["Bishal Ghimire - Yellow"] },
+    home: {
+      teamName: "Thuenlam FC",
+      scorers: ["Tshering Dorji - 2 goals", "Kunzang Thinley - 3 goals"],
+      cards: [],
+    },
+    away: {
+      teamName: "Unity Stars FC",
+      scorers: [],
+      cards: ["Bishal Ghimire - Yellow"],
+    },
   },
 
   "R2-M4": {
-    home: { teamName: "Achos Football Team", scorers: ["Tshering Tobgyel - 2 goals"], cards: [] },
-    away: { teamName: "JA Brothers Football Club", scorers: [], cards: ["Yuzan Ghimire - Yellow"] },
+    home: {
+      teamName: "Achos Football Team",
+      scorers: ["Tshering Tobgyel - 2 goals"],
+      cards: [],
+    },
+    away: {
+      teamName: "JA Brothers Football Club",
+      scorers: [],
+      cards: ["Yuzan Ghimire - Yellow"],
+    },
   },
 
   "R2-M5": {
     home: {
       teamName: "Azhas FC",
       scorers: ["Rabten Tshegyel - 1 goal"],
-      cards: ["Rabten Tshegyel - Yellow", "Nima Tshering - Yellow", "Thinley Gyaltshen - Second yellow and red"],
+      cards: [
+        "Rabten Tshegyel - Yellow",
+        "Nima Tshering - Yellow",
+        "Thinley Gyaltshen - Second yellow and red",
+      ],
     },
-    away: { teamName: "Queanbeyan Nepalese UFC", scorers: ["Saneej Chhetri - 1 goal"], cards: [] },
+    away: {
+      teamName: "Queanbeyan Nepalese UFC",
+      scorers: ["Saneej Chhetri - 1 goal"],
+      cards: [],
+    },
   },
 
   "R2-M6": {
     home: {
       teamName: "Nepal United FC",
-      scorers: ["Nishan Khadka - 1 goal", "Enoj Neupane - 4 goals", "Niraj Chhetri - 1 goal", "Dipendra Gurung - 2 goals", "Salav Gauchan - 2 goals"],
+      scorers: [
+        "Nishan Khadka - 1 goal",
+        "Enoj Neupane - 4 goals",
+        "Niraj Chhetri - 1 goal",
+        "Dipendra Gurung - 2 goals",
+        "Salav Gauchan - 2 goals",
+      ],
       cards: [],
     },
     away: { teamName: "CNFC Canberra", scorers: [], cards: [] },
@@ -502,13 +1076,21 @@ export const MATCH_FACTS: MatchFactsRecord = {
   },
 
   "R3-M2": {
-    home: { teamName: "CNFC Canberra", scorers: ["Sumit Ale - 1 goal", "Manoj - 2 goals"], cards: ["Prawol Vaidya - Yellow"] },
+    home: {
+      teamName: "CNFC Canberra",
+      scorers: ["Sumit Ale - 1 goal", "Manoj - 2 goals"],
+      cards: ["Prawol Vaidya - Yellow"],
+    },
     away: { teamName: "Unity Stars FC", scorers: ["Panda - 2 goals"], cards: [] },
   },
 
   "R3-M3": {
     home: { teamName: "Druk FC", scorers: ["Sangay Tenzin - 1 goal"], cards: [] },
-    away: { teamName: "Phuensum FC", scorers: ["Sonam Dorji - 1 goal", "Kinley Wangdi - 1 goal", "Sonam Wangchuk - 1 goal"], cards: ["Namgay Tenzin - Straight red (dissent)"] },
+    away: {
+      teamName: "Phuensum FC",
+      scorers: ["Sonam Dorji - 1 goal", "Kinley Wangdi - 1 goal", "Sonam Wangchuk - 1 goal"],
+      cards: ["Namgay Tenzin - Straight red (dissent)"],
+    },
   },
 
   "R3-M4": {
@@ -517,19 +1099,35 @@ export const MATCH_FACTS: MatchFactsRecord = {
   },
 
   "R3-M5": {
-    home: { teamName: "Nepal United FC", scorers: ["Pujan Uparkoti - 1 goal"], cards: ["Enoj Neupane - Yellow", "Aakash Jung Raut - Yellow"] },
-    away: { teamName: "Khukuri Canberra FC", scorers: ["Abhishek Chapagain - 1 goal", "Roshan Lamichhane - 1 goal"], cards: ["Sagar Khadka - Yellow", "Protshan Basnet - Second yellow and red"] },
+    home: {
+      teamName: "Nepal United FC",
+      scorers: ["Pujan Uparkoti - 1 goal"],
+      cards: ["Enoj Neupane - Yellow", "Aakash Jung Raut - Yellow"],
+    },
+    away: {
+      teamName: "Khukuri Canberra FC",
+      scorers: ["Abhishek Chapagain - 1 goal", "Roshan Lamichhane - 1 goal"],
+      cards: ["Sagar Khadka - Yellow", "Protshan Basnet - Second yellow and red"],
+    },
   },
 
   "R3-M6": {
-    home: { teamName: "Azhas FC", scorers: ["Chimi K Wangchuk - 1 goal", "Rabten Tshegyel - 1 goal", "Namgay Wangchuk - 1 goal"], cards: ["Zayden Dorji - Yellow"] },
+    home: {
+      teamName: "Azhas FC",
+      scorers: ["Chimi K Wangchuk - 1 goal", "Rabten Tshegyel - 1 goal", "Namgay Wangchuk - 1 goal"],
+      cards: ["Zayden Dorji - Yellow"],
+    },
     away: { teamName: "Achos Football Team", scorers: ["Sonam Chopen - 1 goal"], cards: ["Kelzang Jigme - Yellow"] },
   },
 
   // -------- WEEK 4 --------
   "R4-M1": {
     home: { teamName: "Druk FC", scorers: ["Tenzi Dorji - 1 goal"], cards: ["Sonam Wangdi - Yellow"] },
-    away: { teamName: "JA Brothers Football Club", scorers: ["Darshan Gautam - 1 goal"], cards: ["Angel Prasai - Yellow", "Alton Thakuri - Yellow", "Silas Tamang - Yellow"] },
+    away: {
+      teamName: "JA Brothers Football Club",
+      scorers: ["Darshan Gautam - 1 goal"],
+      cards: ["Angel Prasai - Yellow", "Alton Thakuri - Yellow", "Silas Tamang - Yellow"],
+    },
   },
 
   "R4-M2": {
@@ -539,25 +1137,44 @@ export const MATCH_FACTS: MatchFactsRecord = {
 
   "R4-M3": {
     home: { teamName: "Everest FC", scorers: ["Bikki - 1 goal", "Piya - 1 goal"], cards: ["Bikki - Yellow"] },
-    away: { teamName: "Azhas FC", scorers: ["Jigme Norbu - 1 goal", "Jampel Dorji - 1 goal"], cards: ["Thinley Gyaltshen - Yellow", "Chimi K Wangchuk - Yellow", "Rabten Tshegyel - Yellow"] },
+    away: {
+      teamName: "Azhas FC",
+      scorers: ["Jigme Norbu - 1 goal", "Jampel Dorji - 1 goal"],
+      cards: ["Thinley Gyaltshen - Yellow", "Chimi K Wangchuk - Yellow", "Rabten Tshegyel - Yellow"],
+    },
   },
 
   "R4-M4": {
     home: {
       teamName: "Nepal United FC",
-      scorers: ["Niraj Chhetri - 2 goals", "Bivek Gurung - 2 goals", "Sanjok Rai - 2 goals", "Enoj Neupane - 1 goal", "Sunil Bhandari - 1 goal", "Salav Gauchan - 1 goal"],
+      scorers: [
+        "Niraj Chhetri - 2 goals",
+        "Bivek Gurung - 2 goals",
+        "Sanjok Rai - 2 goals",
+        "Enoj Neupane - 1 goal",
+        "Sunil Bhandari - 1 goal",
+        "Salav Gauchan - 1 goal",
+      ],
       cards: [],
     },
     away: { teamName: "Unity Stars FC", scorers: ["Baby - 1 goal"], cards: [] },
   },
 
   "R4-M5": {
-    home: { teamName: "Thuenlam FC", scorers: ["Loday Wangchuk - 1 goal", "Tshering Dorji - 1 goal"], cards: ["Loday Wangchuk - Yellow"] },
+    home: {
+      teamName: "Thuenlam FC",
+      scorers: ["Loday Wangchuk - 1 goal", "Tshering Dorji - 1 goal"],
+      cards: ["Loday Wangchuk - Yellow"],
+    },
     away: { teamName: "Achos Football Team", scorers: ["Kelzang Jigme - 1 goal"], cards: ["Samten Wangchuk - Yellow", "Kuenzang Dorji - Yellow"] },
   },
 
   "R4-M6": {
-    home: { teamName: "Khukuri Canberra FC", scorers: ["Ravi Pandey - 1 goal", "Roshan Lamichhane - 1 goal", "Aawesh Dhakal - 1 goal"], cards: ["Sagar Khadka - Yellow"] },
+    home: {
+      teamName: "Khukuri Canberra FC",
+      scorers: ["Ravi Pandey - 1 goal", "Roshan Lamichhane - 1 goal", "Aawesh Dhakal - 1 goal"],
+      cards: ["Sagar Khadka - Yellow"],
+    },
     away: { teamName: "Phuensum FC", scorers: [], cards: [] },
   },
 
@@ -599,7 +1216,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
   },
 
   "R6-M2": {
-    home: { teamName: "Queanbeyan Nepalese UFC", scorers: ["BYE fixture - awarded 3-0 win (3 points)"], cards: [] },
+    home: { teamName: "Queanbeyan Nepalese UFC", scorers: ["BYE fixture - awarded 3-0 win"], cards: [] },
     away: { teamName: "BYE", scorers: [], cards: [] },
   },
 
@@ -607,7 +1224,13 @@ export const MATCH_FACTS: MatchFactsRecord = {
     home: { teamName: "Unity Stars FC", scorers: ["Sangay Wangchuk - 1 goal"], cards: [] },
     away: {
       teamName: "Achos Football Team",
-      scorers: ["Tshering Tobgyel - 1 goal", "Sonam Chopen - 1 goal", "Ugyen Phuntsho - 1 goal", "Sonam Dhendup - 1 goal", "Tshewang Dorji - 1 goal"],
+      scorers: [
+        "Tshering Tobgyel - 1 goal",
+        "Sonam Chopen - 1 goal",
+        "Ugyen Phuntsho - 1 goal",
+        "Sonam Dhendup - 1 goal",
+        "Tshewang Dorji - 1 goal",
+      ],
       cards: [],
     },
   },
@@ -625,5 +1248,57 @@ export const MATCH_FACTS: MatchFactsRecord = {
   "R6-M6": {
     home: { teamName: "Druk FC", scorers: ["Sonam Wangdi - 1 goal"], cards: [] },
     away: { teamName: "Thuenlam FC", scorers: ["Kunzang Thinley - 2 goals", "Kinley Wangchuk - 1 goal"], cards: [] },
+  },
+
+  // -------- WEEK 7 --------
+  "R7-M1": {
+    home: { teamName: "Phuensum FC", scorers: [], cards: [] },
+    away: { teamName: "Azhas FC", scorers: [], cards: [] },
+  },
+
+  "R7-M2": {
+    home: {
+      teamName: "Khukuri Canberra FC",
+      scorers: [
+        "Roshan Lamichhane - 3 goals",
+        "Abhishek Chapagain - 1 goal",
+        "Manish Khatiwada - 1 goal",
+        "Gagan Prajapati - 1 goal",
+      ],
+      cards: [],
+    },
+    away: {
+      teamName: "Thuenlam FC",
+      scorers: [],
+      cards: ["Sangay Nildrup - Yellow"],
+    },
+  },
+
+  "R7-M3": {
+    home: {
+      teamName: "CNFC Canberra",
+      scorers: ["Sunil Thapa Magar - 2 goals", "Sumin Bhattarai - 1 goal"],
+      cards: ["Bishal Ghimire - Yellow"],
+    },
+    away: {
+      teamName: "Druk FC",
+      scorers: ["Tashi Tshering - 1 goal", "Jigme Tshultrim - 2 goals"],
+      cards: ["Thinley Jamtsho - Red"],
+    },
+  },
+
+  "R7-M4": {
+    home: { teamName: "Unity Stars FC", scorers: [], cards: ["Tenzin - Yellow", "Jersey No 5 - Yellow"] },
+    away: { teamName: "Everest FC", scorers: ["Yogesh Piya - 1 goal", "Bijay Bhandari - 1 goal"], cards: ["Bikrant Rana Magar - Yellow"] },
+  },
+
+  "R7-M5": {
+    home: { teamName: "Queanbeyan Nepalese UFC", scorers: [], cards: ["Prajwal Bhandari - Red"] },
+    away: { teamName: "Achos Football Team", scorers: ["Kuenzang Dorji - 1 goal", "Tsherig Tobgyel - 1 goal"], cards: ["Tshering Namgay - Yellow"] },
+  },
+
+  "R7-M6": {
+    home: { teamName: "JA Brothers Football Club", scorers: ["BYE fixture - awarded 3-0 win"], cards: [] },
+    away: { teamName: "BYE", scorers: [], cards: [] },
   },
 };
