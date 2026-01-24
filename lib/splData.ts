@@ -796,6 +796,15 @@ export const RESULTS = [
   { fixtureId: "R7-M4", homeGoals: 0, awayGoals: 2 }, // Unity 0-2 Everest
   { fixtureId: "R7-M5", homeGoals: 0, awayGoals: 2 }, // Queanbeyan 0-2 Achos
   { fixtureId: "R7-M6", homeGoals: 3, awayGoals: 0 }, // JA Brothers 3-0 BYE
+
+  // Week 8
+  { fixtureId: "R8-M1", homeGoals: 3, awayGoals: 0 }, // Achos 3-0 BYE
+  { fixtureId: "R8-M2", homeGoals: 0, awayGoals: 0 }, // JA Brothers 0-0 Azhas
+  { fixtureId: "R8-M3", homeGoals: 2, awayGoals: 2 }, // Queanbeyan 2-2 Everest
+  { fixtureId: "R8-M4", homeGoals: 2, awayGoals: 4 }, // Phuensum 2-4 Thuenlam
+  { fixtureId: "R8-M5", homeGoals: 2, awayGoals: 6 }, // Unity 2-6 Druk
+  { fixtureId: "R8-M6", homeGoals: 4, awayGoals: 0 }, // Khukuri 4-0 CNFC
+
 ];
 
 export type TableRow = {
@@ -1301,4 +1310,36 @@ export const MATCH_FACTS: MatchFactsRecord = {
     home: { teamName: "JA Brothers Football Club", scorers: ["BYE fixture - awarded 3-0 win"], cards: [] },
     away: { teamName: "BYE", scorers: [], cards: [] },
   },
+
+  // -------- WEEK 8 --------
+  "R8-M1": {
+    home: { teamName: "Achos Football Team", scorers: ["BYE fixture - awarded 3-0 win"], cards: [] },
+    away: { teamName: "BYE", scorers: [], cards: [] },
+  },
+
+  "R8-M2": {
+    home: { teamName: "JA Brothers Football Club", scorers: [], cards: [] },
+    away: { teamName: "Azhas FC", scorers: [], cards: [] },
+  },
+
+  "R8-M3": {
+    home: { teamName: "Queanbeyan Nepalese UFC", scorers: ["Anil Singh Chaisir - 1 goal", "Namgay - 1 goal"], cards: [] },
+    away: { teamName: "Everest FC", scorers: ["Bijay - 1 goal", "Krishal Lama - 1 goal"], cards: [] },
+  },
+
+  "R8-M4": {
+    home: { teamName: "Phuensum FC", scorers: ["Kinley Wangdi - 2 goals"], cards: [] },
+    away: { teamName: "Thuenlam FC", scorers: ["Chekey Wangchuk - 1 goal", "Tshering Dorji - 1 goal", "Kunzang Thinley - 2 goals"], cards: [] },
+  },
+
+  "R8-M5": {
+    home: { teamName: "Unity Stars FC", scorers: ["Tempa - 2 goals"], cards: [] },
+    away: { teamName: "Druk FC", scorers: ["Sonam Wangdi - 3 goals", "Tashi Dorji - 1 goal", "Jigme Tshultrim - 2 goals"], cards: [] },
+  },
+
+  "R8-M6": {
+    home: { teamName: "Khukuri Canberra FC", scorers: ["Roshan Lamichhane - 1 goal", "Protshan Basnet - 1 goal", "Sagar Khadka - 1 goal", "Own goal (Dev Raj Gurung, CNFC Canberra) - 1 goal"], cards: [] },
+    away: { teamName: "CNFC Canberra", scorers: [], cards: [] },
+  },
+
 };
