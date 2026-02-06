@@ -814,13 +814,13 @@ export const RESULTS = [
   { fixtureId: "R9-M6", homeGoals: 3, awayGoals: 0 }, // Azhas 3-0 BYE
 
 // Week 10
-{ fixtureId: "R10-M1", homeGoals: 3, awayGoals: 0 }, // JA Brothers FC 3-0 Canberra Nepalese FC
-{ fixtureId: "R10-M2", homeGoals: 1, awayGoals: 1 }, // Queanbeyan 1-1 Khukuri Canberra FC
-{ fixtureId: "R10-M3", homeGoals: 0, awayGoals: 0 }, // Phuensum FC 0-0 Unity Stars FC
-{ fixtureId: "R10-M4", homeGoals: 2, awayGoals: 1 }, // Azhas FC 2-1 Thuenlam FC
-{ fixtureId: "R10-M5", homeGoals: 6, awayGoals: 0 }, // Azhos FC 6-0 Druk FC
-{ fixtureId: "R10-M6", homeGoals: 3, awayGoals: 0 }, // Everest FC 3-0 BYE
-  
+{ fixtureId: "R10-M1", homeGoals: 6, awayGoals: 0 }, // Achos FC 6-0 Druk FC
+{ fixtureId: "R10-M2", homeGoals: 2, awayGoals: 1 }, // Azhas FC 2-1 Thuenlam FC
+{ fixtureId: "R10-M3", homeGoals: 3, awayGoals: 0 }, // JA Brothers FC 3-0 CNFC Canberra
+{ fixtureId: "R10-M4", homeGoals: 3, awayGoals: 0 }, // Everest FC 3-0 BYE
+{ fixtureId: "R10-M5", homeGoals: 1, awayGoals: 1 }, // Queanbeyan Nepalese UFC 1-1 Khukuri Canberra FC
+{ fixtureId: "R10-M6", homeGoals: 0, awayGoals: 0 }, // Phuensum FC 0-0 Unity Stars FC
+
 ];
 
 export type TableRow = {
@@ -1423,18 +1423,66 @@ export const MATCH_FACTS: MatchFactsRecord = {
 // -------- WEEK 10 --------
 "R10-M1": {
   home: {
-    teamName: "JA Brothers Football Club",
-    scorers: [],
+    teamName: "Achos FC",
+    scorers: [
+      "Tshering Tobgyel - 2 goals",
+      "Karma Wangchuk - 1 goal",
+      "Kelzang Jigme - 2 goals",
+      "Sonam Dhendup - 1 goal",
+    ],
     cards: [],
   },
   away: {
-    teamName: "Canberra Nepalese FC",
+    teamName: "Druk FC",
     scorers: [],
     cards: [],
   },
 },
 
 "R10-M2": {
+  home: {
+    teamName: "Azhas FC",
+    scorers: ["Karma Nima - 1 goal", "Chimi K Wangchuk - 1 goal"],
+    cards: ["Karma Nima - Yellow", "Nima Tshering - Yellow"],
+  },
+  away: {
+    teamName: "Thuenlam FC",
+    scorers: ["Kunaznag Thinley - 1 goal"],
+    cards: [
+      "Karma Tenzin - Yellow",
+      "Penden Tsherang - Yellow",
+      "Samdrup - Yellow",
+    ],
+  },
+},
+
+"R10-M3": {
+  home: {
+    teamName: "JA Brothers FC",
+    scorers: [],
+    cards: [],
+  },
+  away: {
+    teamName: "CNFC Canberra",
+    scorers: [],
+    cards: [],
+  },
+},
+
+"R10-M4": {
+  home: {
+    teamName: "Everest FC",
+    scorers: ["BYE fixture - awarded 3-0 win"],
+    cards: [],
+  },
+  away: {
+    teamName: "BYE",
+    scorers: [],
+    cards: [],
+  },
+},
+
+"R10-M5": {
   home: {
     teamName: "Queanbeyan Nepalese UFC",
     scorers: ["Sushant Shrestha - 1 goal"],
@@ -1452,7 +1500,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
   },
 },
 
-"R10-M3": {
+"R10-M6": {
   home: {
     teamName: "Phuensum FC",
     scorers: [],
@@ -1460,54 +1508,6 @@ export const MATCH_FACTS: MatchFactsRecord = {
   },
   away: {
     teamName: "Unity Stars FC",
-    scorers: [],
-    cards: [],
-  },
-},
-
-"R10-M4": {
-  home: {
-    teamName: "Azhas FC",
-    scorers: ["Karma Nima - 1 goal", "Chimi K Wangchuk - 1 goal"],
-    cards: ["Karma Nima - Yellow", "Nima Tshering - Yellow"],
-  },
-  away: {
-    teamName: "Thuenlam FC",
-    scorers: ["Kunaznag Thinley - 1 goal"],
-    cards: [
-      "Karma Tenzin - Yellow",
-      "Penden Tsherang - Yellow",
-      "Samdrup - Yellow",
-    ],
-  },
-},
-
-"R10-M5": {
-  home: {
-    teamName: "Azhos FC",
-    scorers: [
-      "Tshering Tobgyel - 2 goals",
-      "Karma Wangchuk - 1 goal",
-      "Kelzang Jigme - 2 goals",
-      "Sonam Dhendup - 1 goal",
-    ],
-    cards: [],
-  },
-  away: {
-    teamName: "Druk FC",
-    scorers: [],
-    cards: [],
-  },
-},
-
-"R10-M6": {
-  home: {
-    teamName: "Everest FC",
-    scorers: ["BYE fixture - awarded 3-0 win"],
-    cards: [],
-  },
-  away: {
-    teamName: "BYE",
     scorers: [],
     cards: [],
   },
