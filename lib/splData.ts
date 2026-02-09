@@ -813,22 +813,21 @@ export const RESULTS = [
   { fixtureId: "R9-M5", homeGoals: 2, awayGoals: 1 }, // Phuensum 2-1 CNFC
   { fixtureId: "R9-M6", homeGoals: 3, awayGoals: 0 }, // Azhas 3-0 BYE
 
-// Week 10
-{ fixtureId: "R10-M1", homeGoals: 6, awayGoals: 0 }, // Achos FC 6-0 Druk FC
-{ fixtureId: "R10-M2", homeGoals: 2, awayGoals: 1 }, // Azhas FC 2-1 Thuenlam FC
-{ fixtureId: "R10-M3", homeGoals: 3, awayGoals: 0 }, // JA Brothers FC 3-0 CNFC Canberra
-{ fixtureId: "R10-M4", homeGoals: 3, awayGoals: 0 }, // Everest FC 3-0 BYE
-{ fixtureId: "R10-M5", homeGoals: 1, awayGoals: 1 }, // Queanbeyan Nepalese UFC 1-1 Khukuri Canberra FC
-{ fixtureId: "R10-M6", homeGoals: 0, awayGoals: 0 }, // Phuensum FC 0-0 Unity Stars FC
+  // Week 10
+  { fixtureId: "R10-M1", homeGoals: 6, awayGoals: 0 }, // Achos FC 6-0 Druk FC
+  { fixtureId: "R10-M2", homeGoals: 2, awayGoals: 1 }, // Azhas FC 2-1 Thuenlam FC
+  { fixtureId: "R10-M3", homeGoals: 3, awayGoals: 0 }, // JA Brothers FC 3-0 CNFC Canberra
+  { fixtureId: "R10-M4", homeGoals: 3, awayGoals: 0 }, // Everest FC 3-0 BYE
+  { fixtureId: "R10-M5", homeGoals: 1, awayGoals: 1 }, // Queanbeyan Nepalese UFC 1-1 Khukuri Canberra FC
+  { fixtureId: "R10-M6", homeGoals: 0, awayGoals: 0 }, // Phuensum FC 0-0 Unity Stars FC
 
-// Week 11
-{ fixtureId: "R11-M1", homeGoals: 3, awayGoals: 0 }, // Thuenam FC 3-0 BYE
-{ fixtureId: "R11-M2", homeGoals: 4, awayGoals: 4 }, // Queanbeyan Nepalese United FC 4-4 Phuensum FC
-{ fixtureId: "R11-M3", homeGoals: 1, awayGoals: 4 }, // Achos FC 1-4 Khukuri Canberra FC
-{ fixtureId: "R11-M4", homeGoals: 2, awayGoals: 0 }, // Everest FC 2-0 Druk FC
-{ fixtureId: "R11-M5", homeGoals: 4, awayGoals: 1 }, // JA Brothers FC 4-1 Unity Stars FC
-{ fixtureId: "R11-M6", homeGoals: 3, awayGoals: 0 }, // Azhas FC 3-0 Canberra Nepalese FC (walkover)
-
+  // Week 11
+  { fixtureId: "R11-M1", homeGoals: 4, awayGoals: 4 }, // Queanbeyan Nepalese United FC 4-4 Phuensum FC
+  { fixtureId: "R11-M2", homeGoals: 3, awayGoals: 0 }, // Thuenam FC 3-0 BYE
+  { fixtureId: "R11-M3", homeGoals: 3, awayGoals: 0 }, // Azhas FC 3-0 Canberra Nepalese FC (walkover)
+  { fixtureId: "R11-M4", homeGoals: 1, awayGoals: 4 }, // Achos FC 1-4 Khukuri Canberra FC
+  { fixtureId: "R11-M5", homeGoals: 4, awayGoals: 1 }, // JA Brothers FC 4-1 Unity Stars FC
+  { fixtureId: "R11-M6", homeGoals: 2, awayGoals: 0 }, // Everest FC 2-0 Druk FC
 ];
 
 export type TableRow = {
@@ -1524,23 +1523,23 @@ export const MATCH_FACTS: MatchFactsRecord = {
 // -------- WEEK 11 --------
 
 "R11-M1": {
-  home: { teamName: "Thuenam FC", scorers: ["BYE fixture - 3-0 awarded"], cards: [] },
-  away: { teamName: "BYE", scorers: [], cards: [] },
-},
-
-"R11-M2": {
   home: { teamName: "Queanbeyan Nepalese United FC", scorers: ["Sushant Shrestha - 2", "Saneej Chhetri - 1", "Jenish Gautam - 1"], cards: [] },
   away: { teamName: "Phuensum FC", scorers: ["Sampa Tshering - 3", "Unknown - 1"], cards: [] },
 },
 
+"R11-M2": {
+  home: { teamName: "Thuenam FC", scorers: ["BYE fixture - 3-0 awarded"], cards: [] },
+  away: { teamName: "BYE", scorers: [], cards: [] },
+},
+
 "R11-M3": {
-  home: { teamName: "Achos FC", scorers: ["Tshering Tobgyel - 1"], cards: ["Tshering Dorji - Yellow", "Choney Dorji - Yellow", "Tshering Namgay - Yellow"] },
-  away: { teamName: "Khukuri Canberra FC", scorers: ["Roshan Lamichhane - 3", "Abhishek Chapagain - 1"], cards: ["Protshan Basnet - Yellow"] },
+  home: { teamName: "Azhas FC", scorers: ["Walkover win - 3-0 awarded"], cards: [] },
+  away: { teamName: "Canberra Nepalese FC", scorers: [], cards: [] },
 },
 
 "R11-M4": {
-  home: { teamName: "Everest FC", scorers: ["Bijay Bhandari - 1", "Unknown - 1"], cards: [] },
-  away: { teamName: "Druk FC", scorers: [], cards: [] },
+  home: { teamName: "Achos FC", scorers: ["Tshering Tobgyel - 1"], cards: ["Tshering Dorji - Yellow", "Choney Dorji - Yellow", "Tshering Namgay - Yellow"] },
+  away: { teamName: "Khukuri Canberra FC", scorers: ["Roshan Lamichhane - 3", "Abhishek Chapagain - 1"], cards: ["Protshan Basnet - Yellow"] },
 },
 
 "R11-M5": {
@@ -1549,8 +1548,8 @@ export const MATCH_FACTS: MatchFactsRecord = {
 },
 
 "R11-M6": {
-  home: { teamName: "Azhas FC", scorers: ["Walkover win - 3-0 awarded"], cards: [] },
-  away: { teamName: "Canberra Nepalese FC", scorers: [], cards: [] },
+  home: { teamName: "Everest FC", scorers: ["Bijay Bhandari - 1", "Unknown - 1"], cards: [] },
+  away: { teamName: "Druk FC", scorers: [], cards: [] },
 },
 
 };
