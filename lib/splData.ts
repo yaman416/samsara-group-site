@@ -821,6 +821,14 @@ export const RESULTS = [
 { fixtureId: "R10-M5", homeGoals: 1, awayGoals: 1 }, // Queanbeyan Nepalese UFC 1-1 Khukuri Canberra FC
 { fixtureId: "R10-M6", homeGoals: 0, awayGoals: 0 }, // Phuensum FC 0-0 Unity Stars FC
 
+// Week 11
+{ fixtureId: "R11-M1", homeGoals: 3, awayGoals: 0 }, // Thuenam FC 3-0 BYE
+{ fixtureId: "R11-M2", homeGoals: 3, awayGoals: 0 }, // Azhas FC 3-0 Canberra Nepalese FC (walkover)
+{ fixtureId: "R11-M3", homeGoals: 4, awayGoals: 4 }, // Queanbeyan Nepalese United FC 4-4 Phuensum FC
+{ fixtureId: "R11-M4", homeGoals: 1, awayGoals: 4 }, // Achos FC 1-4 Khukuri Canberra FC
+{ fixtureId: "R11-M5", homeGoals: 2, awayGoals: 0 }, // Everest FC 2-0 Druk FC
+{ fixtureId: "R11-M6", homeGoals: 4, awayGoals: 1 }, // JA Brothers FC 4-1 Unity Stars FC
+
 ];
 
 export type TableRow = {
@@ -1509,6 +1517,106 @@ export const MATCH_FACTS: MatchFactsRecord = {
   away: {
     teamName: "Unity Stars FC",
     scorers: [],
+    cards: [],
+  },
+},
+
+// -------- WEEK 11 --------
+"R11-M1": {
+  home: {
+    teamName: "Thuenam FC",
+    scorers: ["BYE fixture - awarded 3-0 win"],
+    cards: [],
+  },
+  away: {
+    teamName: "BYE",
+    scorers: [],
+    cards: [],
+  },
+},
+
+"R11-M2": {
+  home: {
+    teamName: "Azhas FC",
+    scorers: ["Walkover win - awarded 3-0"],
+    cards: [],
+  },
+  away: {
+    teamName: "Canberra Nepalese FC",
+    scorers: [],
+    cards: [],
+  },
+},
+
+"R11-M3": {
+  home: {
+    teamName: "Queanbeyan Nepalese United FC",
+    scorers: [
+      "Sushant Shrestha - 2 goals",
+      "Saneej Chhetri - 1 goal",
+      "Jenish Gautam - 1 goal",
+    ],
+    cards: [],
+  },
+  away: {
+    teamName: "Phuensum FC",
+    scorers: [
+      "Sampa Tshering - 3 goals",
+      "Unknown scorer - 1 goal",
+    ],
+    cards: [],
+  },
+},
+
+"R11-M4": {
+  home: {
+    teamName: "Achos FC",
+    scorers: ["Tshering Tobgyel - 1 goal"],
+    cards: [
+      "Tshering Dorji - Yellow",
+      "Choney Dorji - Yellow",
+      "Tshering Namgay - Yellow",
+    ],
+  },
+  away: {
+    teamName: "Khukuri Canberra FC",
+    scorers: [
+      "Roshan Lamichhane - 3 goals",
+      "Abhishek Chapagain - 1 goal",
+    ],
+    cards: ["Protshan Basnet - Yellow"],
+  },
+},
+
+"R11-M5": {
+  home: {
+    teamName: "Everest FC",
+    scorers: [
+      "Bijay Bhandari - 1 goal",
+      "Unknown scorer - 1 goal",
+    ],
+    cards: [],
+  },
+  away: {
+    teamName: "Druk FC",
+    scorers: [],
+    cards: [],
+  },
+},
+
+"R11-M6": {
+  home: {
+    teamName: "JA Brothers FC",
+    scorers: [
+      "Ajay Shrestha - 1 goal",
+      "Sabin Shrestha - 2 goals",
+      "Alton Thakuri - 1 goal",
+    ],
+    cards: [],
+  },
+  away: {
+    teamName: "Unity Stars FC",
+    scorers: ["Unknown scorer - 1 goal"],
     cards: [],
   },
 },
