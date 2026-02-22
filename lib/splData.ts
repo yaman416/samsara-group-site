@@ -14,6 +14,14 @@ export const ORG = {
   facebook: "https://www.facebook.com/profile.php?id=61566789173985",
 };
 
+export const SPL_STATUS = {
+  leagueStageConcluded: true,
+  leagueStageWinner: "Thuenlam FC",
+  championshipOngoing: true,
+  note:
+    "League Stage has concluded. Championship Stage is ongoing. Final champions will be decided in the playoffs.",
+};
+
 export const SPL_SEASON = {
   name: "Samsara Premier League (SPL) 2025-26",
   organiser: "Samsara Group - Canberra",

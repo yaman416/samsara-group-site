@@ -7,6 +7,7 @@ import {
   TEAMS,
   TEAM_LOGOS,
   type TableRow,
+  SPL_STATUS,
 } from "@/lib/splData";
 import { useMemo } from "react";
 import { ListOrdered } from "lucide-react";
@@ -208,9 +209,25 @@ export default function LeagueTableSection() {
             <span>League Table</span>
           </h2>
           <p className="mt-2 text-xs md:text-sm text-gray-600 max-w-2xl mx-auto">
-            Samsara Premier League (SPL) 2025 to 2026 standings after Week{" "}
-            {latestRound}. Table updates after each completed match.
+            Samsara Premier League (SPL) 2025 to 2026 standings after Week {latestRound}.
+            {SPL_STATUS.leagueStageConcluded ? (
+              <>
+                {" "}
+                League Stage has concluded. Championship Stage is ongoing.
+              </>
+            ) : (
+              <> Table updates after each completed match.</>
+            )}
           </p>
+          {SPL_STATUS.leagueStageConcluded && (
+            <div className="mt-4 rounded-2xl border bg-slate-50 px-4 py-3 text-left text-xs sm:text-sm">
+              <div className="font-semibold text-slate-900">
+                League Stage Winners:{" "}
+                <span className="text-emerald-700">{SPL_STATUS.leagueStageWinner}</span>
+              </div>
+              <div className="mt-1 text-slate-600">{SPL_STATUS.note}</div>
+            </div>
+          )}
         </div>
 
         <div className="-mx-2 overflow-x-auto px-2 pb-2 sm:pb-4 mt-2">
