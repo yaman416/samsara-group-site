@@ -6,8 +6,15 @@ import { ORG, SPL_SEASON } from "@/lib/splData";
 import { Users } from "lucide-react";
 
 const IMAGES = [
-  "/hero-3.jpg",
-  "/hero-2.jpg",
+  // Khukuri Canberra FC
+  "/khukuri-final-1.jpg",
+  "/khukuri-final-2.jpg",
+  "/khukuri-final-3.jpg",
+
+  // Thuenlam FC
+  "/thuenlam-final-1.jpg",
+  "/thuenlam-final-2.jpg",
+  "/thuenlam-final-3.jpg",
 ];
 
 const SLIDE_DURATION = 5000;
@@ -18,7 +25,12 @@ export default function HeroSection() {
   const labels = useMemo(() => {
     return [
       "Khukuri Canberra FC - Championship Winners",
-      "Thuenlam FC - Runner-Up / Running Shield Winners",
+      "Khukuri Canberra FC - SPL 2025-26 Champions",
+      "Khukuri Canberra FC - Championship Celebration",
+
+      "Thuenlam FC - Championship Runner-Up",
+      "Thuenlam FC - Running Shield Winners (1st of League)",
+      "Thuenlam FC - SPL 2025-26 League Stage Winners",
     ];
   }, []);
 
