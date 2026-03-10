@@ -2,21 +2,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ORG, SPL_SEASON, TEAMS as LEAGUE_TEAMS } from "@/lib/splData";
+import { ORG, SPL_SEASON } from "@/lib/splData";
 import { Users } from "lucide-react";
 
 const IMAGES = [
   "/hero-3.jpg",
-  "/hero-11.jpg",
-  "/hero-8.jpg",
-  "/hero-5.jpg",
   "/hero-2.jpg",
-  "/hero-10.jpg",
-  "/hero-4.jpg",
-  "/hero-9.jpg",
-  "/hero-12.jpg",
-  "/hero-6.jpg",
-  "/hero-7.jpg",
 ];
 
 const SLIDE_DURATION = 5000;
@@ -24,14 +15,11 @@ const SLIDE_DURATION = 5000;
 export default function HeroSection() {
   const [index, setIndex] = useState(0);
 
-  // Use TEAMS from splData (Nepal United removed there), then make labels match image count.
   const labels = useMemo(() => {
-    const cleanTeams = [...LEAGUE_TEAMS].filter((t) => t !== "Nepal United FC");
-    const out: string[] = [];
-    for (let i = 0; i < IMAGES.length; i++) {
-      out.push(cleanTeams[i] || "SBA Samsara Premier League 2025-26");
-    }
-    return out;
+    return [
+      "Khukuri Canberra FC - Championship Winners",
+      "Thuenlam FC - Runner-Up / Running Shield Winners",
+    ];
   }, []);
 
   useEffect(() => {
@@ -61,7 +49,7 @@ export default function HeroSection() {
 
         <div className="absolute inset-x-0 bottom-7 flex flex-col items-center gap-3 px-4 text-center">
           <p className="rounded-full bg-black/70 px-4 py-1 text-[11px] font-medium text-white">
-            Participating Teams · SBA Samsara Premier League 2025-26
+            SPL 2025-26 Champions & Honours
           </p>
 
           <div className="inline-flex max-w-xl items-center justify-center rounded-2xl bg-black/75 px-4 py-2 text-sm font-semibold text-white sm:text-base md:text-lg">
@@ -97,6 +85,17 @@ export default function HeroSection() {
         >
           ›
         </button>
+      </div>
+
+      <div className="rounded-3xl border border-orange-200 bg-orange-50 px-4 py-5 shadow-sm sm:px-6 md:px-8">
+        <h2 className="text-center text-xl font-extrabold tracking-tight text-slate-900 md:text-2xl">
+          News Announcement
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-xs text-gray-700 md:text-sm">
+          Samsara Group Canberra is pleased to announce the <strong>2nd Nepalese New Year Cup 2083</strong>,
+          taking place on <strong>April 4</strong> and <strong>April 11</strong>. More details, fixtures,
+          and participating team updates will be announced soon.
+        </p>
       </div>
 
       <div className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8" id="about">
@@ -165,9 +164,9 @@ export default function HeroSection() {
             </p>
 
             <ul className="mt-3 space-y-1.5 text-xs text-slate-600 md:text-sm">
-              <li>• Structured match weeks and a full league table</li>
-              <li>• Match facts and final scores verified by SPL officials</li>
-              <li>• Rulebook and format available under Downloads</li>
+              <li>• Championship Winners: Khukuri Canberra FC</li>
+              <li>• Championship Runner-Up: Thuenlam FC</li>
+              <li>• Running Shield Winners (1st of League): Thuenlam FC</li>
             </ul>
 
             <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-xs text-orange-800 md:text-sm">
