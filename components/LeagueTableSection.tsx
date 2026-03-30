@@ -202,13 +202,14 @@ export default function LeagueTableSection() {
 
   return (
     <section id="table" className="mt-10">
-      <div className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8">
-        <div className="text-center mb-4">
-          <h2 className="inline-flex items-center justify-center gap-2 text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
-            <ListOrdered size={22} className="text-orange-600" />
+      <div className="shell-card px-4 py-7 sm:px-6 md:px-8">
+        <div className="mb-4 text-center">
+          <p className="section-kicker">Standings</p>
+          <h2 className="mt-2 inline-flex items-center justify-center gap-2 font-display text-3xl text-slate-900 md:text-4xl">
+            <ListOrdered size={22} className="text-[#8a6a35]" />
             <span>League Table</span>
           </h2>
-          <p className="mt-2 text-xs md:text-sm text-gray-600 max-w-2xl mx-auto">
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[#526070]">
             Samsara Premier League (SPL) 2025 to 2026 standings after Week {latestRound}.
             {SPL_STATUS.leagueStageConcluded ? (
               <>
@@ -220,12 +221,12 @@ export default function LeagueTableSection() {
             )}
           </p>
           {SPL_STATUS.leagueStageConcluded && (
-            <div className="mt-4 rounded-2xl border bg-slate-50 px-4 py-3 text-left text-xs sm:text-sm">
+            <div className="mt-4 rounded-[1.5rem] border border-[#14324a]/10 bg-[#f8f3eb] px-4 py-4 text-left text-sm">
               <div className="font-semibold text-slate-900">
                 League Stage Winners:{" "}
                 <span className="text-emerald-700">{SPL_STATUS.leagueStageWinner}</span>
               </div>
-              <div className="mt-1 text-slate-600">{SPL_STATUS.note}</div>
+              <div className="mt-1 text-[#526070]">{SPL_STATUS.note}</div>
             </div>
           )}
         </div>

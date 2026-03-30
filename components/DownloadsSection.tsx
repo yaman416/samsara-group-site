@@ -1,55 +1,34 @@
 // components/DownloadsSection.tsx
 import { FileText } from "lucide-react";
-
-const DOWNLOADS = [
-  {
-    title: "SPL Fixtures 2025 to 2026",
-    description:
-      "Full season schedule with match days, kick off times, and grounds.",
-    href: "/files/Samsara-League-Fixtures.pdf",
-    cta: "Download Fixtures (PDF)",
-  },
-  {
-    title: "SPL Official Rulebook and Code of Conduct",
-    description:
-      "Competition rules, discipline process, and player conduct guidelines.",
-    href: "/files/SPL Official Rulebook & Code of Conduct.pdf",
-    cta: "Download Rulebook (PDF)",
-  },
-];
+import { DOWNLOADS } from "@/lib/siteContent";
 
 export default function DownloadsSection() {
   return (
     <section id="downloads" className="mt-10">
-      <div className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8">
-        {/* Heading, similar style to sponsors */}
+      <div className="shell-card px-4 py-7 sm:px-6 md:px-8">
         <div className="text-center">
-          <h2 className="inline-flex items-center justify-center gap-2 text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
-            <FileText size={22} className="text-orange-600" />
+          <p className="section-kicker">Resources</p>
+          <h2 className="mt-2 inline-flex items-center justify-center gap-2 font-display text-3xl text-slate-900 md:text-4xl">
+            <FileText size={22} className="text-[#8a6a35]" />
             <span>Downloads</span>
           </h2>
-          <p className="mt-2 text-xs md:text-sm text-gray-600 max-w-2xl mx-auto">
-            Official Samsara Premier League documents for clubs, referees, team
-            managers, and supporters.
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[#526070]">
+            Official Samsara Premier League documents for clubs, referees, team managers, and
+            supporters.
           </p>
         </div>
 
-        {/* Cards row, compact like sponsor slider but only two items */}
         <div className="mt-5 flex flex-col gap-4 md:flex-row md:justify-center">
           {DOWNLOADS.map((d) => (
             <a
               key={d.title}
               href={d.href}
               download
-              className="flex-1 min-w-[240px] max-w-sm rounded-2xl border bg-gray-50 px-4 py-4 text-center text-xs md:text-sm text-gray-800 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              className="flex-1 min-w-[240px] max-w-sm rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] px-5 py-5 text-center text-sm text-[#1c2430] shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
             >
-              <h3 className="mb-1 text-sm md:text-base font-semibold">
-                {d.title}
-              </h3>
-              <p className="mb-3 text-[11px] md:text-xs text-gray-600 leading-snug">
-                {d.description}
-              </p>
-              <span className="inline-flex items-center justify-center rounded-full bg-orange-600 px-4 py-1.5 text-[11px] font-medium text-white">
+              <h3 className="mb-2 font-display text-2xl leading-tight">{d.title}</h3>
+              <p className="mb-4 text-sm leading-6 text-[#5a6776]">{d.description}</p>
+              <span className="inline-flex items-center justify-center rounded-full bg-[#14324a] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white">
                 {d.cta}
               </span>
             </a>

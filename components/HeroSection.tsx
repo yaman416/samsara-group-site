@@ -1,190 +1,183 @@
-// components/HeroSection.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { ArrowRight, CalendarDays, MapPin, Users } from "lucide-react";
 import { ORG, SPL_SEASON } from "@/lib/splData";
-import { Users } from "lucide-react";
-
-const IMAGES = [
-  // Khukuri Canberra FC
-  "/khukuri-final-1.jpg",
-  "/khukuri-final-2.jpg",
-  "/khukuri-final-3.jpg",
-
-  // Thuenlam FC
-  "/thuenlam-final-1.jpg",
-  "/thuenlam-final-2.jpg",
-  "/thuenlam-final-3.jpg",
-];
+import {
+  COMMUNITY_PILLARS,
+  CURRENT_UPDATE,
+  FEATURED_EVENT,
+  HERO_SLIDES,
+  HOME_HIGHLIGHTS,
+} from "@/lib/siteContent";
 
 const SLIDE_DURATION = 5000;
 
 export default function HeroSection() {
   const [index, setIndex] = useState(0);
-
-  const labels = useMemo(() => {
-    return [
-      "Khukuri Canberra FC - Championship Winners",
-      "Khukuri Canberra FC - SPL 2025-26 Champions",
-      "Khukuri Canberra FC - Championship Celebration",
-
-      "Thuenlam FC - Championship Runner-Up",
-      "Thuenlam FC - Running Shield Winners (1st of League)",
-      "Thuenlam FC - SPL 2025-26 League Stage Winners",
-    ];
-  }, []);
+  const slide = HERO_SLIDES[index];
 
   useEffect(() => {
-    if (IMAGES.length <= 1) return;
-    const id = setInterval(() => setIndex((prev) => (prev + 1) % IMAGES.length), SLIDE_DURATION);
+    if (HERO_SLIDES.length <= 1) return;
+    const id = setInterval(() => {
+      setIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, SLIDE_DURATION);
     return () => clearInterval(id);
   }, []);
 
-  function goPrev() {
-    setIndex((prev) => (prev - 1 + IMAGES.length) % IMAGES.length);
-  }
-
-  function goNext() {
-    setIndex((prev) => (prev + 1) % IMAGES.length);
-  }
-
-  function handleDotClick(i: number) {
-    setIndex(i);
-  }
-
   return (
-    <section className="mt-4 space-y-8">
-      <div className="relative min-h-[340px] overflow-hidden rounded-3xl border bg-slate-900 shadow-sm sm:min-h-[420px] md:min-h-[500px]">
-        <img src={IMAGES[index]} alt={labels[index]} className="absolute inset-0 h-full w-full object-cover" />
+    <section className="mt-5 space-y-8">
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="shell-card relative overflow-hidden">
+          <img
+            src={slide.image}
+            alt={slide.label}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#11283d]/90 via-[#11283d]/58 to-[#0f1116]/45" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(215,170,88,0.26),transparent_30%)]" />
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+          <div className="relative flex min-h-[420px] flex-col justify-between p-6 sm:min-h-[520px] sm:p-8 lg:p-10">
+            <div className="flex flex-wrap items-center gap-3 text-white/92">
+              <span className="rounded-full border border-white/20 bg-white/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.24em]">
+                {slide.eyebrow}
+              </span>
+              <span className="rounded-full border border-white/15 px-4 py-1 text-[11px]">
+                {SPL_SEASON.organiser}
+              </span>
+            </div>
 
-        <div className="absolute inset-x-0 bottom-7 flex flex-col items-center gap-3 px-4 text-center">
-          <p className="rounded-full bg-black/70 px-4 py-1 text-[11px] font-medium text-white">
-            SPL 2025-26 Champions & Honours
-          </p>
+            <div className="max-w-2xl space-y-5">
+              <div className="space-y-3">
+                <p className="section-kicker text-[#f2cd84]">Community-led organisation</p>
+                <h1 className="font-display text-4xl leading-tight text-white sm:text-5xl lg:text-6xl">
+                  Football, culture, and community updates in one place.
+                </h1>
+                <p className="max-w-xl text-sm leading-7 text-white/78 sm:text-base">
+                  {ORG.intro}
+                </p>
+              </div>
 
-          <div className="inline-flex max-w-xl items-center justify-center rounded-2xl bg-black/75 px-4 py-2 text-sm font-semibold text-white sm:text-base md:text-lg">
-            {labels[index]}
-          </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {HOME_HIGHLIGHTS.map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-2xl border border-white/14 bg-white/10 px-4 py-4 backdrop-blur-sm"
+                  >
+                    <p className="font-display text-2xl text-white">{item.value}</p>
+                    <p className="mt-1 text-xs leading-5 text-white/72">{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          <div className="flex items-center justify-center gap-1.5">
-            {IMAGES.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => handleDotClick(i)}
-                className={`h-1.5 w-5 rounded-full transition ${i === index ? "bg-white" : "bg-white/40"}`}
-                aria-label={`Show slide ${i + 1}`}
-              />
-            ))}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-6">
+              <div className="rounded-2xl border border-white/14 bg-black/15 px-4 py-3 text-sm text-white/88 backdrop-blur-sm">
+                {slide.label}
+              </div>
+
+              <div className="flex items-center gap-2">
+                {HERO_SLIDES.map((item, itemIndex) => (
+                  <button
+                    key={item.image}
+                    type="button"
+                    onClick={() => setIndex(itemIndex)}
+                    className={`h-2.5 rounded-full transition ${
+                      itemIndex === index ? "w-8 bg-[#f2cd84]" : "w-2.5 bg-white/45"
+                    }`}
+                    aria-label={`Show slide ${itemIndex + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={goPrev}
-          className="absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-lg text-white hover:bg-black/60"
-          aria-label="Previous slide"
-        >
-          ‹
-        </button>
-        <button
-          type="button"
-          onClick={goNext}
-          className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-lg text-white hover:bg-black/60"
-          aria-label="Next slide"
-        >
-          ›
-        </button>
-      </div>
+        <div className="grid gap-6">
+          <div className="shell-card p-6 sm:p-7">
+            <p className="section-kicker">{CURRENT_UPDATE.eyebrow}</p>
+            <h2 className="mt-3 font-display text-3xl leading-tight text-[#182230]">
+              {CURRENT_UPDATE.title}
+            </h2>
+            <p className="mt-4 section-copy">{CURRENT_UPDATE.body}</p>
 
-      <div className="rounded-3xl border border-orange-200 bg-orange-50 px-4 py-5 shadow-sm sm:px-6 md:px-8">
-        <h2 className="text-center text-xl font-extrabold tracking-tight text-slate-900 md:text-2xl">
-          News Announcement
-        </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-xs text-gray-700 md:text-sm">
-          Samsara Group Canberra is pleased to announce the <strong>2nd Nepalese New Year Cup 2083</strong>,
-          taking place on <strong>April 4</strong> and <strong>April 11</strong>. More details, fixtures,
-          and participating team updates will be announced soon.
-        </p>
-      </div>
-
-      <div className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8" id="about">
-        <h2 className="text-center text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
-          <span className="inline-flex items-center justify-center gap-2">
-            <Users size={22} className="text-orange-600" />
-            <span>About Samsara Group Canberra</span>
-          </span>
-        </h2>
-
-        <p className="mx-auto mt-3 max-w-2xl text-center text-xs text-gray-600 md:text-sm">
-          {ORG.name} is a volunteer led community group in Canberra. We were formed to support Nepalese and Bhutanese individuals and families who are living, studying, and working in the region. Our focus is community, wellbeing, and connection, not only sport.
-        </p>
-
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <div className="space-y-3 text-sm text-slate-700">
-            <h3 className="font-semibold text-slate-900">Who we are</h3>
-            <p>
-              Samsara Group Canberra is run by volunteers from the local community. We bring together students, families, and workers from different backgrounds who share a connection to Nepal and Bhutan.
-            </p>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-600 md:text-sm">
-              <li>Community based and not for profit</li>
-              <li>Led by volunteers who live in Canberra</li>
-              <li>Open and welcoming to new members and supporters</li>
-            </ul>
-          </div>
-
-          <div className="space-y-3 text-sm text-slate-700">
-            <h3 className="font-semibold text-slate-900">What we do</h3>
-            <p>
-              Our activities focus on bringing people together in a positive and practical way. Sport is a big part of this, and we also support social, cultural, and wellbeing projects through the year.
-            </p>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-600 md:text-sm">
-              <li>Organise regular community football and friendly tournaments</li>
-              <li>Coordinate events where families and friends can meet</li>
-              <li>Support new arrivals with information, contacts, and community links</li>
-              <li>Run the Samsara Premier League as our main football program</li>
-            </ul>
-          </div>
-
-          <div className="mt-6 rounded-2xl border bg-white px-4 py-5 shadow-sm sm:px-5 md:col-span-2">
-            <div className="mb-3 flex items-center justify-center gap-2">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-orange-100">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-orange-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M8 21h8m-4-4v4m5-19H7v5a5 5 0 005 5 5 5 0 005-5V2z"
-                  />
-                </svg>
-              </span>
-              <h3 className="text-base font-extrabold tracking-tight text-slate-900">
-                Featured Event: Samsara Premier League 2025-26
-              </h3>
-            </div>
-
-            <p className="text-xs leading-relaxed text-slate-600 md:text-sm">
-              The Samsara Premier League is the flagship football competition coordinated by {ORG.name}. Community clubs take part in organised match weeks at {SPL_SEASON.venue}. Match results, standings, and fixtures are updated after each round.
-            </p>
-
-            <ul className="mt-3 space-y-1.5 text-xs text-slate-600 md:text-sm">
-              <li>• Championship Winners: Khukuri Canberra FC</li>
-              <li>• Championship Runner-Up: Thuenlam FC</li>
-              <li>• Running Shield Winners (1st of League): Thuenlam FC</li>
-            </ul>
-
-            <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-xs text-orange-800 md:text-sm">
-              <strong className="text-orange-700">Note:</strong> The SPL is a volunteer led competition built on respect, fairness, and community spirit.
+            <div className="mt-6 space-y-3 text-sm text-[#314255]">
+              <div className="flex items-start gap-3">
+                <CalendarDays size={18} className="mt-0.5 text-[#8a6a35]" />
+                <span>April 4 and April 11 event dates announced</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <MapPin size={18} className="mt-0.5 text-[#8a6a35]" />
+                <span>{SPL_SEASON.venue}</span>
+              </div>
             </div>
           </div>
+
+          <div className="shell-card bg-[#14324a] p-6 text-white sm:p-7">
+            <p className="section-kicker text-[#f2cd84]">About Samsara Group Canberra</p>
+            <h2 className="mt-3 font-display text-3xl leading-tight">
+              Local community, organised with care.
+            </h2>
+            <p className="mt-4 text-sm leading-7 text-white/76">
+              Samsara Group Canberra is a volunteer-led community group supporting Nepalese and
+              Bhutanese individuals and families through sport, culture, wellbeing, and connection.
+            </p>
+            <a
+              href="#about"
+              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#f2cd84]"
+            >
+              Explore the organisation
+              <ArrowRight size={16} />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div id="about" className="shell-card grid gap-8 p-6 sm:p-8 lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
+        <div>
+          <p className="section-kicker">Who we are</p>
+          <h2 className="mt-3 section-title">A community platform, not just a fixture board.</h2>
+          <p className="mt-4 section-copy">
+            {ORG.name} is run by volunteers from the Canberra community. We create consistent spaces
+            where people can meet, compete, celebrate, and support one another across the year.
+          </p>
+
+          <div className="mt-6 rounded-[1.5rem] border border-[#14324a]/10 bg-[#f8f3eb] p-5">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-[#14324a] p-2 text-white">
+                <Users size={18} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#182230]">{FEATURED_EVENT.title}</p>
+                <p className="mt-1 text-sm leading-6 text-[#526070]">{FEATURED_EVENT.summary}</p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-2 text-sm text-[#314255]">
+              {FEATURED_EVENT.bullets.map((item) => (
+                <p key={item} className="rounded-xl bg-white/70 px-4 py-3">
+                  {item}
+                </p>
+              ))}
+            </div>
+
+            <p className="mt-4 text-xs leading-6 text-[#667384]">{FEATURED_EVENT.note}</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          {COMMUNITY_PILLARS.map((pillar, pillarIndex) => (
+            <div
+              key={pillar.title}
+              className="rounded-[1.5rem] border border-[#14324a]/10 bg-white/70 p-5"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a6a35]">
+                0{pillarIndex + 1}
+              </p>
+              <h3 className="mt-2 text-xl font-semibold text-[#182230]">{pillar.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-[#526070]">{pillar.description}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -11,9 +11,9 @@ import MainFooter from "@/components/MainFooter";
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-50">
+    <div className="flex min-h-screen flex-col overflow-x-hidden">
       <MainHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-10">
+      <main className="page-shell flex-1">
         <HeroSection />
         <LeagueTableSection />
         <FixturesResultsSection />

@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function CookieConsent() {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
+  const [show, setShow] = useState(() => {
+    if (typeof window === "undefined") return false;
     try {
       const approved = window.localStorage.getItem("cookieAccepted");
-      if (!approved) setShow(true);
+      return !approved;
     } catch {
-      // If localStorage is blocked, do nothing but avoid breaking the page
+      // If localStorage is blocked, keep the banner hidden to avoid breaking the page.
+      return false;
     }
-  }, []);
+  });
 
   function accept() {
     try {

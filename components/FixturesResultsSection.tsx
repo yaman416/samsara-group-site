@@ -13,7 +13,10 @@ export default function FixturesResultsSection() {
 
   const today = new Date();
   const firstUpcomingFixture = FIXTURES.find((f) => new Date(f.date) >= today);
-  const defaultRound = firstUpcomingFixture ? firstUpcomingFixture.round : rounds[0];
+  const latestCompletedRound = [...RESULTS]
+    .map((result) => FIXTURES.find((fixture) => fixture.id === result.fixtureId)?.round ?? 0)
+    .reduce((maxRound, round) => Math.max(maxRound, round), rounds[0]);
+  const defaultRound = firstUpcomingFixture ? firstUpcomingFixture.round : latestCompletedRound;
 
   const [selectedRound, setSelectedRound] = useState<number>(defaultRound);
   const [openMatchId, setOpenMatchId] = useState<string | null>(null);
@@ -43,13 +46,14 @@ export default function FixturesResultsSection() {
 
   return (
     <section id="fixturesResults" className="mt-12">
-      <div className="rounded-3xl border bg-white px-4 py-7 shadow-sm sm:px-6 md:px-8">
+      <div className="shell-card px-4 py-7 sm:px-6 md:px-8">
         <div className="mb-5 text-center">
-          <h2 className="inline-flex items-center justify-center gap-2 text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
-            <ListOrdered size={22} className="text-orange-600" />
+          <p className="section-kicker">Season tracker</p>
+          <h2 className="mt-2 inline-flex items-center justify-center gap-2 font-display text-3xl text-slate-900 md:text-4xl">
+            <ListOrdered size={22} className="text-[#8a6a35]" />
             <span>SPL Fixtures &amp; Results</span>
           </h2>
-          <p className="mt-2 mx-auto max-w-2xl text-xs text-gray-600 md:text-sm">
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[#526070]">
             Weekly fixtures, final scores, and match facts for the Samsara Premier League.
           </p>
         </div>
@@ -60,7 +64,7 @@ export default function FixturesResultsSection() {
             <select
               value={selectedRound}
               onChange={(e) => setSelectedRound(Number(e.target.value))}
-              className="rounded-lg border px-3 py-2 text-sm shadow-sm"
+              className="rounded-xl border border-[#14324a]/10 bg-[#fcfaf6] px-3 py-2 text-sm shadow-sm"
             >
               {rounds.map((r) => (
                 <option key={r} value={r}>
@@ -71,13 +75,13 @@ export default function FixturesResultsSection() {
           </div>
         </div>
 
-        <div className="mb-3 text-center text-xs text-gray-600">
-          <span className="rounded-full border border-orange-600 px-3 py-1 text-orange-600">
-            Upcoming Week: {nextUpcomingRound}
+        <div className="mb-3 text-center text-xs text-[#526070]">
+          <span className="rounded-full border border-[#8a6a35]/30 bg-[#f7efe1] px-3 py-1 text-[#8a6a35]">
+            {firstUpcomingFixture ? `Upcoming Week: ${nextUpcomingRound}` : `Latest completed week: ${latestCompletedRound}`}
           </span>
         </div>
 
-        <p className="mb-5 text-center text-xs text-gray-600 md:text-sm">
+        <p className="mb-5 text-center text-sm leading-7 text-[#526070]">
           Fixtures are updated weekly. Final scores and match facts are added after each match is completed and confirmed by the organisers.
         </p>
 
@@ -91,7 +95,7 @@ export default function FixturesResultsSection() {
             const awayLogo = logo(f.away);
 
             return (
-              <div key={f.id} className="rounded-xl border bg-white p-4 shadow">
+              <div key={f.id} className="rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] p-4 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   {/* Home */}
                   <div className="flex min-w-[40%] items-center gap-2">
@@ -111,15 +115,15 @@ export default function FixturesResultsSection() {
                   {/* Centre */}
                   <div className="flex-1 text-center">
                     {isFinished ? (
-                      <span className="text-lg font-bold">
+                      <span className="text-lg font-bold text-[#182230]">
                         {res.homeGoals}
                         <span className="mx-1 text-[10px] text-gray-500">FT</span>
                         {res.awayGoals}
                       </span>
                     ) : (
-                      <span className="text-sm font-semibold text-gray-600">vs</span>
+                      <span className="text-sm font-semibold text-[#5a6776]">vs</span>
                     )}
-                    <div className="mt-1 text-[10px] text-gray-600">
+                    <div className="mt-1 text-[10px] text-[#6b7684]">
                       Week {f.round} • {f.date} • {f.time}
                     </div>
                   </div>
@@ -140,14 +144,14 @@ export default function FixturesResultsSection() {
                   </div>
                 </div>
 
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600">
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[#5a6776]">
                   <span>
                     Ground: <strong>{f.ground}</strong>
                   </span>
 
                   <div className="flex items-center gap-2">
                     {!isFinished && (
-                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] text-green-700">
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] text-emerald-700">
                         Upcoming fixture
                       </span>
                     )}
@@ -158,7 +162,7 @@ export default function FixturesResultsSection() {
                           setOpenMatchId("loading-" + f.id);
                           setTimeout(() => setOpenMatchId(f.id), 50);
                         }}
-                        className="rounded-lg bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700"
+                        className="rounded-lg bg-[#14324a] px-3 py-1 text-xs text-white hover:bg-[#0f273a]"
                       >
                         Match Facts
                       </button>

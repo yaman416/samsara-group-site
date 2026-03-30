@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { SPL_SEASON } from "@/lib/splData";
+import { ORG, SPL_SEASON } from "@/lib/splData";
 
 type MainHeaderProps = {
   active?: string;
@@ -34,33 +34,32 @@ export default function MainHeader({ active, onChange }: MainHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center px-4 py-3">
-        {/* LEFT: logo + label */}
+    <header className="sticky top-0 z-40 border-b border-white/30 bg-[#f6f0e7]/85 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <img
             src="/logo.png"
             alt="Samsara Group Canberra logo"
-            className="h-9 w-9"
+            className="h-10 w-10 rounded-full border border-[#14324a]/10 bg-white/70 p-1"
           />
           <div className="leading-tight">
-            <p className="text-sm font-semibold text-slate-900">
-              Samsara Group Canberra
+            <p className="font-display text-lg text-[#182230]">{ORG.name}</p>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-[#6f6250]">
+              {SPL_SEASON.name}
             </p>
           </div>
         </div>
 
-        {/* CENTER: main nav (desktop / tablet only) */}
-        <nav className="hidden flex-1 items-center justify-center gap-3 md:flex">
+        <nav className="hidden flex-1 items-center justify-center gap-2 md:flex">
           {LINKS.map((link) => (
             <button
               key={link.key}
               type="button"
               onClick={() => handleClick(link.key, link.target)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+              className={`rounded-full px-3 py-2 text-xs font-medium transition ${
                 active === link.key
-                  ? "bg-orange-50 text-orange-700"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-orange-600"
+                  ? "bg-[#14324a] text-[#fff8ef]"
+                  : "text-[#425164] hover:bg-white/70 hover:text-[#14324a]"
               }`}
             >
               {link.label}
@@ -68,52 +67,56 @@ export default function MainHeader({ active, onChange }: MainHeaderProps) {
           ))}
         </nav>
 
-        {/* RIGHT: YouTube + hamburger (hamburger only on small screens) */}
         <div className="ml-auto flex items-center gap-2">
-          {/* Watch live – always visible */}
           <a
             href="https://www.youtube.com/@SamsaraGroupCanberra"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 rounded-full bg-red-600 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-red-700"
+            className="hidden items-center gap-2 rounded-full border border-[#14324a]/12 bg-white/75 px-4 py-2 text-[11px] font-semibold text-[#14324a] shadow-sm transition hover:bg-white sm:inline-flex"
           >
-            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/20 text-[9px]">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#14324a] text-[9px] text-white">
               ▶
             </span>
-            <span>Watch live</span>
+            <span>Watch live updates</span>
           </a>
 
-          {/* Hamburger – really small screens only */}
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
-            className="inline-flex items-center justify-center rounded-full border px-2 py-1 text-xs text-slate-700 md:hidden"
+            className="inline-flex items-center justify-center rounded-full border border-[#14324a]/12 bg-white/75 px-3 py-2 text-xs text-[#14324a] md:hidden"
             aria-label="Open menu"
           >
             <span className="mr-1 text-[11px]">Menu</span>
             <span className="flex flex-col gap-[3px]">
-              <span className="block h-[2px] w-3 rounded bg-slate-700" />
-              <span className="block h-[2px] w-3 rounded bg-slate-700" />
-              <span className="block h-[2px] w-3 rounded bg-slate-700" />
+              <span className="block h-[2px] w-3 rounded bg-[#14324a]" />
+              <span className="block h-[2px] w-3 rounded bg-[#14324a]" />
+              <span className="block h-[2px] w-3 rounded bg-[#14324a]" />
             </span>
           </button>
         </div>
       </div>
 
-      {/* MOBILE MENU: only appears when hamburger open, and only on small screens */}
       {mobileOpen && (
-        <div className="border-t bg-white md:hidden">
-          <div className="mx-auto max-w-6xl space-y-2 px-4 py-3">
+        <div className="border-t border-white/30 bg-[#f6f0e7]/95 md:hidden">
+          <div className="mx-auto max-w-7xl space-y-2 px-4 py-3 sm:px-6">
             {LINKS.map((link) => (
               <button
                 key={link.key}
                 type="button"
                 onClick={() => handleClick(link.key, link.target)}
-                className="block w-full rounded-lg px-2 py-2 text-left text-xs font-medium text-slate-700 hover:bg-gray-100"
+                className="block w-full rounded-xl px-3 py-3 text-left text-xs font-medium text-[#324356] hover:bg-white/80"
               >
                 {link.label}
               </button>
             ))}
+            <a
+              href="https://www.youtube.com/@SamsaraGroupCanberra"
+              target="_blank"
+              rel="noreferrer"
+              className="block rounded-xl bg-[#14324a] px-3 py-3 text-xs font-semibold text-white"
+            >
+              Watch live updates
+            </a>
           </div>
         </div>
       )}
