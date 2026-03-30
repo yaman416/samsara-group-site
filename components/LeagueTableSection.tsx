@@ -200,6 +200,17 @@ export default function LeagueTableSection() {
     }));
   }, [visibleRows]);
 
+  const leader = renumberedRows[0];
+  const topAttack = leader
+    ? renumberedRows.reduce((best, row) => (row.goalsFor > best.goalsFor ? row : best), leader)
+    : null;
+  const topDefence = leader
+    ? renumberedRows.reduce(
+        (best, row) => (row.goalsAgainst < best.goalsAgainst ? row : best),
+        leader,
+      )
+    : null;
+
   return (
     <section id="table" className="mt-10">
       <div className="shell-card px-4 py-7 sm:px-6 md:px-8">
@@ -231,10 +242,40 @@ export default function LeagueTableSection() {
           )}
         </div>
 
+        {leader && (
+          <div className="mb-5 grid gap-3 md:grid-cols-3">
+            <div className="rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] px-4 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a6a35]">
+                Current leader
+              </p>
+              <p className="mt-2 text-lg font-semibold text-[#182230]">{leader.name}</p>
+              <p className="mt-1 text-sm text-[#526070]">{leader.points} pts after {leader.played} matches</p>
+            </div>
+            <div className="rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] px-4 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a6a35]">
+                Best attack
+              </p>
+              <p className="mt-2 text-lg font-semibold text-[#182230]">{topAttack?.name}</p>
+              <p className="mt-1 text-sm text-[#526070]">
+                {topAttack?.goalsFor} goals scored
+              </p>
+            </div>
+            <div className="rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] px-4 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a6a35]">
+                Best defence
+              </p>
+              <p className="mt-2 text-lg font-semibold text-[#182230]">{topDefence?.name}</p>
+              <p className="mt-1 text-sm text-[#526070]">
+                {topDefence?.goalsAgainst} goals conceded
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="-mx-2 overflow-x-auto px-2 pb-2 sm:pb-4 mt-2">
-          <table className="min-w-full text-left text-xs sm:text-sm">
+          <table className="min-w-full overflow-hidden text-left text-xs sm:text-sm">
             <thead>
-              <tr className="border-b bg-slate-50 text-[11px] uppercase text-slate-500 sm:text-xs">
+              <tr className="border-b bg-[#f4ecdf] text-[11px] uppercase text-slate-500 sm:text-xs">
                 <th className="px-3 py-2">Pos</th>
                 <th className="px-3 py-2">Team</th>
                 <th className="px-2 py-2 text-center">MP</th>

@@ -46,6 +46,25 @@ export const HOME_HIGHLIGHTS = [
   },
 ];
 
+export const HOME_ACTIONS = [
+  {
+    href: "#fixturesResults",
+    label: "View fixtures and results",
+    variant: "primary" as const,
+  },
+  {
+    href: "#downloads",
+    label: "Open league documents",
+    variant: "secondary" as const,
+  },
+];
+
+export const TRUST_MARKERS = [
+  "Volunteer-led community organisation",
+  "Football, culture, and local events",
+  "Regular league and tournament updates",
+];
+
 export const COMMUNITY_PILLARS = [
   {
     title: "Sport that strengthens community",
@@ -91,6 +110,7 @@ export const DOWNLOADS = [
       "Full season schedule with match days, kick-off times, and grounds.",
     href: "/files/Samsara League Fixtures.pdf",
     cta: "Download fixtures",
+    meta: "PDF document",
   },
   {
     title: "SPL Official Rulebook and Code of Conduct",
@@ -98,5 +118,6 @@ export const DOWNLOADS = [
       "Competition rules, discipline process, and conduct guidance for teams and officials.",
     href: "/files/SPL Official Rulebook & Code of Conduct.pdf",
     cta: "Download rulebook",
+    meta: "Official rules",
   },
 ];

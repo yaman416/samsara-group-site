@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, CalendarDays, MapPin, Users } from "lucide-react";
+import { ArrowRight, CalendarDays, MapPin, Phone, Users } from "lucide-react";
 import { ORG, SPL_SEASON } from "@/lib/splData";
 import {
   COMMUNITY_PILLARS,
   CURRENT_UPDATE,
   FEATURED_EVENT,
+  HOME_ACTIONS,
   HERO_SLIDES,
   HOME_HIGHLIGHTS,
+  TRUST_MARKERS,
 } from "@/lib/siteContent";
 
 const SLIDE_DURATION = 5000;
@@ -27,8 +29,8 @@ export default function HeroSection() {
 
   return (
     <section className="mt-5 space-y-8">
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="shell-card relative overflow-hidden">
+      <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+        <div className="shell-card soft-grid relative overflow-hidden">
           <img
             src={slide.image}
             alt={slide.label}
@@ -58,6 +60,23 @@ export default function HeroSection() {
                 </p>
               </div>
 
+              <div className="flex flex-wrap gap-3">
+                {HOME_ACTIONS.map((action) => (
+                  <a
+                    key={action.label}
+                    href={action.href}
+                    className={
+                      action.variant === "primary"
+                        ? "inline-flex items-center gap-2 rounded-full bg-[#f2cd84] px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#14324a] transition hover:bg-[#f7d99c]"
+                        : "inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-white/16"
+                    }
+                  >
+                    {action.label}
+                    <ArrowRight size={14} />
+                  </a>
+                ))}
+              </div>
+
               <div className="grid gap-3 sm:grid-cols-3">
                 {HOME_HIGHLIGHTS.map((item) => (
                   <div
@@ -67,6 +86,17 @@ export default function HeroSection() {
                     <p className="font-display text-2xl text-white">{item.value}</p>
                     <p className="mt-1 text-xs leading-5 text-white/72">{item.label}</p>
                   </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-2 text-[11px] text-white/76">
+                {TRUST_MARKERS.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-white/14 bg-black/12 px-3 py-1.5"
+                  >
+                    {item}
+                  </span>
                 ))}
               </div>
             </div>
@@ -129,6 +159,32 @@ export default function HeroSection() {
               Explore the organisation
               <ArrowRight size={16} />
             </a>
+          </div>
+
+          <div id="contact" className="shell-card p-6 sm:p-7">
+            <p className="section-kicker">Get in touch</p>
+            <h2 className="mt-3 font-display text-2xl leading-tight text-[#182230]">
+              Contact the organisers
+            </h2>
+            <div className="mt-5 space-y-3 text-sm text-[#314255]">
+              <a
+                href={`mailto:${ORG.email}`}
+                className="flex items-center justify-between rounded-2xl border border-[#14324a]/10 bg-white/70 px-4 py-3 hover:bg-white"
+              >
+                <span>{ORG.email}</span>
+                <ArrowRight size={16} className="text-[#8a6a35]" />
+              </a>
+              <a
+                href={`tel:${ORG.phone.replace(/\s+/g, "")}`}
+                className="flex items-center justify-between rounded-2xl border border-[#14324a]/10 bg-white/70 px-4 py-3 hover:bg-white"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Phone size={16} className="text-[#8a6a35]" />
+                  {ORG.phone}
+                </span>
+                <ArrowRight size={16} className="text-[#8a6a35]" />
+              </a>
+            </div>
           </div>
         </div>
       </div>

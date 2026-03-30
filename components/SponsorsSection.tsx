@@ -41,6 +41,13 @@ function buildSponsorList(): SponsorWithTier[] {
 }
 
 const ALL_SPONSORS = buildSponsorList();
+const TIER_ORDER: Tier[] = [
+  "Title Sponsor",
+  "Platinum Sponsor",
+  "Silver Sponsor",
+  "Media Partner",
+  "Merchandise Partner",
+];
 
 export default function SponsorsSection() {
   if (!ALL_SPONSORS.length) return null;
@@ -60,45 +67,54 @@ export default function SponsorsSection() {
           </p>
         </div>
 
-        <div className="mt-5 overflow-x-auto">
-          <div className="flex gap-4 pb-3 pr-2 snap-x snap-mandatory min-w-max">
-            {ALL_SPONSORS.map((s) => {
-              const clickable = s.url && s.url !== "#";
-              const Card = clickable ? "a" : "div";
+        <div className="mt-6 space-y-6">
+          {TIER_ORDER.map((tier) => {
+            const sponsors = ALL_SPONSORS.filter((sponsor) => sponsor.tier === tier);
+            if (!sponsors.length) return null;
 
-              return (
-                <Card
-                  key={s.name}
-                  href={clickable ? s.url : undefined}
-                  target={clickable ? "_blank" : undefined}
-                  rel={clickable ? "noreferrer" : undefined}
-                  className="snap-center flex h-36 w-56 flex-col items-center justify-center rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] px-4 text-center text-sm text-[#1c2430] shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-                >
-                  {s.logo ? (
-                    <img
-                      src={s.logo}
-                      alt={s.name}
-                      className="mb-2 max-h-12 max-w-[80%] object-contain"
-                    />
-                  ) : (
-                    <span className="mb-2 font-semibold">{s.name}</span>
-                  )}
+            return (
+              <div key={tier} className="rounded-[1.75rem] border border-[#14324a]/10 bg-[#f9f4ec] p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <h3 className="font-display text-2xl text-[#182230]">{tier}</h3>
+                  <span className="rounded-full bg-white/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a6a35]">
+                    {sponsors.length} partner{sponsors.length > 1 ? "s" : ""}
+                  </span>
+                </div>
 
-                  <span className="line-clamp-2 text-xs leading-5 text-[#4f5e6e]">
-                    {s.name}
-                  </span>
-                  <span className="mt-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#8a6a35]">
-                    {s.tier}
-                  </span>
-                </Card>
-              );
-            })}
-          </div>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {sponsors.map((s) => {
+                    const clickable = s.url && s.url !== "#";
+                    const Card = clickable ? "a" : "div";
+
+                    return (
+                      <Card
+                        key={s.name}
+                        href={clickable ? s.url : undefined}
+                        target={clickable ? "_blank" : undefined}
+                        rel={clickable ? "noreferrer" : undefined}
+                        className="flex min-h-36 flex-col items-center justify-center rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] px-4 py-5 text-center text-sm text-[#1c2430] shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                      >
+                        {s.logo ? (
+                          <img
+                            src={s.logo}
+                            alt={s.name}
+                            className="mb-3 max-h-12 max-w-[80%] object-contain"
+                          />
+                        ) : (
+                          <span className="mb-2 font-semibold">{s.name}</span>
+                        )}
+
+                        <span className="line-clamp-2 text-xs leading-5 text-[#4f5e6e]">
+                          {s.name}
+                        </span>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
-
-        <p className="mt-2 text-center text-[11px] text-[#6b7684]">
-          Swipe sideways on mobile or scroll horizontally to view all sponsors.
-        </p>
       </div>
     </section>
   );

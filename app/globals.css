@@ -147,8 +147,11 @@
   }
 
   .shell-card {
-    background: var(--card);
-    box-shadow: 0 20px 60px rgba(28, 36, 48, 0.08);
+    background:
+      linear-gradient(180deg, rgba(255, 253, 249, 0.94), rgba(252, 247, 240, 0.9));
+    box-shadow:
+      0 20px 60px rgba(28, 36, 48, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45);
     @apply rounded-[2rem] border backdrop-blur-sm;
   }
 
@@ -162,5 +165,12 @@
 
   .section-copy {
     @apply text-sm leading-7 text-[#526070] md:text-[15px];
+  }
+
+  .soft-grid {
+    background-image:
+      linear-gradient(rgba(20, 50, 74, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(20, 50, 74, 0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
   }
 }
