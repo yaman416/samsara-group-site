@@ -160,7 +160,8 @@
   }
 
   .section-title {
-    @apply font-display text-3xl leading-tight text-[#182230] md:text-4xl;
+    font-family: var(--font-display);
+    @apply text-3xl leading-tight text-[#182230] md:text-4xl;
   }
 
   .section-copy {
