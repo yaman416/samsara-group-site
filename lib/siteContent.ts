@@ -1,6 +1,6 @@
 export const HERO_SLIDES = [
   {
-    image: "/gallery/nnyc-action-3.png",
+    image: "/gallery/nnyc-action-1.png",
     label: "Samsara Premier League - Season 3 Starts Nov 2027",
     eyebrow: "SPL Season 3",
     sublabel: "A growing community football competition bringing Nepalese and Bhutanese teams together in Canberra",
@@ -8,7 +8,7 @@ export const HERO_SLIDES = [
     cta: "View League Details",
   },
   {
-    image: "/gallery/nnyc-celebration-2.png",
+    image: "/gallery/nnyc-team-1.png",
     label: "Nepalese New Year Cup - 4 and 11 April 2026",
     eyebrow: "New Year Cup",
     sublabel: "Celebrate culture, football, and community over two weekends in Canberra",
@@ -16,7 +16,7 @@ export const HERO_SLIDES = [
     cta: "Explore Event",
   },
   {
-    image: "/gallery/nnyc-team-2.png",
+    image: "/gallery/nnyc-player-1.png",
     label: "More Than Football - Building Community",
     eyebrow: "Community First",
     sublabel: "Connecting the wider Canberra Nepalese and Bhutanese community through sport and events",
@@ -183,25 +183,25 @@ export const EVENT_PARTNERS = [
 export const NEWS_UPDATES = [
   {
     title: "Match reports and weekly league wrap-ups",
-    image: "/gallery/nnyc-action-4.png",
+    image: "/gallery/nnyc-action-3.png",
     tag: "Reports",
   },
   {
     title: "Announcements for cup fixtures, registrations, and deadlines",
-    image: "/gallery/nnyc-touchline-1.png",
+    image: "/gallery/nnyc-celebration-2.png",
     tag: "Announcements",
   },
   {
     title: "Community event updates and cup news",
-    image: "/gallery/nnyc-player-1.png",
+    image: "/gallery/nnyc-team-2.png",
     tag: "Events",
   },
 ];
 
 export const GALLERY_HIGHLIGHTS = [
   { image: "/gallery/nnyc-action-1.png", title: "Matchday action" },
-  { image: "/gallery/nnyc-celebration-2.png", title: "Team celebrations" },
-  { image: "/gallery/nnyc-team-2.png", title: "Running shield winners" },
+  { image: "/gallery/nnyc-celebration-1.png", title: "Team celebrations" },
+  { image: "/gallery/nnyc-team-1.png", title: "Running shield winners" },
   { image: "/gallery/nnyc-action-2.png", title: "Aerial battle in midfield" },
   { image: "/gallery/nnyc-player-1.png", title: "Match focus" },
   { image: "/gallery/nnyc-touchline-1.png", title: "Touchline moments" },
@@ -260,19 +260,19 @@ export const DOWNLOADS = [
 export const STORY_CARDS = [
   {
     title: "Khukuri Canberra FC crowned season 2 champions",
-    image: "/gallery/nnyc-celebration-2.png",
+    image: "/gallery/nnyc-celebration-1.png",
     tag: "Final",
     href: "#fixturesResults",
   },
   {
     title: "Thuenlam FC finish league stage on top",
-    image: "/gallery/nnyc-team-2.png",
+    image: "/gallery/nnyc-team-1.png",
     tag: "League",
     href: "#fixturesResults",
   },
   {
     title: "New Year Cup dates confirmed for Canberra",
-    image: "/gallery/nnyc-touchline-1.png",
+    image: "/gallery/nnyc-action-4.png",
     tag: "Community",
     href: "#about",
   },

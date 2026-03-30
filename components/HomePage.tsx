@@ -44,7 +44,7 @@ export default function HomePage() {
         <section id="league" className="shell-card overflow-hidden p-0">
           <div className="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="relative min-h-[320px]">
-              <img src="/gallery/nnyc-action-3.png" alt="Samsara Premier League" className="absolute inset-0 h-full w-full object-cover object-center" />
+              <img src="/gallery/nnyc-action-2.png" alt="Samsara Premier League" className="absolute inset-0 h-full w-full object-cover object-center" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#08111a]/92 via-[#08111a]/45 to-transparent" />
               <div className="absolute inset-0 p-5 sm:p-7 lg:p-8">
                 <div className="max-w-2xl">
@@ -206,10 +206,10 @@ export default function HomePage() {
           <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="editorial-frame overflow-hidden">
-                <img src="/gallery/nnyc-celebration-2.png" alt="New Year Cup celebration" className="aspect-[16/11] h-full w-full object-cover object-center" />
+                <img src="/gallery/nnyc-celebration-1.png" alt="New Year Cup celebration" className="aspect-[16/11] h-full w-full object-cover object-center" />
               </div>
               <div className="editorial-frame overflow-hidden">
-                <img src="/gallery/nnyc-team-2.png" alt="Cultural activities" className="aspect-[16/11] h-full w-full object-cover object-center" />
+                <img src="/gallery/nnyc-action-4.png" alt="Cultural activities" className="aspect-[16/11] h-full w-full object-cover object-center" />
               </div>
             </div>
 
