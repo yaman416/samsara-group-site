@@ -212,60 +212,62 @@ export default function LeagueTableSection() {
     : null;
 
   return (
-    <section id="table" className="mt-10">
+    <section id="table" className="mt-0">
       <div className="shell-card px-4 py-7 sm:px-6 md:px-8">
-        <div className="mb-4 text-center">
-          <p className="section-kicker">Standings</p>
-          <h2 className="mt-2 inline-flex items-center justify-center gap-2 font-display text-3xl text-slate-900 md:text-4xl">
-            <ListOrdered size={22} className="text-[#8a6a35]" />
-            <span>League Table</span>
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[#526070]">
-            Samsara Premier League (SPL) 2025 to 2026 standings after Week {latestRound}.
-            {SPL_STATUS.leagueStageConcluded ? (
-              <>
-                {" "}
-                League Stage has concluded. Championship Stage is ongoing.
-              </>
-            ) : (
-              <> Table updates after each completed match.</>
-            )}
-          </p>
+        <div className="section-divider">
+          <div className="min-w-0">
+            <p className="section-kicker">Standings</p>
+            <h2 className="mt-2 inline-flex max-w-full items-center gap-2 font-display text-3xl md:text-4xl">
+              <ListOrdered size={22} className="text-[#ff8f62]" />
+              <span className="text-[#15202b]">League Table</span>
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#8ea0b1]">
+              Samsara Premier League (SPL) 2025 to 2026 standings after Week {latestRound}.
+              {SPL_STATUS.leagueStageConcluded ? (
+                <>
+                  {" "}
+                  League Stage has concluded. Championship Stage is ongoing.
+                </>
+              ) : (
+                <> Table updates after each completed match.</>
+              )}
+            </p>
+          </div>
           {SPL_STATUS.leagueStageConcluded && (
-            <div className="mt-4 rounded-[1.5rem] border border-[#14324a]/10 bg-[#f8f3eb] px-4 py-4 text-left text-sm">
-              <div className="font-semibold text-slate-900">
+            <div className="w-full max-w-sm rounded-[1.25rem] border border-slate-200 bg-[#f8fafc] px-4 py-4 text-left text-sm">
+              <div className="font-semibold text-[#15202b]">
                 League Stage Winners:{" "}
-                <span className="text-emerald-700">{SPL_STATUS.leagueStageWinner}</span>
+                <span className="text-[#f0b429]">{SPL_STATUS.leagueStageWinner}</span>
               </div>
-              <div className="mt-1 text-[#526070]">{SPL_STATUS.note}</div>
+              <div className="mt-1 text-[#8ea0b1]">{SPL_STATUS.note}</div>
             </div>
           )}
         </div>
 
         {leader && (
           <div className="mb-5 grid gap-3 md:grid-cols-3">
-            <div className="rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] px-4 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a6a35]">
-                Current leader
+            <div className="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4 text-[#15202b]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#ff8f62]">
+                League winner
               </p>
-              <p className="mt-2 text-lg font-semibold text-[#182230]">{leader.name}</p>
-              <p className="mt-1 text-sm text-[#526070]">{leader.points} pts after {leader.played} matches</p>
+              <p className="mt-2 text-lg font-semibold">{SPL_STATUS.leagueStageWinner}</p>
+              <p className="mt-1 text-sm text-[#607181]">League stage winners for SPL 2025-26</p>
             </div>
-            <div className="rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] px-4 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a6a35]">
+            <div className="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4 text-[#15202b]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#ff8f62]">
                 Best attack
               </p>
-              <p className="mt-2 text-lg font-semibold text-[#182230]">{topAttack?.name}</p>
-              <p className="mt-1 text-sm text-[#526070]">
+              <p className="mt-2 text-lg font-semibold">{topAttack?.name}</p>
+              <p className="mt-1 text-sm text-[#607181]">
                 {topAttack?.goalsFor} goals scored
               </p>
             </div>
-            <div className="rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] px-4 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8a6a35]">
+            <div className="rounded-[1.25rem] border border-slate-200 bg-[#fff5f5] px-4 py-4 text-[#15202b]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#b42318]">
                 Best defence
               </p>
-              <p className="mt-2 text-lg font-semibold text-[#182230]">{topDefence?.name}</p>
-              <p className="mt-1 text-sm text-[#526070]">
+              <p className="mt-2 text-lg font-semibold">{topDefence?.name}</p>
+              <p className="mt-1 text-sm text-[#607181]">
                 {topDefence?.goalsAgainst} goals conceded
               </p>
             </div>
@@ -275,7 +277,7 @@ export default function LeagueTableSection() {
         <div className="-mx-2 overflow-x-auto px-2 pb-2 sm:pb-4 mt-2">
           <table className="min-w-full overflow-hidden text-left text-xs sm:text-sm">
             <thead>
-              <tr className="border-b bg-[#f4ecdf] text-[11px] uppercase text-slate-500 sm:text-xs">
+              <tr className="border-b border-slate-200 bg-[#f8fafc] text-[11px] uppercase text-[#607181] sm:text-xs">
                 <th className="px-3 py-2">Pos</th>
                 <th className="px-3 py-2">Team</th>
                 <th className="px-2 py-2 text-center">MP</th>
@@ -300,9 +302,9 @@ export default function LeagueTableSection() {
                   row.played === 0
                     ? "bg-white"
                     : isTop4
-                    ? "bg-emerald-50"
+                    ? "bg-[#f8fbff]"
                     : isBottom2
-                    ? "bg-rose-50"
+                    ? "bg-[#fff7f7]"
                     : "bg-white";
 
                 const movementSymbol =
@@ -315,8 +317,8 @@ export default function LeagueTableSection() {
                     : "text-slate-400";
 
                 return (
-                  <tr key={row.name} className={`${bg} text-[11px] sm:text-xs`}>
-                    <td className="whitespace-nowrap px-3 py-2 font-semibold text-slate-800">
+                  <tr key={row.name} className={`${bg} text-[11px] text-[#15202b] sm:text-xs`}>
+                    <td className="whitespace-nowrap px-3 py-2 font-semibold text-[#15202b]">
                       <span>{row.position}</span>{" "}
                       <span className={`ml-1 text-[10px] ${movementClass}`}>
                         {movementSymbol}{" "}
@@ -328,10 +330,10 @@ export default function LeagueTableSection() {
                         <img
                           src={logo}
                           alt={row.name}
-                          className="h-6 w-6 rounded-full border bg-white object-contain"
+                          className="h-6 w-6 rounded-full border border-[#11293f]/8 bg-white object-contain"
                         />
                       ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-[9px] font-bold text-slate-700">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-[9px] font-bold text-[#607181]">
                           {row.name
                             .split(" ")
                             .map((p) => p[0])
@@ -362,10 +364,10 @@ export default function LeagueTableSection() {
                               key={i}
                               className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold ${
                                 code === "W"
-                                  ? "bg-emerald-500 text-white"
+                                  ? "bg-[#11293f] text-white"
                                   : code === "D"
                                   ? "bg-slate-300 text-slate-800"
-                                  : "bg-rose-500 text-white"
+                                  : "bg-[#ff5a36] text-white"
                               }`}
                             >
                               {code}
@@ -381,13 +383,13 @@ export default function LeagueTableSection() {
           </table>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 border-t px-4 py-3 text-[11px] text-slate-500 sm:px-6 sm:text-xs mt-2">
+        <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-slate-200 px-4 py-3 text-[11px] text-[#607181] sm:px-6 sm:text-xs">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded bg-emerald-100 border border-emerald-400" />
+            <span className="h-3 w-3 rounded border border-[#d7222a] bg-[#d7222a]/20" />
             Top 4 advance to knockouts
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded bg-rose-100 border border-rose-400" />
+            <span className="h-3 w-3 rounded border border-[#ff5a36] bg-[#ff5a36]/20" />
             Bottom 2 in relegation zone
           </div>
         </div>

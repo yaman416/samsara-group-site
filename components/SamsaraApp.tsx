@@ -36,7 +36,7 @@ const SPL_SEASON = {
 // Official names
 const TEAMS = [
   "Khukuri Canberra FC",
-  "Phuensum FC",
+  "Aces FC",
   "Everest FC",
   "Azhas FC",
   "Thuenlam FC",
@@ -76,11 +76,11 @@ const FIXTURES = [
   { week: 1, date: "2025-11-15", time: "3:30 PM", home: "Thuenlam FC", away: "CNFC Canberra", ground: "Ground 2" },
   { week: 1, date: "2025-11-15", time: "5:00 PM", home: "Everest FC", away: "Khukuri Canberra FC", ground: "Ground 1" },
   { week: 1, date: "2025-11-15", time: "5:00 PM", home: "Azhas FC", away: "Unity Stars FC", ground: "Ground 2" },
-  { week: 1, date: "2025-11-15", time: "6:30 PM", home: "Achos Football Team", away: "Phuensum FC", ground: "Ground 1" },
+  { week: 1, date: "2025-11-15", time: "6:30 PM", home: "Achos Football Team", away: "Aces FC", ground: "Ground 1" },
   { week: 1, date: "2025-11-15", time: "6:30 PM", home: "JA Brothers Football Club", away: "Queanbeyan Nepalese United Football Club", ground: "Ground 2" },
 
   // Week 2 – 22 Nov 2025
-  { week: 2, date: "2025-11-22", time: "3:30 PM", home: "Everest FC", away: "Phuensum FC", ground: "Ground 1" },
+  { week: 2, date: "2025-11-22", time: "3:30 PM", home: "Everest FC", away: "Aces FC", ground: "Ground 1" },
   { week: 2, date: "2025-11-22", time: "3:30 PM", home: "Druk FC", away: "Khukuri Canberra FC", ground: "Ground 2" },
   { week: 2, date: "2025-11-22", time: "5:00 PM", home: "Thuenlam FC", away: "Unity Stars FC", ground: "Ground 1" },
   { week: 2, date: "2025-11-22", time: "5:00 PM", home: "Achos Football Team", away: "JA Brothers Football Club", ground: "Ground 2" },

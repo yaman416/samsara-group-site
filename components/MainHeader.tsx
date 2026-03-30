@@ -1,8 +1,8 @@
-// components/MainHeader.tsx
 "use client";
 
 import { useState } from "react";
-import { ORG, SPL_SEASON } from "@/lib/splData";
+import { Facebook, Instagram, Menu, Search, Timer, Video, Youtube } from "lucide-react";
+import { ORG } from "@/lib/splData";
 
 type MainHeaderProps = {
   active?: string;
@@ -10,126 +10,141 @@ type MainHeaderProps = {
 };
 
 const LINKS = [
-  { key: "home", label: "About Us", target: "about" },
-  { key: "table", label: "League Table", target: "table" },
-  { key: "fixturesResults", label: "Fixtures & Results", target: "fixturesResults" },
-  { key: "downloads", label: "Downloads", target: "downloads" },
-  { key: "sponsors", label: "Sponsors", target: "sponsors" },
+  { key: "home", label: "Home", href: "/#home" },
+  { key: "league", label: "Samsara Premier League", href: "/#league" },
+  { key: "cup", label: "New Year Cup", href: "/#newYearCup" },
+  { key: "fixtures", label: "Fixtures & Results", href: "/#fixturesResults" },
+  { key: "gallery", label: "Gallery", href: "/gallery" },
+  { key: "community", label: "Community Events", href: "/#community" },
+  { key: "about", label: "About Us", href: "/#about" },
+  { key: "contact", label: "Contact", href: "/#contact" },
 ];
-
-function scrollToSection(id: string) {
-  if (typeof document === "undefined") return;
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.scrollIntoView({ behavior: "smooth", block: "start" });
-}
 
 export default function MainHeader({ active, onChange }: MainHeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const eventDate = new Date("2026-04-04T09:00:00+11:00");
+  const now = new Date();
+  const daysUntil = Math.max(0, Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
-  const handleClick = (key: string, target: string) => {
-    if (onChange) onChange(key);
-    scrollToSection(target);
+  const handleClick = (key: string) => {
+    onChange?.(key);
     setMobileOpen(false);
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/30 bg-[#f6f0e7]/85 backdrop-blur-xl">
-      <div className="border-b border-[#14324a]/8 bg-[#17334b] text-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-[11px] sm:px-6 lg:px-8">
-          <p className="uppercase tracking-[0.18em] text-white/70">
-            Community football and cultural events in Canberra
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/96 backdrop-blur-xl">
+      <div className="border-b border-slate-200 bg-[#15202b]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 py-2 text-[11px] sm:px-6 lg:px-8">
+          <p className="font-medium uppercase tracking-[0.14em] text-white/80">
+            Connecting communities through sport, culture, and events in Canberra
           </p>
-          <p className="text-white/78">{ORG.email}</p>
-        </div>
-      </div>
-      <div className="mx-auto flex max-w-7xl items-center px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
-          <img
-            src="/logo.png"
-            alt="Samsara Group Canberra logo"
-            className="h-10 w-10 rounded-full border border-[#14324a]/10 bg-white/70 p-1"
-          />
-          <div className="leading-tight">
-            <p className="font-display text-lg text-[#182230]">{ORG.name}</p>
-            <p className="text-[11px] uppercase tracking-[0.22em] text-[#6f6250]">
-              {SPL_SEASON.name}
-            </p>
+          <div className="flex flex-wrap items-center gap-3 text-white/60">
+            <a href="https://www.facebook.com/samsaragroupcbr" target="_blank" rel="noreferrer" className="hover:text-white">
+              <Facebook size={14} />
+            </a>
+            <a href="https://www.instagram.com/samsaragroup.cbr/" target="_blank" rel="noreferrer" className="hover:text-white">
+              <Instagram size={14} />
+            </a>
+            <a href="https://www.tiktok.com/@samsaragroupcanberra" target="_blank" rel="noreferrer" className="hover:text-white">
+              <Video size={14} />
+            </a>
+            <a href="https://www.youtube.com/@SamsaraGroupCanberra" target="_blank" rel="noreferrer" className="hover:text-white">
+              <Youtube size={14} />
+            </a>
+            <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-white/78">
+              <Timer size={12} />
+              {daysUntil} days to next event
+            </span>
           </div>
         </div>
+      </div>
 
-        <nav className="hidden flex-1 items-center justify-center gap-2 md:flex">
-          {LINKS.map((link) => (
-            <button
-              key={link.key}
-              type="button"
-              onClick={() => handleClick(link.key, link.target)}
-              className={`rounded-full px-3 py-2 text-xs font-medium transition ${
-                active === link.key
-                  ? "bg-[#14324a] text-[#fff8ef]"
-                  : "text-[#425164] hover:bg-white/70 hover:text-[#14324a]"
-              }`}
-            >
-              {link.label}
-            </button>
-          ))}
-        </nav>
+      <div className="mx-auto flex max-w-7xl items-center gap-4 px-3 py-4 sm:px-6 lg:px-8">
+        <a href="/" className="flex min-w-0 items-center gap-3">
+          <img
+            src="/logo.png"
+            alt={`${ORG.name} logo`}
+            className="h-14 w-auto object-contain"
+          />
+          <div className="min-w-0">
+            <p className="truncate text-base font-semibold tracking-[-0.02em] text-[#15202b] sm:text-lg">
+              Samsara Group Canberra
+            </p>
+            <p className="truncate text-[11px] uppercase tracking-[0.18em] text-[#ff7d7d]">
+              Community sport and culture in Canberra
+            </p>
+          </div>
+        </a>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="hidden flex-1 items-center gap-3 xl:flex">
+          <div className="flex flex-1 items-center rounded-full border border-slate-200 bg-[#f8fafc] px-4 py-3 text-[#607181]">
+            <Search size={16} />
+            <span className="ml-2 text-sm">Search league, cup, fixtures, and events</span>
+          </div>
+
           <a
-            href="#contact"
-            className="hidden rounded-full border border-[#14324a]/12 bg-[#14324a] px-4 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-[#0f273a] lg:inline-flex"
+            href="/#join"
+            className="rounded-full bg-[#d7222a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#e13940]"
           >
-            Contact organisers
+            Contact Us
           </a>
-          <a
-            href="https://www.youtube.com/@SamsaraGroupCanberra"
-            target="_blank"
-            rel="noreferrer"
-            className="hidden items-center gap-2 rounded-full border border-[#14324a]/12 bg-white/75 px-4 py-2 text-[11px] font-semibold text-[#14324a] shadow-sm transition hover:bg-white sm:inline-flex"
-          >
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#14324a] text-[9px] text-white">
-              ▶
-            </span>
-            <span>Watch live updates</span>
-          </a>
+        </div>
 
-          <button
-            type="button"
-            onClick={() => setMobileOpen((v) => !v)}
-            className="inline-flex items-center justify-center rounded-full border border-[#14324a]/12 bg-white/75 px-3 py-2 text-xs text-[#14324a] md:hidden"
-            aria-label="Open menu"
-          >
-            <span className="mr-1 text-[11px]">Menu</span>
-            <span className="flex flex-col gap-[3px]">
-              <span className="block h-[2px] w-3 rounded bg-[#14324a]" />
-              <span className="block h-[2px] w-3 rounded bg-[#14324a]" />
-              <span className="block h-[2px] w-3 rounded bg-[#14324a]" />
-            </span>
-          </button>
+        <button
+          type="button"
+          onClick={() => setMobileOpen((value) => !value)}
+          className="ml-auto inline-flex rounded-full border border-slate-200 bg-[#f8fafc] p-3 text-[#15202b] xl:hidden"
+          aria-label="Open menu"
+        >
+          <Menu size={18} />
+        </button>
+      </div>
+
+      <div className="border-t border-slate-200 bg-[#fcfdff]">
+        <div className="mx-auto hidden max-w-7xl items-center justify-between gap-4 px-3 py-3 xl:flex sm:px-6 lg:px-8">
+          <nav className="flex flex-wrap items-center gap-1">
+            {LINKS.map((link) => (
+              <a
+                key={link.key}
+                onClick={() => handleClick(link.key)}
+                href={link.href}
+                className={`rounded-full px-4 py-2 text-sm transition ${
+                  active === link.key
+                    ? "bg-[#d7222a] text-white"
+                    : "text-[#607181] hover:bg-[#f3f6fb] hover:text-[#15202b]"
+                }`}
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-white/30 bg-[#f6f0e7]/95 md:hidden">
-          <div className="mx-auto max-w-7xl space-y-2 px-4 py-3 sm:px-6">
+        <div className="border-t border-slate-200 bg-white xl:hidden">
+          <div className="mx-auto max-w-7xl space-y-2 px-3 py-4 sm:px-6">
+            <div className="flex items-center rounded-full border border-slate-200 bg-[#f8fafc] px-4 py-3 text-[#607181]">
+              <Search size={16} />
+              <span className="ml-2 text-sm">Search site</span>
+            </div>
+
             {LINKS.map((link) => (
-              <button
+              <a
                 key={link.key}
-                type="button"
-                onClick={() => handleClick(link.key, link.target)}
-                className="block w-full rounded-xl px-3 py-3 text-left text-xs font-medium text-[#324356] hover:bg-white/80"
+                onClick={() => handleClick(link.key)}
+                href={link.href}
+                className="block w-full rounded-xl px-3 py-3 text-left text-sm text-[#607181] hover:bg-[#f3f6fb]"
               >
                 {link.label}
-              </button>
+              </a>
             ))}
+
             <a
-              href="https://www.youtube.com/@SamsaraGroupCanberra"
-              target="_blank"
-              rel="noreferrer"
-              className="block rounded-xl bg-[#14324a] px-3 py-3 text-xs font-semibold text-white"
+              href="/#join"
+              className="block rounded-xl bg-[#d7222a] px-3 py-3 text-sm font-semibold text-white"
             >
-              Watch live updates
+              Contact Us
             </a>
           </div>
         </div>

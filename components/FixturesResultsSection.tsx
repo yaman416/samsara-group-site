@@ -45,26 +45,26 @@ export default function FixturesResultsSection() {
   }
 
   return (
-    <section id="fixturesResults" className="mt-12">
+    <section id="fixturesResultsDetails" className="mt-0">
       <div className="shell-card px-4 py-7 sm:px-6 md:px-8">
-        <div className="mb-5 text-center">
-          <p className="section-kicker">Season tracker</p>
-          <h2 className="mt-2 inline-flex items-center justify-center gap-2 font-display text-3xl text-slate-900 md:text-4xl">
-            <ListOrdered size={22} className="text-[#8a6a35]" />
-            <span>SPL Fixtures &amp; Results</span>
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[#526070]">
-            Weekly fixtures, final scores, and match facts for the Samsara Premier League.
-          </p>
-        </div>
+        <div className="section-divider">
+          <div>
+            <p className="section-kicker">Season tracker</p>
+            <h2 className="mt-2 inline-flex items-center justify-center gap-2 font-display text-3xl md:text-4xl">
+              <ListOrdered size={22} className="text-[#ff8f62]" />
+              <span className="text-[#15202b]">SPL Fixtures &amp; Results</span>
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#8ea0b1]">
+              Weekly fixtures, final scores, and match facts for the Samsara Premier League.
+            </p>
+          </div>
 
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-600">Week</span>
+            <span className="text-xs text-[#6d7c8b]">Week</span>
             <select
               value={selectedRound}
               onChange={(e) => setSelectedRound(Number(e.target.value))}
-              className="rounded-xl border border-[#14324a]/10 bg-[#fcfaf6] px-3 py-2 text-sm shadow-sm"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#15202b] shadow-sm"
             >
               {rounds.map((r) => (
                 <option key={r} value={r}>
@@ -75,17 +75,17 @@ export default function FixturesResultsSection() {
           </div>
         </div>
 
-        <div className="mb-3 text-center text-xs text-[#526070]">
-          <span className="rounded-full border border-[#8a6a35]/30 bg-[#f7efe1] px-3 py-1 text-[#8a6a35]">
+        <div className="mb-4 text-center text-xs text-[#8ea0b1]">
+          <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[#607181]">
             {firstUpcomingFixture ? `Upcoming Week: ${nextUpcomingRound}` : `Latest completed week: ${latestCompletedRound}`}
           </span>
         </div>
 
-        <p className="mb-5 text-center text-sm leading-7 text-[#526070]">
+        <p className="mb-6 text-center text-sm leading-7 text-[#8ea0b1]">
           Fixtures are updated weekly. Final scores and match facts are added after each match is completed and confirmed by the organisers.
         </p>
 
-        <div className="space-y-4">
+        <div className="grid gap-4">
           {fixtures.map((f) => {
             const res = resultMap[f.id];
             const isFinished = !!res;
@@ -95,16 +95,15 @@ export default function FixturesResultsSection() {
             const awayLogo = logo(f.away);
 
             return (
-              <div key={f.id} className="rounded-[1.5rem] border border-[#14324a]/10 bg-[#fcfaf6] p-4 shadow-sm">
+              <div key={f.id} className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  {/* Home */}
                   <div className="flex min-w-[40%] items-center gap-2">
                     {homeLogo ? (
-                      <img src={homeLogo} className="h-7 w-7 rounded-full border" alt={f.home} />
+                      <img src={homeLogo} className="h-9 w-9 rounded-full border border-slate-200 bg-white p-1" alt={f.home} />
                     ) : (
                       <div className="h-7 w-7 rounded-full border bg-slate-100" />
                     )}
-                    <span className="text-sm font-semibold">{f.home}</span>
+                    <span className="text-sm font-semibold text-[#15202b]">{f.home}</span>
                     {isBye(f.home) && (
                       <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-700">
                         BYE
@@ -112,46 +111,44 @@ export default function FixturesResultsSection() {
                     )}
                   </div>
 
-                  {/* Centre */}
                   <div className="flex-1 text-center">
                     {isFinished ? (
-                      <span className="text-lg font-bold text-[#182230]">
+                      <span className="rounded-full bg-[#d7222a] px-4 py-1 text-lg font-bold text-white">
                         {res.homeGoals}
-                        <span className="mx-1 text-[10px] text-gray-500">FT</span>
+                        <span className="mx-1 text-[10px] text-white/70">FT</span>
                         {res.awayGoals}
                       </span>
                     ) : (
-                      <span className="text-sm font-semibold text-[#5a6776]">vs</span>
+                      <span className="rounded-full bg-[#f3f6fb] px-4 py-1 text-sm font-semibold text-[#607181]">vs</span>
                     )}
-                    <div className="mt-1 text-[10px] text-[#6b7684]">
+                    <div className="mt-1 text-[10px] text-[#607181]">
                       Week {f.round} • {f.date} • {f.time}
                     </div>
                   </div>
 
-                  {/* Away */}
                   <div className="flex min-w-[40%] items-center justify-end gap-2">
                     {isBye(f.away) && (
                       <span className="mr-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-700">
                         BYE
                       </span>
                     )}
-                    <span className="text-right text-sm font-semibold">{f.away}</span>
+                    <span className="text-right text-sm font-semibold text-[#15202b]">{f.away}</span>
                     {awayLogo ? (
-                      <img src={awayLogo} className="h-7 w-7 rounded-full border" alt={f.away} />
+                      <img src={awayLogo} className="h-9 w-9 rounded-full border border-slate-200 bg-white p-1" alt={f.away} />
                     ) : (
                       <div className="h-7 w-7 rounded-full border bg-slate-100" />
                     )}
                   </div>
                 </div>
 
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[#5a6776]">
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-3 text-xs text-[#607181]">
                   <span>
                     Ground: <strong>{f.ground}</strong>
                   </span>
 
                   <div className="flex items-center gap-2">
                     {!isFinished && (
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] text-emerald-700">
+                      <span className="rounded-full bg-[#d7222a]/14 px-2 py-0.5 text-[10px] text-[#ff8f62]">
                         Upcoming fixture
                       </span>
                     )}
@@ -162,7 +159,7 @@ export default function FixturesResultsSection() {
                           setOpenMatchId("loading-" + f.id);
                           setTimeout(() => setOpenMatchId(f.id), 50);
                         }}
-                        className="rounded-lg bg-[#14324a] px-3 py-1 text-xs text-white hover:bg-[#0f273a]"
+                        className="rounded-full bg-[#d7222a] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#e13940]"
                       >
                         Match Facts
                       </button>
