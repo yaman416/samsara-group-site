@@ -21,7 +21,7 @@ export default function MainFooter() {
               href="https://www.facebook.com/samsaragroupcbr"
               target="_blank"
               rel="noreferrer"
-              className="mt-5 inline-flex items-center justify-center rounded-full bg-[#d7222a] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition hover:bg-[#e13940]"
+              className="mt-5 inline-flex items-center justify-center rounded-full bg-[#18212a] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-sm transition hover:bg-[#253240]"
             >
               Follow us on Facebook
             </a>

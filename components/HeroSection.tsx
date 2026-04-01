@@ -32,32 +32,30 @@ export default function HeroSection() {
             alt={slide.label}
             className="absolute inset-0 h-full w-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050b12]/92 via-[#08121b]/54 to-transparent" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(215,34,42,0.22),transparent_24%)]" />
-
-          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#111922]/88 via-[#111922]/34 to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/20 to-transparent" />
 
           <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 lg:p-10">
-            <div className="max-w-4xl">
-                <span className="inline-flex rounded-full bg-[#d7222a] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
-                  {slide.eyebrow}
-                </span>
-              <h1 className="text-balance mt-4 text-4xl font-semibold leading-[0.96] tracking-[-0.04em] text-white sm:text-5xl lg:text-[4.6rem]">
+            <div className="max-w-3xl">
+              <span className="inline-flex rounded-full border border-white/18 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+                {slide.eyebrow}
+              </span>
+              <h1 className="text-balance mt-4 text-[2.2rem] font-semibold leading-[0.98] tracking-[-0.05em] text-white sm:text-[3.4rem] lg:text-[4.4rem]">
                 {slide.label}
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/82 sm:text-base">
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px] lg:text-base">
                 {slide.sublabel}
               </p>
 
-              <div className="mt-6 flex flex-wrap items-center gap-3">
+              <div className="stack-actions mt-6">
                 <a
                   href={slide.href}
-                  className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#07111a] transition hover:bg-[#f2f5f8]"
+                  className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-white px-5 py-3 text-center text-sm font-semibold text-[#18212a] transition hover:bg-[#f3f5f7] sm:min-h-0 sm:w-auto"
                 >
                   {slide.cta}
                 </a>
-                <span className="inline-flex items-center gap-2 text-sm text-white/72">
-                  <CalendarDays size={16} className="text-[#ff8f62]" />
+                <span className="inline-flex items-center gap-2 text-sm text-white/72 sm:w-auto">
+                  <CalendarDays size={16} className="text-white/70" />
                   Canberra community football and culture
                 </span>
               </div>
@@ -68,8 +66,8 @@ export default function HeroSection() {
                     key={item.image}
                     type="button"
                     onClick={() => setIndex(itemIndex)}
-                    className={`h-2 rounded-full transition ${
-                      itemIndex === index ? "w-8 bg-[#d7222a]" : "w-2 bg-white/45"
+                    className={`h-2.5 rounded-full transition ${
+                      itemIndex === index ? "w-8 bg-white" : "w-2.5 bg-white/40"
                     }`}
                     aria-label={`Show slide ${itemIndex + 1}`}
                   />
@@ -84,12 +82,12 @@ export default function HeroSection() {
         {QUICK_INFO.map((item) => {
           const Icon = ICONS[item.icon as keyof typeof ICONS];
           return (
-            <div key={item.title} className="shell-card px-4 py-4">
+            <div key={item.title} className="shell-card px-4 py-4 sm:px-5">
               <div className="flex items-center gap-3">
-                <div className="rounded-full bg-[#d7222a]/14 p-2 text-[#ff8f62]">
+                <div className="rounded-full bg-[#18212a]/8 p-2.5 text-[#18212a]">
                   <Icon size={18} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8ea0b1]">
                     {item.title}
                   </p>

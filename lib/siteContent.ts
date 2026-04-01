@@ -1,6 +1,6 @@
 export const HERO_SLIDES = [
   {
-    image: "/gallery/nnyc-action-1.png",
+    image: "/gallery/Screenshot%202026-03-31%20at%204.16.48%E2%80%AFam.png",
     label: "Samsara Premier League - Season 3 Starts Nov 2027",
     eyebrow: "SPL Season 3",
     sublabel: "A growing community football competition bringing Nepalese and Bhutanese teams together in Canberra",
@@ -8,7 +8,7 @@ export const HERO_SLIDES = [
     cta: "View League Details",
   },
   {
-    image: "/gallery/nnyc-team-1.png",
+    image: "/gallery/Screenshot%202026-03-31%20at%204.23.30%E2%80%AFam.png",
     label: "Nepalese New Year Cup - 4 and 11 April 2026",
     eyebrow: "New Year Cup",
     sublabel: "Celebrate culture, football, and community over two weekends in Canberra",
@@ -16,7 +16,7 @@ export const HERO_SLIDES = [
     cta: "Explore Event",
   },
   {
-    image: "/gallery/nnyc-player-1.png",
+    image: "/gallery/Screenshot%202026-03-31%20at%204.20.34%E2%80%AFam.png",
     label: "More Than Football - Building Community",
     eyebrow: "Community First",
     sublabel: "Connecting the wider Canberra Nepalese and Bhutanese community through sport and events",
@@ -149,7 +149,7 @@ export const NEW_YEAR_CUP = {
     "Food, music, and cultural celebration",
     "Photos and community highlights from previous years",
   ],
-  venue: "Harrison Playing Fields (101-102)",
+  venue: "Nicholls Synthetic Fields",
   dates: "4 & 11 April 2026",
   groups: [
     {
@@ -183,28 +183,28 @@ export const EVENT_PARTNERS = [
 export const NEWS_UPDATES = [
   {
     title: "Match reports and weekly league wrap-ups",
-    image: "/gallery/nnyc-action-3.png",
+    image: "/gallery/Screenshot%202026-03-31%20at%204.15.55%E2%80%AFam.png",
     tag: "Reports",
   },
   {
     title: "Announcements for cup fixtures, registrations, and deadlines",
-    image: "/gallery/nnyc-celebration-2.png",
+    image: "/gallery/Screenshot%202026-03-31%20at%204.20.47%E2%80%AFam.png",
     tag: "Announcements",
   },
   {
     title: "Community event updates and cup news",
-    image: "/gallery/nnyc-team-2.png",
+    image: "/gallery/Screenshot%202026-03-31%20at%204.22.10%E2%80%AFam.png",
     tag: "Events",
   },
 ];
 
 export const GALLERY_HIGHLIGHTS = [
-  { image: "/gallery/nnyc-action-1.png", title: "Matchday action" },
-  { image: "/gallery/nnyc-celebration-1.png", title: "Team celebrations" },
-  { image: "/gallery/nnyc-team-1.png", title: "Running shield winners" },
-  { image: "/gallery/nnyc-action-2.png", title: "Aerial battle in midfield" },
-  { image: "/gallery/nnyc-player-1.png", title: "Match focus" },
-  { image: "/gallery/nnyc-touchline-1.png", title: "Touchline moments" },
+  { image: "/gallery/Screenshot%202026-03-31%20at%204.15.46%E2%80%AFam.png", title: "Matchday action" },
+  { image: "/gallery/Screenshot%202026-03-31%20at%204.16.18%E2%80%AFam.png", title: "Team celebrations" },
+  { image: "/gallery/Screenshot%202026-03-31%20at%204.18.27%E2%80%AFam.png", title: "Running shield winners" },
+  { image: "/gallery/Screenshot%202026-03-31%20at%204.19.04%E2%80%AFam.png", title: "Aerial battle in midfield" },
+  { image: "/gallery/Screenshot%202026-03-31%20at%204.21.54%E2%80%AFam.png", title: "Match focus" },
+  { image: "/gallery/Screenshot%202026-03-31%20at%204.22.18%E2%80%AFam.png", title: "Touchline moments" },
 ];
 
 export const COMMUNITY_EVENTS = [
@@ -260,25 +260,25 @@ export const DOWNLOADS = [
 export const STORY_CARDS = [
   {
     title: "Khukuri Canberra FC crowned season 2 champions",
-    image: "/gallery/nnyc-celebration-1.png",
+    image: "/gallery/Screenshot%202026-03-31%20at%204.16.15%E2%80%AFam.png",
     tag: "Final",
     href: "#fixturesResults",
   },
   {
     title: "Thuenlam FC finish league stage on top",
-    image: "/gallery/nnyc-team-1.png",
+    image: "/gallery/Screenshot%202026-03-31%20at%204.18.30%E2%80%AFam.png",
     tag: "League",
     href: "#fixturesResults",
   },
   {
     title: "New Year Cup dates confirmed for Canberra",
-    image: "/gallery/nnyc-action-4.png",
+    image: "/gallery/Screenshot%202026-03-31%20at%204.20.02%E2%80%AFam.png",
     tag: "Community",
     href: "#about",
   },
   {
     title: "Volunteer organisers keep the competition moving",
-    image: "/gallery/nnyc-player-1.png",
+    image: "/gallery/Screenshot%202026-03-31%20at%204.22.04%E2%80%AFam.png",
     tag: "Behind the scenes",
     href: "#about",
   },

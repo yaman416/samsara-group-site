@@ -1,25 +1,40 @@
 import { readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative, sep } from "node:path";
 import MainHeader from "@/components/MainHeader";
 import MainFooter from "@/components/MainFooter";
 
 const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 
+function walkGallery(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const fullPath = join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      return walkGallery(fullPath);
+    }
+
+    const dotIndex = entry.name.lastIndexOf(".");
+    if (dotIndex === -1) return [];
+    if (!IMAGE_EXTENSIONS.has(entry.name.slice(dotIndex).toLowerCase())) return [];
+
+    return [fullPath];
+  });
+}
+
 function galleryImages() {
   const galleryDir = join(process.cwd(), "public", "gallery");
 
-  return readdirSync(galleryDir)
-    .filter((file) => {
-      const dotIndex = file.lastIndexOf(".");
-      if (dotIndex === -1) return false;
-      if (file.startsWith("nnyc-")) return false;
-      return IMAGE_EXTENSIONS.has(file.slice(dotIndex).toLowerCase());
-    })
+  return walkGallery(galleryDir)
     .sort((a, b) => a.localeCompare(b))
-    .map((file) => ({
-      key: file,
-      src: `/gallery/${encodeURIComponent(file)}`,
-    }));
+    .map((filePath) => {
+      const relativePath = relative(galleryDir, filePath);
+      const webPath = relativePath.split(sep).map(encodeURIComponent).join("/");
+
+      return {
+        key: relativePath,
+        src: `/gallery/${webPath}`,
+      };
+    });
 }
 
 export default function GalleryPage() {

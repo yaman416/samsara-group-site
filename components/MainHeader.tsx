@@ -16,6 +16,7 @@ const LINKS = [
   { key: "fixtures", label: "Fixtures & Results", href: "/#fixturesResults" },
   { key: "gallery", label: "Gallery", href: "/gallery" },
   { key: "community", label: "Community Events", href: "/#community" },
+  { key: "sponsors", label: "Sponsors", href: "/#sponsors" },
   { key: "about", label: "About Us", href: "/#about" },
   { key: "contact", label: "Contact", href: "/#contact" },
 ];
@@ -32,59 +33,59 @@ export default function MainHeader({ active, onChange }: MainHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/96 backdrop-blur-xl">
-      <div className="border-b border-slate-200 bg-[#15202b]">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-3 py-2 text-[11px] sm:px-6 lg:px-8">
-          <p className="font-medium uppercase tracking-[0.14em] text-white/80">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/92 backdrop-blur-xl">
+      <div className="border-b border-slate-200 bg-[#f6f8fa]">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-2 px-4 py-2 text-[11px] sm:flex-row sm:flex-wrap sm:items-center sm:px-6 lg:px-8">
+          <p className="max-w-2xl font-medium uppercase tracking-[0.14em] text-[#6a7682]">
             Connecting communities through sport, culture, and events in Canberra
           </p>
-          <div className="flex flex-wrap items-center gap-3 text-white/60">
-            <a href="https://www.facebook.com/samsaragroupcbr" target="_blank" rel="noreferrer" className="hover:text-white">
+          <div className="flex w-full flex-wrap items-center gap-3 text-[#7a8794] sm:w-auto sm:justify-end">
+            <a href="https://www.facebook.com/samsaragroupcbr" target="_blank" rel="noreferrer" className="hover:text-[#18212a]">
               <Facebook size={14} />
             </a>
-            <a href="https://www.instagram.com/samsaragroup.cbr/" target="_blank" rel="noreferrer" className="hover:text-white">
+            <a href="https://www.instagram.com/samsaragroup.cbr/" target="_blank" rel="noreferrer" className="hover:text-[#18212a]">
               <Instagram size={14} />
             </a>
-            <a href="https://www.tiktok.com/@samsaragroupcanberra" target="_blank" rel="noreferrer" className="hover:text-white">
+            <a href="https://www.tiktok.com/@samsaragroupcanberra" target="_blank" rel="noreferrer" className="hover:text-[#18212a]">
               <Video size={14} />
             </a>
-            <a href="https://www.youtube.com/@SamsaraGroupCanberra" target="_blank" rel="noreferrer" className="hover:text-white">
+            <a href="https://www.youtube.com/@SamsaraGroupCanberra" target="_blank" rel="noreferrer" className="hover:text-[#18212a]">
               <Youtube size={14} />
             </a>
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-white/78">
-              <Timer size={12} />
+            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-[#5f6b76]">
+              <Timer size={12} className="text-[#18212a]" />
               {daysUntil} days to next event
             </span>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-3 py-4 sm:px-6 lg:px-8">
-        <a href="/" className="flex min-w-0 items-center gap-3">
+      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <a href="/" className="flex min-w-0 flex-1 items-center gap-3">
           <img
             src="/logo.png"
             alt={`${ORG.name} logo`}
-            className="h-14 w-auto object-contain"
+            className="h-12 w-auto object-contain sm:h-14"
           />
           <div className="min-w-0">
             <p className="truncate text-base font-semibold tracking-[-0.02em] text-[#15202b] sm:text-lg">
               Samsara Group Canberra
             </p>
-            <p className="truncate text-[11px] uppercase tracking-[0.18em] text-[#ff7d7d]">
+            <p className="truncate text-[11px] uppercase tracking-[0.18em] text-[#7a8794]">
               Community sport and culture in Canberra
             </p>
           </div>
         </a>
 
         <div className="hidden flex-1 items-center gap-3 xl:flex">
-          <div className="flex flex-1 items-center rounded-full border border-slate-200 bg-[#f8fafc] px-4 py-3 text-[#607181]">
+          <div className="flex flex-1 items-center rounded-full border border-slate-200 bg-[#f6f8fa] px-4 py-3 text-[#607181]">
             <Search size={16} />
             <span className="ml-2 text-sm">Search league, cup, fixtures, and events</span>
           </div>
 
           <a
             href="/#join"
-            className="rounded-full bg-[#d7222a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#e13940]"
+            className="button-primary"
           >
             Contact Us
           </a>
@@ -100,18 +101,18 @@ export default function MainHeader({ active, onChange }: MainHeaderProps) {
         </button>
       </div>
 
-      <div className="border-t border-slate-200 bg-[#fcfdff]">
-        <div className="mx-auto hidden max-w-7xl items-center justify-between gap-4 px-3 py-3 xl:flex sm:px-6 lg:px-8">
-          <nav className="flex flex-wrap items-center gap-1">
+      <div className="border-t border-slate-200 bg-white">
+        <div className="mx-auto hidden max-w-7xl items-center justify-center px-4 py-3 xl:flex sm:px-6 lg:px-8">
+          <nav className="flex flex-wrap items-center justify-center gap-1.5">
             {LINKS.map((link) => (
               <a
                 key={link.key}
                 onClick={() => handleClick(link.key)}
                 href={link.href}
-                className={`rounded-full px-4 py-2 text-sm transition ${
+                className={`rounded-full px-3 py-2 text-[13px] font-medium transition ${
                   active === link.key
-                    ? "bg-[#d7222a] text-white"
-                    : "text-[#607181] hover:bg-[#f3f6fb] hover:text-[#15202b]"
+                    ? "bg-[#18212a] text-white"
+                    : "text-[#607181] hover:bg-[#f6f8fa] hover:text-[#15202b]"
                 }`}
               >
                 {link.label}
@@ -123,8 +124,8 @@ export default function MainHeader({ active, onChange }: MainHeaderProps) {
 
       {mobileOpen && (
         <div className="border-t border-slate-200 bg-white xl:hidden">
-          <div className="mx-auto max-w-7xl space-y-2 px-3 py-4 sm:px-6">
-            <div className="flex items-center rounded-full border border-slate-200 bg-[#f8fafc] px-4 py-3 text-[#607181]">
+          <div className="mx-auto max-w-7xl space-y-3 px-4 py-4 sm:px-6">
+            <div className="flex items-center rounded-full border border-slate-200 bg-[#f6f8fa] px-4 py-3 text-[#607181]">
               <Search size={16} />
               <span className="ml-2 text-sm">Search site</span>
             </div>
@@ -134,7 +135,7 @@ export default function MainHeader({ active, onChange }: MainHeaderProps) {
                 key={link.key}
                 onClick={() => handleClick(link.key)}
                 href={link.href}
-                className="block w-full rounded-xl px-3 py-3 text-left text-sm text-[#607181] hover:bg-[#f3f6fb]"
+                className="block w-full rounded-2xl border border-slate-200 bg-[#f6f8fa] px-4 py-3 text-left text-sm font-medium text-[#607181] hover:bg-white"
               >
                 {link.label}
               </a>
@@ -142,7 +143,7 @@ export default function MainHeader({ active, onChange }: MainHeaderProps) {
 
             <a
               href="/#join"
-              className="block rounded-xl bg-[#d7222a] px-3 py-3 text-sm font-semibold text-white"
+              className="button-primary"
             >
               Contact Us
             </a>

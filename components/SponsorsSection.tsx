@@ -15,10 +15,10 @@ export default function SponsorsSection() {
     <section id="sponsors" className="mt-12 mb-4">
       <div className="shell-card overflow-hidden px-4 py-7 sm:px-6 md:px-8">
         <div className="section-divider">
-          <div>
+          <div className="min-w-0">
             <p className="section-kicker">Sponsors & Partners</p>
-            <h2 className="mt-2 inline-flex items-center gap-2 font-display text-3xl md:text-4xl">
-              <Building2 size={22} className="text-[#ff8f62]" />
+            <h2 className="mt-2 inline-flex max-w-full items-center gap-2 font-display text-3xl md:text-4xl">
+              <Building2 size={22} className="text-[#18212a]" />
               <span className="text-[#15202b]">Thank you for supporting this community event</span>
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-[#607181]">
@@ -32,9 +32,9 @@ export default function SponsorsSection() {
             {marqueeItems.map((item, index) => (
               <div
                 key={`${item.tier}-${item.name}-${index}`}
-                className="flex min-h-[92px] min-w-[240px] flex-col items-start justify-center rounded-[1rem] border border-slate-200 bg-white px-5 py-4 shadow-sm"
+                className="flex min-h-[92px] min-w-[220px] flex-col items-start justify-center rounded-[1rem] border border-slate-200 bg-white px-5 py-4 shadow-sm sm:min-w-[240px]"
               >
-                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#b42318]">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6a7682]">
                   {item.tier}
                 </span>
                 <span className="mt-2 text-sm font-semibold leading-6 text-[#15202b]">

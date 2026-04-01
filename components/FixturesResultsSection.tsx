@@ -51,7 +51,7 @@ export default function FixturesResultsSection() {
           <div>
             <p className="section-kicker">Season tracker</p>
             <h2 className="mt-2 inline-flex items-center justify-center gap-2 font-display text-3xl md:text-4xl">
-              <ListOrdered size={22} className="text-[#ff8f62]" />
+              <ListOrdered size={22} className="text-[#18212a]" />
               <span className="text-[#15202b]">SPL Fixtures &amp; Results</span>
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-[#8ea0b1]">
@@ -59,12 +59,12 @@ export default function FixturesResultsSection() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
             <span className="text-xs text-[#6d7c8b]">Week</span>
             <select
               value={selectedRound}
               onChange={(e) => setSelectedRound(Number(e.target.value))}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#15202b] shadow-sm"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#15202b] shadow-sm sm:w-auto"
             >
               {rounds.map((r) => (
                 <option key={r} value={r}>
@@ -113,7 +113,7 @@ export default function FixturesResultsSection() {
 
                   <div className="flex-1 text-center">
                     {isFinished ? (
-                      <span className="rounded-full bg-[#d7222a] px-4 py-1 text-lg font-bold text-white">
+                      <span className="rounded-full bg-[#18212a] px-4 py-1 text-lg font-bold text-white">
                         {res.homeGoals}
                         <span className="mx-1 text-[10px] text-white/70">FT</span>
                         {res.awayGoals}
@@ -148,7 +148,7 @@ export default function FixturesResultsSection() {
 
                   <div className="flex items-center gap-2">
                     {!isFinished && (
-                      <span className="rounded-full bg-[#d7222a]/14 px-2 py-0.5 text-[10px] text-[#ff8f62]">
+                      <span className="rounded-full bg-[#18212a]/8 px-2 py-0.5 text-[10px] text-[#18212a]">
                         Upcoming fixture
                       </span>
                     )}
@@ -159,7 +159,7 @@ export default function FixturesResultsSection() {
                           setOpenMatchId("loading-" + f.id);
                           setTimeout(() => setOpenMatchId(f.id), 50);
                         }}
-                        className="rounded-full bg-[#d7222a] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#e13940]"
+                        className="button-primary min-h-0 px-3 py-1.5 text-xs"
                       >
                         Match Facts
                       </button>
