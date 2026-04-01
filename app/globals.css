@@ -44,28 +44,28 @@
 }
 
 :root {
-  --font-sans-stack: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-sans-stack: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono-stack: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
-  --font-display: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Suisse Intl", "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --radius: 0.625rem;
-  --background: #f7f8fa;
-  --foreground: #18212a;
+  --background: #f4f4f1;
+  --foreground: #111827;
   --card: rgba(255, 255, 255, 0.96);
-  --card-foreground: #18212a;
+  --card-foreground: #111827;
   --popover: #ffffff;
-  --popover-foreground: #18212a;
-  --primary: #18212a;
+  --popover-foreground: #111827;
+  --primary: #111827;
   --primary-foreground: #ffffff;
-  --secondary: #f1f3f5;
-  --secondary-foreground: #18212a;
-  --muted: #f3f5f7;
-  --muted-foreground: #5f6b76;
+  --secondary: #ecece7;
+  --secondary-foreground: #111827;
+  --muted: #efefe9;
+  --muted-foreground: #666f7c;
   --destructive: oklch(0.577 0.245 27.325);
-  --accent: #d5dbe1;
+  --accent: #d7d8d0;
   --accent-foreground: #111111;
-  --border: rgba(24, 33, 42, 0.08);
-  --input: rgba(24, 33, 42, 0.08);
-  --ring: rgba(24, 33, 42, 0.2);
+  --border: rgba(17, 24, 39, 0.09);
+  --input: rgba(17, 24, 39, 0.08);
+  --ring: rgba(17, 24, 39, 0.16);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -125,7 +125,9 @@
   }
 
   body {
-    background: linear-gradient(180deg, #fbfcfd 0%, #f5f7f9 100%);
+    background:
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 32%),
+      linear-gradient(180deg, #fafaf7 0%, #f3f3ee 100%);
     @apply text-foreground antialiased;
     font-family: var(--font-sans-stack);
   }
@@ -141,15 +143,15 @@
   }
 
   .page-shell {
-    @apply relative mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-8 xl:px-10;
+    @apply relative mx-auto w-full max-w-[1340px] px-4 pb-16 sm:px-6 lg:px-8 xl:px-10;
   }
 
   .shell-card {
-    background: rgba(255, 255, 255, 0.96);
+    background: rgba(255, 255, 255, 0.9);
     box-shadow:
-      0 14px 36px rgba(15, 23, 42, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    @apply rounded-[1.5rem] border backdrop-blur-sm;
+      0 24px 60px rgba(15, 23, 42, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    @apply rounded-[1.75rem] border backdrop-blur-md;
   }
 
   .section-kicker {
@@ -158,11 +160,11 @@
 
   .section-title {
     font-family: var(--font-display);
-    @apply text-[1.8rem] font-semibold leading-[1.05] tracking-[-0.03em] text-[#15202b] sm:text-[2.1rem] md:text-[2.5rem];
+    @apply text-[2rem] font-semibold leading-[0.98] tracking-[-0.045em] text-[#101820] sm:text-[2.45rem] md:text-[3rem];
   }
 
   .section-copy {
-    @apply text-sm leading-7 text-[#607181] md:text-[15px];
+    @apply text-sm leading-7 text-[#66707d] md:text-[15px];
   }
 
   .soft-grid {
@@ -173,11 +175,11 @@
   }
 
   .section-divider {
-    @apply mb-6 flex flex-col items-start gap-4 border-b border-slate-200 pb-5 sm:mb-7 sm:flex-row sm:items-end sm:justify-between;
+    @apply mb-8 flex flex-col items-start gap-5 border-b border-slate-200/90 pb-6 sm:flex-row sm:items-end sm:justify-between;
   }
 
   .surface-muted {
-    @apply rounded-[1.1rem] border border-slate-200 bg-[#f6f8fa];
+    @apply rounded-[1.35rem] border border-slate-200/90 bg-[#f7f7f3];
   }
 
   .pill-label {
@@ -189,9 +191,9 @@
   }
 
   .editorial-frame {
-    @apply overflow-hidden rounded-[1.35rem] border border-slate-200 bg-white;
+    @apply overflow-hidden rounded-[1.6rem] border border-slate-200/90 bg-white;
     box-shadow:
-      0 18px 42px rgba(15, 23, 42, 0.05),
+      0 22px 52px rgba(15, 23, 42, 0.06),
       0 2px 8px rgba(15, 23, 42, 0.04);
   }
 
@@ -200,18 +202,18 @@
   }
 
   .sports-panel {
-    @apply overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white text-[#15202b];
+    @apply overflow-hidden rounded-[2rem] border border-slate-200/90 bg-white text-[#15202b];
     box-shadow:
-      0 18px 42px rgba(15, 23, 42, 0.05),
+      0 24px 56px rgba(15, 23, 42, 0.06),
       0 2px 8px rgba(15, 23, 42, 0.04);
   }
 
   .button-primary {
-    @apply inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#18212a] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#253240] sm:min-h-0 sm:w-auto;
+    @apply inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#101820] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#1d2936] sm:min-h-0 sm:w-auto;
   }
 
   .button-secondary {
-    @apply inline-flex min-h-11 w-full items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-center text-sm font-semibold text-[#18212a] transition hover:bg-[#f6f8fa] sm:min-h-0 sm:w-auto;
+    @apply inline-flex min-h-11 w-full items-center justify-center rounded-full border border-slate-200 bg-white/90 px-5 py-3 text-center text-sm font-semibold text-[#111827] transition hover:bg-[#f7f7f3] sm:min-h-0 sm:w-auto;
   }
 
   .button-chip {
@@ -220,6 +222,47 @@
 
   .stack-actions {
     @apply flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center;
+  }
+
+  .eyebrow-link {
+    @apply inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7780];
+  }
+
+  .editorial-label {
+    @apply text-[10px] font-semibold uppercase tracking-[0.18em] text-[#757f89];
+  }
+
+  .editorial-headline {
+    font-family: var(--font-display);
+    @apply text-[2.3rem] font-semibold leading-[0.95] tracking-[-0.05em] text-[#101820] sm:text-[3rem] lg:text-[4rem];
+  }
+
+  .editorial-subhead {
+    @apply text-[15px] leading-7 text-[#66707d] sm:text-base;
+  }
+
+  .image-tile {
+    @apply overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-[#eeefe8];
+  }
+
+  .post-card {
+    @apply editorial-frame flex flex-col overflow-hidden;
+  }
+
+  .post-image {
+    @apply aspect-[4/3] h-full w-full object-cover object-center;
+  }
+
+  .post-body {
+    @apply flex flex-1 flex-col p-4 sm:p-5;
+  }
+
+  .post-title {
+    @apply mt-3 text-[1.2rem] font-semibold leading-[1.1] tracking-[-0.04em] text-[#101820] sm:text-[1.28rem];
+  }
+
+  .post-copy {
+    @apply mt-3 text-sm leading-7 text-[#66707d];
   }
 
   .partner-marquee {

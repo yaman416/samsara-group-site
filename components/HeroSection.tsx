@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CalendarDays, MapPin, Sparkles, Trophy, Users } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowUpRight, CalendarDays, ChevronRight, MapPin, Sparkles, Trophy, Users } from "lucide-react";
 import { HERO_SLIDES, QUICK_INFO } from "@/lib/siteContent";
 
 const SLIDE_DURATION = 5000;
@@ -16,6 +16,10 @@ const ICONS = {
 export default function HeroSection() {
   const [index, setIndex] = useState(0);
   const slide = HERO_SLIDES[index];
+  const sideStories = useMemo(
+    () => HERO_SLIDES.filter((_, itemIndex) => itemIndex !== index).slice(0, 2),
+    [index],
+  );
 
   useEffect(() => {
     if (HERO_SLIDES.length <= 1) return;
@@ -24,79 +28,119 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section id="home" className="mt-6 space-y-5">
-      <div className="sports-panel overflow-hidden">
-        <div className="relative min-h-[420px] sm:min-h-[520px]">
-          <img
-            src={slide.image}
-            alt={slide.label}
-            className="absolute inset-0 h-full w-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#111922]/88 via-[#111922]/34 to-transparent" />
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/20 to-transparent" />
+    <section id="home" className="mt-6 space-y-4 sm:space-y-5">
+      <div className="sports-panel p-4 sm:p-5 lg:p-6">
+        <div className="grid gap-4 lg:grid-cols-[1.4fr_0.88fr]">
+          <article className="editorial-frame overflow-hidden">
+            <div className="grid min-h-[520px] lg:grid-cols-[1.08fr_0.92fr]">
+              <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
+                <div>
+                  <p className="eyebrow-link">
+                    Featured story
+                    <span className="h-1 w-1 rounded-full bg-[#a0a7af]" />
+                    {slide.eyebrow}
+                  </p>
+                  <h1 className="editorial-headline mt-4 text-balance">{slide.label}</h1>
+                  <p className="editorial-subhead mt-5 max-w-xl">{slide.sublabel}</p>
+                </div>
 
-          <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 lg:p-10">
-            <div className="max-w-3xl">
-              <span className="inline-flex rounded-full border border-white/18 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
-                {slide.eyebrow}
-              </span>
-              <h1 className="text-balance mt-4 text-[2.2rem] font-semibold leading-[0.98] tracking-[-0.05em] text-white sm:text-[3.4rem] lg:text-[4.4rem]">
-                {slide.label}
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/78 sm:text-[15px] lg:text-base">
-                {slide.sublabel}
-              </p>
+                <div className="space-y-5 pt-8">
+                  <div className="stack-actions">
+                    <a href={slide.href} className="button-primary">
+                      {slide.cta}
+                    </a>
+                    <a href="#fixturesResults" className="button-secondary">
+                      Open season hub
+                    </a>
+                  </div>
 
-              <div className="stack-actions mt-6">
-                <a
-                  href={slide.href}
-                  className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-white px-5 py-3 text-center text-sm font-semibold text-[#18212a] transition hover:bg-[#f3f5f7] sm:min-h-0 sm:w-auto"
-                >
-                  {slide.cta}
-                </a>
-                <span className="inline-flex items-center gap-2 text-sm text-white/72 sm:w-auto">
-                  <CalendarDays size={16} className="text-white/70" />
-                  Canberra community football and culture
-                </span>
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-[#66707d]">
+                    <span className="inline-flex items-center gap-2">
+                      <CalendarDays size={15} className="text-[#101820]" />
+                      Canberra events and fixtures
+                    </span>
+                    <span className="hidden h-1 w-1 rounded-full bg-slate-300 sm:inline-flex" />
+                    <span className="inline-flex items-center gap-2">
+                      <MapPin size={15} className="text-[#101820]" />
+                      Community sport and culture
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <div className="mt-6 flex items-center gap-2">
-                {HERO_SLIDES.map((item, itemIndex) => (
-                  <button
-                    key={item.image}
-                    type="button"
-                    onClick={() => setIndex(itemIndex)}
-                    className={`h-2.5 rounded-full transition ${
-                      itemIndex === index ? "w-8 bg-white" : "w-2.5 bg-white/40"
-                    }`}
-                    aria-label={`Show slide ${itemIndex + 1}`}
-                  />
-                ))}
+              <div className="relative min-h-[280px] border-t border-slate-200/80 lg:min-h-full lg:border-l lg:border-t-0">
+                <img
+                  src={slide.image}
+                  alt={slide.label}
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0f1720]/40 via-transparent to-white/5" />
               </div>
             </div>
+          </article>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            {sideStories.map((item, itemIndex) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="post-card group min-h-[250px]"
+                onMouseEnter={() => setIndex((index + itemIndex + 1) % HERO_SLIDES.length)}
+              >
+                <div className="image-tile m-3 mb-0">
+                  <img
+                    src={item.image}
+                    alt={item.label}
+                    className="post-image transition duration-500 group-hover:scale-[1.03]"
+                  />
+                </div>
+                <div className="post-body justify-between">
+                  <div>
+                    <p className="editorial-label">{item.eyebrow}</p>
+                    <h2 className="post-title">{item.label}</h2>
+                    <p className="post-copy">{item.sublabel}</p>
+                  </div>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#101820]">
+                    Explore
+                    <ChevronRight size={16} />
+                  </span>
+                </div>
+              </a>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {QUICK_INFO.map((item) => {
           const Icon = ICONS[item.icon as keyof typeof ICONS];
           return (
             <div key={item.title} className="shell-card px-4 py-4 sm:px-5">
-              <div className="flex items-center gap-3">
-                <div className="rounded-full bg-[#18212a]/8 p-2.5 text-[#18212a]">
-                  <Icon size={18} />
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="editorial-label">{item.title}</p>
+                  <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-[#101820]">{item.value}</p>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8ea0b1]">
-                    {item.title}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-[#15202b]">{item.value}</p>
+                <div className="rounded-full bg-[#101820] p-2.5 text-white">
+                  <Icon size={16} />
                 </div>
               </div>
             </div>
           );
         })}
+      </div>
+
+      <div className="shell-card flex flex-col gap-4 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="editorial-label">Why this site exists</p>
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-[#66707d]">
+            A cleaner way to follow league updates, tournament information, community events, and key documents without scrolling through a long homepage.
+          </p>
+        </div>
+        <a href="#more" className="inline-flex items-center gap-2 text-sm font-semibold text-[#101820]">
+          Browse more sections
+          <ArrowUpRight size={16} />
+        </a>
       </div>
     </section>
   );

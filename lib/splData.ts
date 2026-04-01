@@ -31,7 +31,7 @@ export const SPL_SEASON = {
 
 export const TEAMS = [
   "Khukuri Canberra FC",
-  "Aces FC",
+  "Phuensum FC",
   "Everest FC",
   "Azhas FC",
   "Thuenlam FC",
@@ -53,7 +53,7 @@ export const TEAM_LOGOS: Record<string, string> = {
   "JA Brothers Football Club": "/team/jabrothers.png",
   "Khukuri Canberra FC": "/team/khukuri.png",
   "Nepal United FC": "/team/nufc.png",
-  "Aces FC": "/team/phuensum.png",
+  "Phuensum FC": "/team/phuensum.png",
   "Queanbeyan Nepalese UFC": "/team/queanbeyan.png",
   "Thuenlam FC": "/team/thuenlam.png",
   "Unity Stars FC": "/team/unity.png",
@@ -173,7 +173,7 @@ export const FIXTURES: Fixture[] = [
     date: "2025-11-15",
     time: "6:30 PM",
     home: "Achos Football Team",
-    away: "Aces FC",
+    away: "Phuensum FC",
     ground: "Ground 1",
   },
   {
@@ -193,7 +193,7 @@ export const FIXTURES: Fixture[] = [
     date: "2025-11-22",
     time: "3:30 PM",
     home: "Everest FC",
-    away: "Aces FC",
+    away: "Phuensum FC",
     ground: "Ground 1",
   },
   {
@@ -267,7 +267,7 @@ export const FIXTURES: Fixture[] = [
     date: "2025-11-29",
     time: "5:00 PM",
     home: "Druk FC",
-    away: "Aces FC",
+    away: "Phuensum FC",
     ground: "Ground 1",
   },
   {
@@ -350,7 +350,7 @@ export const FIXTURES: Fixture[] = [
     date: "2025-12-06",
     time: "6:30 PM",
     home: "Khukuri Canberra FC",
-    away: "Aces FC",
+    away: "Phuensum FC",
     ground: "Ground 2",
   },
 
@@ -379,7 +379,7 @@ export const FIXTURES: Fixture[] = [
     date: "2025-12-13",
     time: "5:00 PM",
     home: "Nepal United FC",
-    away: "Aces FC",
+    away: "Phuensum FC",
     ground: "Ground 1",
   },
   {
@@ -416,7 +416,7 @@ export const FIXTURES: Fixture[] = [
     round: 6,
     date: "2025-12-20",
     time: "3:30 PM",
-    home: "Aces FC",
+    home: "Phuensum FC",
     away: "JA Brothers Football Club",
     ground: "Ground 1",
   },
@@ -472,7 +472,7 @@ export const FIXTURES: Fixture[] = [
     round: 7,
     date: "2026-01-10",
     time: "3:30 PM",
-    home: "Aces FC",
+    home: "Phuensum FC",
     away: "Azhas FC",
     ground: "Ground 1",
   },
@@ -555,7 +555,7 @@ export const FIXTURES: Fixture[] = [
     round: 8,
     date: "2026-01-17",
     time: "5:00 PM",
-    home: "Aces FC",
+    home: "Phuensum FC",
     away: "Thuenlam FC",
     ground: "Ground 2",
   },
@@ -620,7 +620,7 @@ export const FIXTURES: Fixture[] = [
     round: 9,
     date: "2026-01-31",
     time: "6:30 PM",
-    home: "Aces FC",
+    home: "Phuensum FC",
     away: "CNFC Canberra",
     ground: "Ground 1",
   },
@@ -685,7 +685,7 @@ export const FIXTURES: Fixture[] = [
     round: 10,
     date: "2026-02-07",
     time: "6:30 PM",
-    home: "Aces FC",
+    home: "Phuensum FC",
     away: "Unity Stars FC",
     ground: "Ground 2",
   },
@@ -697,7 +697,7 @@ export const FIXTURES: Fixture[] = [
     date: "2026-02-14",
     time: "3:30 PM",
     home: "Queanbeyan Nepalese UFC",
-    away: "Aces FC",
+    away: "Phuensum FC",
     ground: "Ground 1",
   },
   {
@@ -827,10 +827,10 @@ export const RESULTS = [
   { fixtureId: "R10-M3", homeGoals: 3, awayGoals: 0 }, // JA Brothers FC 3-0 CNFC Canberra
   { fixtureId: "R10-M4", homeGoals: 3, awayGoals: 0 }, // Everest FC 3-0 BYE
   { fixtureId: "R10-M5", homeGoals: 1, awayGoals: 1 }, // Queanbeyan Nepalese UFC 1-1 Khukuri Canberra FC
-  { fixtureId: "R10-M6", homeGoals: 0, awayGoals: 0 }, // Aces FC 0-0 Unity Stars FC
+  { fixtureId: "R10-M6", homeGoals: 0, awayGoals: 0 }, // Phuensum FC 0-0 Unity Stars FC
 
   // Week 11
-  { fixtureId: "R11-M1", homeGoals: 4, awayGoals: 4 }, // Queanbeyan Nepalese United FC 4-4 Aces FC
+  { fixtureId: "R11-M1", homeGoals: 4, awayGoals: 4 }, // Queanbeyan Nepalese United FC 4-4 Phuensum FC
   { fixtureId: "R11-M2", homeGoals: 3, awayGoals: 0 }, // Thuenam FC 3-0 BYE
   { fixtureId: "R11-M3", homeGoals: 3, awayGoals: 0 }, // Azhas FC 3-0 Canberra Nepalese FC (walkover)
   { fixtureId: "R11-M4", homeGoals: 1, awayGoals: 4 }, // Achos FC 1-4 Khukuri Canberra FC
@@ -1008,7 +1008,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
       scorers: ["Tshering Tobgyel - 1 goal"],
       cards: ["Pelzang - Yellow"],
     },
-    away: { teamName: "Aces FC", scorers: [], cards: [] },
+    away: { teamName: "Phuensum FC", scorers: [], cards: [] },
   },
 
   "R1-M6": {
@@ -1032,7 +1032,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
       cards: [],
     },
     away: {
-      teamName: "Aces FC",
+      teamName: "Phuensum FC",
       scorers: ["Sampa Tshering - 1 goal"],
       cards: ["Sonam Wangchuk - Yellow"],
     },
@@ -1127,7 +1127,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
   "R3-M3": {
     home: { teamName: "Druk FC", scorers: ["Sangay Tenzin - 1 goal"], cards: [] },
     away: {
-      teamName: "Aces FC",
+      teamName: "Phuensum FC",
       scorers: ["Sonam Dorji - 1 goal", "Kinley Wangdi - 1 goal", "Sonam Wangchuk - 1 goal"],
       cards: ["Namgay Tenzin - Straight red (dissent)"],
     },
@@ -1215,7 +1215,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
       scorers: ["Ravi Pandey - 1 goal", "Roshan Lamichhane - 1 goal", "Aawesh Dhakal - 1 goal"],
       cards: ["Sagar Khadka - Yellow"],
     },
-    away: { teamName: "Aces FC", scorers: [], cards: [] },
+    away: { teamName: "Phuensum FC", scorers: [], cards: [] },
   },
 
   // -------- WEEK 5 --------
@@ -1230,8 +1230,8 @@ export const MATCH_FACTS: MatchFactsRecord = {
   },
 
   "R5-M3": {
-    home: { teamName: "Nepal United FC", scorers: [], cards: ["Match abandoned due to safety concerns. Result awarded 0-3 to Aces FC."] },
-    away: { teamName: "Aces FC", scorers: [], cards: ["Match abandoned due to safety concerns. Result awarded 3-0 to Aces FC."] },
+    home: { teamName: "Nepal United FC", scorers: [], cards: ["Match abandoned due to safety concerns. Result awarded 0-3 to Phuensum FC."] },
+    away: { teamName: "Phuensum FC", scorers: [], cards: ["Match abandoned due to safety concerns. Result awarded 3-0 to Phuensum FC."] },
   },
 
   "R5-M4": {
@@ -1251,7 +1251,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
 
   // -------- WEEK 6 --------
   "R6-M1": {
-    home: { teamName: "Aces FC", scorers: ["Pema Dorji - 1 goal"], cards: [] },
+    home: { teamName: "Phuensum FC", scorers: ["Pema Dorji - 1 goal"], cards: [] },
     away: { teamName: "JA Brothers Football Club", scorers: ["Thaman Gurung - 1 goal", "Miraj Marikhu - 1 goal"], cards: [] },
   },
 
@@ -1292,7 +1292,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
 
   // -------- WEEK 7 --------
   "R7-M1": {
-    home: { teamName: "Aces FC", scorers: [], cards: [] },
+    home: { teamName: "Phuensum FC", scorers: [], cards: [] },
     away: { teamName: "Azhas FC", scorers: [], cards: [] },
   },
 
@@ -1359,7 +1359,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
   },
 
   "R8-M4": {
-    home: { teamName: "Aces FC", scorers: ["Kinley Wangdi - 2 goals"], cards: [] },
+    home: { teamName: "Phuensum FC", scorers: ["Kinley Wangdi - 2 goals"], cards: [] },
     away: { teamName: "Thuenlam FC", scorers: ["Chekey Wangchuk - 1 goal", "Tshering Dorji - 1 goal", "Kunzang Thinley - 2 goals"], cards: [] },
   },
 
@@ -1423,7 +1423,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
 
   "R9-M5": {
     home: {
-      teamName: "Aces FC",
+      teamName: "Phuensum FC",
       scorers: ["Sampa Tshering - 2 goals"],
       cards: ["Dorji Nidup - Yellow", "Nima Tshering - Yellow"],
     },
@@ -1517,7 +1517,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
 
 "R10-M6": {
   home: {
-    teamName: "Aces FC",
+    teamName: "Phuensum FC",
     scorers: [],
     cards: ["Pelzang - Yellow", "Pelzang - Red"],
   },
@@ -1532,7 +1532,7 @@ export const MATCH_FACTS: MatchFactsRecord = {
 
 "R11-M1": {
   home: { teamName: "Queanbeyan Nepalese United FC", scorers: ["Sushant Shrestha - 2", "Saneej Chhetri - 1", "Jenish Gautam - 1"], cards: [] },
-  away: { teamName: "Aces FC", scorers: ["Sampa Tshering - 3", "Unknown - 1"], cards: [] },
+  away: { teamName: "Phuensum FC", scorers: ["Sampa Tshering - 3", "Unknown - 1"], cards: [] },
 },
 
 "R11-M2": {
