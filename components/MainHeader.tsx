@@ -21,9 +21,6 @@ const LINKS = [
 
 export default function MainHeader({ active, onChange }: MainHeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const eventDate = new Date("2026-04-04T09:00:00+11:00");
-  const now = new Date();
-  const daysUntil = Math.max(0, Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
   const handleClick = (key: string) => {
     onChange?.(key);
@@ -42,7 +39,7 @@ export default function MainHeader({ active, onChange }: MainHeaderProps) {
               <div className="flex flex-wrap items-center gap-3 text-[#6e7782]">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-medium">
                   <Timer size={12} />
-                  {daysUntil} days to next event
+                  NNYC knockouts on Sat 11 Apr
                 </span>
                 <a href="https://www.facebook.com/samsaragroupcbr" target="_blank" rel="noreferrer" className="hover:text-[#101820]">
                   <Facebook size={14} />

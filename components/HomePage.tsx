@@ -49,6 +49,49 @@ const SPONSORS = [
   "LHOTSE",
 ];
 
+const NNYC_STANDINGS = [
+  {
+    group: "Group A",
+    leader: "Thuenlam FC",
+    rows: [
+      { team: "Thuenlam FC", p: 3, w: 3, d: 0, l: 0, gf: 4, ga: 1, gd: 3, pts: 9 },
+      { team: "FC Yeedzin", p: 3, w: 2, d: 0, l: 1, gf: 7, ga: 3, gd: 4, pts: 6 },
+      { team: "Everest FC", p: 3, w: 1, d: 0, l: 2, gf: 3, ga: 4, gd: -1, pts: 3 },
+      { team: "JA Brothers Football Club", p: 3, w: 0, d: 0, l: 3, gf: 2, ga: 8, gd: -6, pts: 0 },
+    ],
+  },
+  {
+    group: "Group B",
+    leader: "Phuensum Masters FC",
+    rows: [
+      { team: "Phuensum Masters FC", p: 3, w: 2, d: 1, l: 0, gf: 7, ga: 3, gd: 4, pts: 7 },
+      { team: "Nazhoen Football Club", p: 3, w: 2, d: 1, l: 0, gf: 4, ga: 1, gd: 3, pts: 7 },
+      { team: "Gurkha Rhinos FC", p: 3, w: 1, d: 0, l: 2, gf: 4, ga: 5, gd: -1, pts: 3 },
+      { team: "Bros and Ball FC", p: 3, w: 0, d: 0, l: 3, gf: 1, ga: 7, gd: -6, pts: 0 },
+    ],
+  },
+  {
+    group: "Group C",
+    leader: "Canberra City FC",
+    rows: [
+      { team: "Canberra City FC", p: 3, w: 2, d: 1, l: 0, gf: 3, ga: 0, gd: 3, pts: 7 },
+      { team: "Azhas FC", p: 3, w: 2, d: 0, l: 1, gf: 3, ga: 2, gd: 1, pts: 6 },
+      { team: "Khukuri Canberra FC", p: 3, w: 1, d: 0, l: 2, gf: 1, ga: 2, gd: -1, pts: 3 },
+      { team: "Aces FC", p: 3, w: 0, d: 1, l: 2, gf: 0, ga: 3, gd: -3, pts: 1 },
+    ],
+  },
+  {
+    group: "Group D",
+    leader: "Queanbeyan Nepalese United Football Club",
+    rows: [
+      { team: "Queanbeyan Nepalese United Football Club", p: 3, w: 2, d: 1, l: 0, gf: 9, ga: 3, gd: 6, pts: 7 },
+      { team: "Bicchi FC", p: 3, w: 1, d: 1, l: 1, gf: 3, ga: 4, gd: -1, pts: 4 },
+      { team: "Unity Stars FC", p: 3, w: 0, d: 3, l: 0, gf: 2, ga: 2, gd: 0, pts: 3 },
+      { team: "Friends FC", p: 3, w: 0, d: 1, l: 2, gf: 1, ga: 6, gd: -5, pts: 1 },
+    ],
+  },
+];
+
 type PreviewDoc = "fixtures" | "spl" | "nnyc" | null;
 
 const HERO_SLIDES = [
@@ -164,14 +207,14 @@ export default function HomePage() {
                 Nepalese New Year Cup
               </h2>
               <p className="mt-4 max-w-xl text-sm leading-7 text-white/72">
-                One compact place for dates, venue, groups, and the official fixture document.
+                Group stages are complete. The next event is the knockout phase on Saturday, April 11, after 1 PM.
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-[1.25rem] border border-white/10 bg-white/6 px-4 py-4">
                   <CalendarDays size={18} className="text-white" />
                   <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">Dates</p>
-                  <p className="mt-2 text-sm font-semibold text-white">{NEW_YEAR_CUP.dates}</p>
+                  <p className="mt-2 text-sm font-semibold text-white">Sat 11 Apr, after 1 PM</p>
                 </div>
                 <div className="rounded-[1.25rem] border border-white/10 bg-white/6 px-4 py-4">
                   <MapPin size={18} className="text-white" />
@@ -180,8 +223,8 @@ export default function HomePage() {
                 </div>
                 <div className="rounded-[1.25rem] border border-white/10 bg-white/6 px-4 py-4">
                   <Trophy size={18} className="text-white" />
-                  <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">Format</p>
-                  <p className="mt-2 text-sm font-semibold text-white">4 groups, 16 teams</p>
+                  <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">Current</p>
+                  <p className="mt-2 text-sm font-semibold text-white">Knockout phase next</p>
                 </div>
               </div>
 
@@ -202,16 +245,38 @@ export default function HomePage() {
             </div>
 
             <div className="grid gap-px bg-slate-200/90 sm:grid-cols-2">
-              {NEW_YEAR_CUP.groups.slice(0, 4).map((group) => (
-                <div key={group.name} className="bg-white px-4 py-4 sm:px-5 sm:py-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7a838c]">{group.name}</p>
-                  <ul className="mt-3 space-y-2">
-                    {group.teams.map((team) => (
-                      <li key={team} className="text-sm font-medium leading-6 text-[#101820]">
-                        {team}
-                      </li>
-                    ))}
-                  </ul>
+              {NNYC_STANDINGS.map((group) => (
+                <div key={group.group} className="bg-white px-4 py-4 sm:px-5 sm:py-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#7a838c]">{group.group}</p>
+                    <span className="rounded-full bg-[#eef4ff] px-3 py-1 text-[11px] font-semibold text-[#2563eb]">
+                      {group.leader}
+                    </span>
+                  </div>
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="min-w-full text-left text-xs text-[#5f6b76]">
+                      <thead>
+                        <tr className="border-b border-slate-200">
+                          <th className="pb-2 pr-3 font-semibold">#</th>
+                          <th className="pb-2 pr-3 font-semibold">Team</th>
+                          <th className="pb-2 pr-2 font-semibold">P</th>
+                          <th className="pb-2 pr-2 font-semibold">GD</th>
+                          <th className="pb-2 font-semibold">Pts</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {group.rows.map((row, index) => (
+                          <tr key={row.team} className="border-b border-slate-100 last:border-b-0">
+                            <td className="py-2 pr-3 text-[#101820]">{index + 1}</td>
+                            <td className="py-2 pr-3 font-medium text-[#101820]">{row.team}</td>
+                            <td className="py-2 pr-2">{row.p}</td>
+                            <td className="py-2 pr-2">{row.gd}</td>
+                            <td className="py-2 font-semibold text-[#101820]">{row.pts}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ))}
             </div>
