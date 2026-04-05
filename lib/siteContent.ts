@@ -1,7 +1,7 @@
 export const HERO_SLIDES = [
   {
     image: "/gallery/Screenshot%202026-03-31%20at%204.16.48%E2%80%AFam.png",
-    label: "Samsara Premier League - Season 3 Starts Nov 2027",
+    label: "Samsara Premier League - Season 3 Starts Nov 2026",
     eyebrow: "SPL Season 3",
     sublabel: "A growing community football competition bringing Nepalese and Bhutanese teams together in Canberra",
     href: "#league",
@@ -28,7 +28,7 @@ export const HERO_SLIDES = [
 export const HOME_HIGHLIGHTS = [
   {
     value: "Season 3",
-    label: "Starts Nov 2027",
+    label: "Starts Nov 2026",
   },
   {
     value: "4 & 11 April 2026",
@@ -105,7 +105,7 @@ export const QUICK_INFO = [
   {
     icon: "trophy",
     title: "SPL Season 3",
-    value: "Starts Nov 2027",
+    value: "Starts Nov 2026",
   },
   {
     icon: "sparkles",

@@ -431,7 +431,7 @@ export default function HomePage() {
               </div>
               <div className="surface-muted px-4 py-5">
                 <p className="text-[10px] uppercase tracking-[0.18em] text-[#7a838c]">Season 3</p>
-                <p className="mt-3 text-lg font-semibold tracking-[-0.03em] text-[#101820]">Starts Nov 2027</p>
+                <p className="mt-3 text-lg font-semibold tracking-[-0.03em] text-[#101820]">Starts Nov 2026</p>
                 <p className="mt-2 text-sm text-[#66707d]">Next SPL season</p>
               </div>
             </div>
