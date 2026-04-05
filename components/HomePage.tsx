@@ -92,6 +92,24 @@ const NNYC_STANDINGS = [
   },
 ];
 
+const NNYC_KNOCKOUT = {
+  left: {
+    quarterfinals: [
+      { match: "Quarterfinal 1", home: "Thuenlam FC", away: "Nazhoen Football Club" },
+      { match: "Quarterfinal 2", home: "Canberra City FC", away: "Bicchi FC" },
+    ],
+    semifinal: { match: "Semifinal 1", home: "Winner QF1", away: "Winner QF2" },
+  },
+  right: {
+    quarterfinals: [
+      { match: "Quarterfinal 3", home: "Phuensum Masters FC", away: "FC Yeedzin" },
+      { match: "Quarterfinal 4", home: "Queanbeyan Nepalese United Football Club", away: "Azhas FC" },
+    ],
+    semifinal: { match: "Semifinal 2", home: "Winner QF3", away: "Winner QF4" },
+  },
+  final: { match: "Championship Final", home: "Winner SF1", away: "Winner SF2" },
+};
+
 type PreviewDoc = "fixtures" | "spl" | "nnyc" | null;
 
 const HERO_SLIDES = [
@@ -279,6 +297,108 @@ export default function HomePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="border-t border-white/10 bg-[#15181b] px-5 py-6 text-white sm:px-7 sm:py-8 lg:px-10 lg:py-10">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="section-kicker text-white/60">Knockout ladder</p>
+                <h3 className="mt-3 text-[1.6rem] font-semibold tracking-[-0.04em] text-white sm:text-[2rem]">
+                  Road to the championship
+                </h3>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/68">
+                  The ladder below follows the current qualified teams from group standings and shows the path from quarterfinals to the final.
+                </p>
+              </div>
+              <p className="text-sm font-medium text-white/72">Knockout phase starts Saturday, April 11 after 1 PM</p>
+            </div>
+
+            <div className="mt-6 grid gap-4 xl:grid-cols-[1fr_0.86fr_1fr]">
+              <div className="space-y-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">Left side</p>
+                <div className="grid gap-4 lg:grid-cols-[1fr_0.88fr]">
+                  <div className="space-y-3">
+                    {NNYC_KNOCKOUT.left.quarterfinals.map((fixture) => (
+                      <div key={fixture.match} className="rounded-[1.25rem] border border-white/10 bg-white/6 px-4 py-4">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">{fixture.match}</p>
+                        <div className="mt-3 space-y-2">
+                          <p className="rounded-[0.9rem] bg-white px-3 py-2 text-sm font-semibold text-[#101820]">{fixture.home}</p>
+                          <p className="text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">vs</p>
+                          <p className="rounded-[0.9rem] bg-white/10 px-3 py-2 text-sm font-semibold text-white">{fixture.away}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex lg:items-center">
+                    <div className="w-full rounded-[1.25rem] border border-white/10 bg-white/8 px-4 py-5 lg:ml-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
+                        {NNYC_KNOCKOUT.left.semifinal.match}
+                      </p>
+                      <div className="mt-3 space-y-2">
+                        <p className="rounded-[0.9rem] bg-white/10 px-3 py-2 text-sm font-semibold text-white">
+                          {NNYC_KNOCKOUT.left.semifinal.home}
+                        </p>
+                        <p className="text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">vs</p>
+                        <p className="rounded-[0.9rem] bg-white/10 px-3 py-2 text-sm font-semibold text-white">
+                          {NNYC_KNOCKOUT.left.semifinal.away}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex">
+                <div className="w-full rounded-[1.5rem] border border-[#ff645f]/30 bg-[#ff645f]/12 px-5 py-6">
+                  <p className="text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-[#ffb1ae]">Final</p>
+                  <h4 className="mt-3 text-center text-xl font-semibold tracking-[-0.04em] text-white">
+                    {NNYC_KNOCKOUT.final.match}
+                  </h4>
+                  <div className="mt-5 space-y-3">
+                    <p className="rounded-[1rem] bg-white px-4 py-3 text-center text-sm font-semibold text-[#101820]">{NNYC_KNOCKOUT.final.home}</p>
+                    <p className="text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">vs</p>
+                    <p className="rounded-[1rem] bg-white/10 px-4 py-3 text-center text-sm font-semibold text-white">{NNYC_KNOCKOUT.final.away}</p>
+                  </div>
+                  <p className="mt-5 text-center text-sm leading-6 text-white/70">
+                    Each side of the bracket produces one finalist.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45 text-left xl:text-right">Right side</p>
+                <div className="grid gap-4 lg:grid-cols-[0.88fr_1fr]">
+                  <div className="flex lg:items-center">
+                    <div className="w-full rounded-[1.25rem] border border-white/10 bg-white/8 px-4 py-5 lg:mr-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
+                        {NNYC_KNOCKOUT.right.semifinal.match}
+                      </p>
+                      <div className="mt-3 space-y-2">
+                        <p className="rounded-[0.9rem] bg-white/10 px-3 py-2 text-sm font-semibold text-white">
+                          {NNYC_KNOCKOUT.right.semifinal.home}
+                        </p>
+                        <p className="text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">vs</p>
+                        <p className="rounded-[0.9rem] bg-white/10 px-3 py-2 text-sm font-semibold text-white">
+                          {NNYC_KNOCKOUT.right.semifinal.away}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {NNYC_KNOCKOUT.right.quarterfinals.map((fixture) => (
+                      <div key={fixture.match} className="rounded-[1.25rem] border border-white/10 bg-white/6 px-4 py-4">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">{fixture.match}</p>
+                        <div className="mt-3 space-y-2">
+                          <p className="rounded-[0.9rem] bg-white px-3 py-2 text-sm font-semibold text-[#101820]">{fixture.home}</p>
+                          <p className="text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">vs</p>
+                          <p className="rounded-[0.9rem] bg-white/10 px-3 py-2 text-sm font-semibold text-white">{fixture.away}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
