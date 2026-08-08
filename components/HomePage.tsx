@@ -182,6 +182,25 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+            {/* SBA x SPL title sponsor card — desktop */}
+            <div className="absolute right-6 top-1/2 z-10 hidden -translate-y-1/2 lg:flex xl:right-10">
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-5 py-5 shadow-2xl backdrop-blur-md">
+                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/40">Title Sponsor</p>
+                <img src="/sponsor/sba.png" alt="SBA Property Group" className="h-16 w-16 rounded-xl bg-white object-contain p-2 shadow-lg" />
+                <span className="text-[11px] font-bold text-white/30">x</span>
+                <img src="/spl-logo.png" alt="SPL" className="h-20 w-20 object-contain drop-shadow-lg" />
+                <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/30">SPL Season 3</p>
+              </div>
+            </div>
+            {/* SBA x SPL title sponsor card — mobile */}
+            <div className="absolute right-3 top-3 z-10 lg:hidden">
+              <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-xl backdrop-blur-md">
+                <img src="/sponsor/sba.png" alt="SBA" className="h-11 w-11 rounded-xl bg-white object-contain p-1.5 shadow" />
+                <span className="text-sm font-bold text-white/30">x</span>
+                <img src="/spl-logo.png" alt="SPL" className="h-12 w-12 object-contain drop-shadow" />
+              </div>
+            </div>
+
             <div className="absolute inset-x-0 bottom-5 z-20 flex items-center justify-center gap-2 sm:bottom-6">
               {HERO_SLIDES.map((image, index) => (
                 <button
