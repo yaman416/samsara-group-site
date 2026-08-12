@@ -125,11 +125,9 @@
   }
 
   body {
-    background:
-      radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 32%),
-      linear-gradient(180deg, #fafaf7 0%, #f3f3ee 100%);
+    background: #f4f4f1;
     @apply text-foreground antialiased;
-    font-family: var(--font-sans-stack);
+    font-family: "DM Sans", var(--font-sans-stack);
   }
 
   a {
