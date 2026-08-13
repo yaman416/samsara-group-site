@@ -33,12 +33,12 @@ const HERO_SHOTS = [
 ];
 
 const CLUBS = [
-  { name: "Khukuri FC", crest: "/team/khukuri.png" },
-  { name: "Thuenlam FC", crest: "/team/thuenlam.png" },
+  { name: "Khukuri FC", crest: "/team/Khukuri.png" },
+  { name: "Thuenlam FC", crest: "/team/Thuenlam.png" },
   { name: "Azhas FC", crest: "/team/azhas.png" },
-  { name: "Queanbeyan Nepalese United FC", crest: "/team/queanbeyan.png" },
+  { name: "Queanbeyan Nepalese United FC", crest: "/team/Queanbeyan.png" },
   { name: "JA Brothers FC", crest: "/team/JA.png" },
-  { name: "Everest FC", crest: "/team/everest.png" },
+  { name: "Everest FC", crest: "/team/Everest.png" },
   { name: "Phuensum FC", crest: "/team/phuensum.png" },
   { name: "FC Yeedzin", crest: "/team/Yeedzin.png" },
   { name: "ACE FC", crest: "/team/Aces.png" },
@@ -115,10 +115,10 @@ export default function HomePage() {
           {/* Desktop nav — centered */}
           <nav className="spl-desktop" style={{ display: "flex", alignItems: "center", gap: 28, margin: "0 auto", fontSize: 15, fontWeight: 400 }}>
             <a href="/" style={{ color: DARK, textDecoration: "none", borderBottom: `2px solid ${RED}`, paddingBottom: 4 }}>Home</a>
-            <a href="#clubs" style={{ color: "#4a545f", textDecoration: "none" }}>Clubs</a>
+            <a href="/season" style={{ color: "#4a545f", textDecoration: "none" }}>Season 3</a>
+            <a href="/clubs" style={{ color: "#4a545f", textDecoration: "none" }}>Clubs</a>
             <a href="/gallery" style={{ color: "#4a545f", textDecoration: "none" }}>Gallery</a>
-            <a href="#partners" style={{ color: "#4a545f", textDecoration: "none" }}>Partners</a>
-            <a href="#about" style={{ color: "#4a545f", textDecoration: "none" }}>About</a>
+            <a href="/partners" style={{ color: "#4a545f", textDecoration: "none" }}>Partners</a>
           </nav>
 
           <a href="/register/team" className="spl-desktop" style={{ background: RED, color: "#fff", fontSize: 14, fontWeight: 500, padding: "13px 24px", borderRadius: 999, whiteSpace: "nowrap", textDecoration: "none", flexShrink: 0 }}>
@@ -135,7 +135,7 @@ export default function HomePage() {
 
         {menuOpen && (
           <div className="spl-mobile" style={{ background: "rgba(244,244,241,.98)", borderTop: "1px solid rgba(17,24,39,.10)", padding: "16px 24px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-            {[["Home", "/"], ["Clubs", "#clubs"], ["Gallery", "/gallery"], ["Partners", "#partners"], ["About", "#about"]].map(([label, href]) => (
+            {[["Home", "/"], ["Season 3", "/season"], ["Clubs", "/clubs"], ["Gallery", "/gallery"], ["Partners", "/partners"]].map(([label, href]) => (
               <a key={label} href={href} onClick={() => setMenuOpen(false)} style={{ color: DARK, fontWeight: 500, fontSize: 16, textDecoration: "none" }}>{label}</a>
             ))}
             <a href="/register/team" style={{ background: RED, color: "#fff", fontSize: 14, fontWeight: 500, padding: "12px 22px", borderRadius: 999, textDecoration: "none", textAlign: "center", marginTop: 4 }}>Register a club</a>
