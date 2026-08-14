@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
 
 const COLORS = [
   ["#b3122b", "Crimson"], ["#e2372b", "Red"], ["#1b2a4a", "Navy"],
@@ -39,6 +40,12 @@ export default function ManagerPage() {
   const [newPlayer, setNewPlayer] = useState({ full_name: "", jersey_number: "", position: "MF", date_of_birth: "" });
   const [addError, setAddError] = useState("");
   const [addBusy, setAddBusy] = useState(false);
+
+  // Edit player
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editPlayer, setEditPlayer] = useState({ full_name: "", jersey_number: "", position: "MF", date_of_birth: "" });
+  const [editError, setEditError] = useState("");
+  const [editBusy, setEditBusy] = useState(false);
 
   // Kit edit
   const [homeColor, setHomeColor] = useState("#b3122b");
@@ -102,6 +109,32 @@ export default function ManagerPage() {
     if (!confirm("Remove this player?")) return;
     await apiFetch("/api/manager/squad", { method: "DELETE", body: JSON.stringify({ id }) });
     setSquad(s => s.filter(p => p.id !== id));
+  }
+
+  function openEdit(p: Player) {
+    setEditId(p.id);
+    setEditPlayer({ full_name: p.full_name, jersey_number: String(p.jersey_number), position: p.position, date_of_birth: p.date_of_birth || "" });
+    setEditError("");
+    setAddOpen(false);
+  }
+
+  async function saveEdit() {
+    const num = parseInt(editPlayer.jersey_number);
+    if (!editPlayer.full_name.trim()) { setEditError("Player name required."); return; }
+    if (!num || num < 1 || num > 99) { setEditError("Jersey number must be 1-99."); return; }
+    if (squad.some(p => p.jersey_number === num && p.id !== editId)) { setEditError(`Jersey ${num} is already taken.`); return; }
+    setEditBusy(true);
+    try {
+      const res = await apiFetch("/api/manager/squad", {
+        method: "PATCH",
+        body: JSON.stringify({ id: editId, full_name: editPlayer.full_name.trim(), jersey_number: num, position: editPlayer.position, date_of_birth: editPlayer.date_of_birth || null }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setEditError(data.error); return; }
+      setSquad(s => s.map(p => p.id === editId ? { ...p, full_name: editPlayer.full_name.trim(), jersey_number: num, position: editPlayer.position, date_of_birth: editPlayer.date_of_birth || null } : p).sort((a, b) => a.jersey_number - b.jersey_number));
+      setEditId(null);
+    } catch { setEditError("Network error."); }
+    finally { setEditBusy(false); }
   }
 
   async function saveKit() {
@@ -247,7 +280,40 @@ export default function ManagerPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {squad.map(p => (
+                    {squad.map(p => editId === p.id ? (
+                      <tr key={p.id} style={{ background: "#fafaf8" }}>
+                        <td colSpan={5} style={{ padding: "16px 12px" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 12, marginBottom: 12 }}>
+                            <div>
+                              <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#4a545f", marginBottom: 6, letterSpacing: ".06em", textTransform: "uppercase" }}>Full name</label>
+                              <input value={editPlayer.full_name} onChange={e => setEditPlayer(p => ({ ...p, full_name: e.target.value }))} style={inputSm} />
+                            </div>
+                            <div>
+                              <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#4a545f", marginBottom: 6, letterSpacing: ".06em", textTransform: "uppercase" }}>Jersey no.</label>
+                              <input type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => ({ ...p, jersey_number: e.target.value }))} style={inputSm} />
+                            </div>
+                            <div>
+                              <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#4a545f", marginBottom: 6, letterSpacing: ".06em", textTransform: "uppercase" }}>Position</label>
+                              <select value={editPlayer.position} onChange={e => setEditPlayer(p => ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
+                                <option value="GK">Goalkeeper</option>
+                                <option value="DF">Defender</option>
+                                <option value="MF">Midfielder</option>
+                                <option value="FW">Forward</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#4a545f", marginBottom: 6, letterSpacing: ".06em", textTransform: "uppercase" }}>Date of birth</label>
+                              <input type="date" value={editPlayer.date_of_birth} onChange={e => setEditPlayer(p => ({ ...p, date_of_birth: e.target.value }))} style={inputSm} />
+                            </div>
+                          </div>
+                          {editError && <div style={{ fontSize: 13, color: "#c22b20", marginBottom: 10 }}>{editError}</div>}
+                          <div style={{ display: "flex", gap: 10 }}>
+                            <button type="button" onClick={() => setEditId(null)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: "1px solid rgba(17,24,39,.18)", color: "#101820", fontSize: 13, fontWeight: 500, padding: "9px 18px", borderRadius: 999, cursor: "pointer" }}>Cancel</button>
+                            <button type="button" onClick={saveEdit} disabled={editBusy} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "#101820", color: "#fff", border: 0, fontSize: 13, fontWeight: 500, padding: "9px 18px", borderRadius: 999, cursor: "pointer", opacity: editBusy ? 0.7 : 1 }}>{editBusy ? "Saving..." : "Save changes"}</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
                       <tr key={p.id}>
                         <td>
                           <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 34, height: 34, borderRadius: 8, background: homeColor, color: "#fff", fontSize: 14, fontWeight: 600 }}>
@@ -260,10 +326,16 @@ export default function ManagerPage() {
                         </td>
                         <td style={{ color: "#66707d", fontSize: 14 }}>{p.date_of_birth || "-"}</td>
                         <td style={{ textAlign: "right" }}>
-                          <button type="button" onClick={() => removePlayer(p.id)}
-                            style={{ background: "none", border: "1px solid rgba(17,24,39,.14)", borderRadius: 8, color: "#66707d", fontSize: 13, padding: "6px 12px", cursor: "pointer", fontFamily: "'DM Sans',system-ui,sans-serif" }}>
-                            Remove
-                          </button>
+                          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                            <button type="button" onClick={() => openEdit(p)}
+                              style={{ background: "none", border: "1px solid rgba(17,24,39,.14)", borderRadius: 8, color: "#101820", fontSize: 13, padding: "6px 12px", cursor: "pointer", fontFamily: "'DM Sans',system-ui,sans-serif" }}>
+                              Edit
+                            </button>
+                            <button type="button" onClick={() => removePlayer(p.id)}
+                              style={{ background: "none", border: "1px solid rgba(17,24,39,.14)", borderRadius: 8, color: "#66707d", fontSize: 13, padding: "6px 12px", cursor: "pointer", fontFamily: "'DM Sans',system-ui,sans-serif" }}>
+                              Remove
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -402,30 +474,76 @@ export default function ManagerPage() {
 
         {/* ACCOUNT */}
         {screen === "account" && (
-          <div style={{ maxWidth: 480 }}>
-            <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36 }}>
-              <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: 26, margin: "0 0 24px" }}>Account</h2>
-              <div style={{ display: "grid", gap: 14, marginBottom: 28 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, paddingBottom: 14, borderBottom: "1px solid rgba(17,24,39,.07)" }}>
-                  <span style={{ color: "#66707d" }}>Club</span><span style={{ fontWeight: 500 }}>{club?.name || "-"}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, paddingBottom: 14, borderBottom: "1px solid rgba(17,24,39,.07)" }}>
-                  <span style={{ color: "#66707d" }}>Season</span><span style={{ fontWeight: 500 }}>Season 3 · 2026-27</span>
-                </div>
-              </div>
-              <div style={{ display: "grid", gap: 12 }}>
-                <a href="mailto:samsaragroup.cbr@gmail.com?subject=Password reset request"
-                  style={{ display: "block", background: "rgba(17,24,39,.06)", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "14px 18px", fontSize: 15, color: "#101820", textDecoration: "none", fontWeight: 500 }}>
-                  Reset password via email
-                </a>
-                <button type="button" onClick={signOut}
-                  style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: "1px solid rgba(17,24,39,.18)", color: "#66707d", fontSize: 15, fontWeight: 500, padding: "14px 18px", borderRadius: 12, cursor: "pointer", textAlign: "left" }}>
-                  Sign out
-                </button>
-              </div>
-            </div>
-          </div>
+          <AccountTab club={club} onSignOut={signOut} />
         )}
+      </div>
+    </div>
+  );
+}
+
+function AccountTab({ club, onSignOut }: { club: { name: string } | null; onSignOut: () => void }) {
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [pwBusy, setPwBusy] = useState(false);
+  const [pwMsg, setPwMsg] = useState("");
+  const [pwError, setPwError] = useState("");
+
+  const inputSm = { width: "100%", boxSizing: "border-box" as const, border: "1px solid rgba(17,24,39,.18)", borderRadius: 10, fontSize: 15, padding: "11px 14px", color: "#101820", fontFamily: "'DM Sans',system-ui,sans-serif" };
+  const label11 = { display: "block" as const, fontSize: 11, fontWeight: 500 as const, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#66707d", marginBottom: 8 };
+
+  async function changePassword() {
+    setPwError(""); setPwMsg("");
+    if (!newPw || newPw.length < 8) { setPwError("Password must be at least 8 characters."); return; }
+    if (newPw !== confirmPw) { setPwError("Passwords do not match."); return; }
+    setPwBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: newPw });
+    setPwBusy(false);
+    if (error) { setPwError(error.message); return; }
+    setPwMsg("Password updated successfully.");
+    setNewPw(""); setConfirmPw("");
+  }
+
+  return (
+    <div style={{ maxWidth: 480, display: "grid", gap: 20 }}>
+      <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 32 }}>
+        <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: 24, margin: "0 0 20px" }}>Account</h2>
+        <div style={{ display: "grid", gap: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, paddingBottom: 12, borderBottom: "1px solid rgba(17,24,39,.07)" }}>
+            <span style={{ color: "#66707d" }}>Club</span>
+            <span style={{ fontWeight: 500 }}>{club?.name || "-"}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, paddingBottom: 12, borderBottom: "1px solid rgba(17,24,39,.07)" }}>
+            <span style={{ color: "#66707d" }}>Season</span>
+            <span style={{ fontWeight: 500 }}>Season 3 · 2026</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 32 }}>
+        <h3 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: 20, margin: "0 0 20px" }}>Change password</h3>
+        <div style={{ display: "grid", gap: 16 }}>
+          <div>
+            <label style={label11}>New password</label>
+            <input type="password" value={newPw} onChange={e => { setNewPw(e.target.value); setPwError(""); setPwMsg(""); }} placeholder="At least 8 characters" style={inputSm} />
+          </div>
+          <div>
+            <label style={label11}>Confirm new password</label>
+            <input type="password" value={confirmPw} onChange={e => { setConfirmPw(e.target.value); setPwError(""); setPwMsg(""); }} placeholder="Repeat password" style={inputSm} />
+          </div>
+        </div>
+        {pwError && <div style={{ marginTop: 12, fontSize: 14, color: "#a3211a" }}>{pwError}</div>}
+        {pwMsg && <div style={{ marginTop: 12, fontSize: 14, color: "#1f6b37", fontWeight: 500 }}>{pwMsg}</div>}
+        <button type="button" onClick={changePassword} disabled={pwBusy}
+          style={{ marginTop: 20, fontFamily: "'DM Sans',system-ui,sans-serif", background: "#101820", color: "#fff", border: 0, fontSize: 14, fontWeight: 500, padding: "12px 24px", borderRadius: 999, cursor: "pointer", opacity: pwBusy ? 0.7 : 1 }}>
+          {pwBusy ? "Updating..." : "Update password"}
+        </button>
+      </div>
+
+      <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 24 }}>
+        <button type="button" onClick={onSignOut}
+          style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: "none", color: "#a3211a", fontSize: 15, fontWeight: 500, cursor: "pointer" }}>
+          Sign out
+        </button>
       </div>
     </div>
   );
