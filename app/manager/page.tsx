@@ -25,8 +25,9 @@ async function getToken(): Promise<string | null> {
 
 async function apiFetch(path: string, opts: RequestInit = {}) {
   const token = await getToken();
-  const auth = token ? { Authorization: `Bearer ${token}` } : {};
-  return fetch(path, { ...opts, headers: { "Content-Type": "application/json", ...auth, ...(opts.headers ?? {}) } });
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return fetch(path, { ...opts, headers });
 }
 
 export default function ManagerPage() {
