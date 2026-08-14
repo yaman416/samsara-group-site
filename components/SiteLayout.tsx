@@ -11,6 +11,11 @@ interface SiteLayoutProps {
 export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem("spl_token"));
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -94,18 +99,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
               </svg>
               <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase" as const }}>Account</span>
             </button>
-            {accountOpen && (
-              <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "24px 20px", minWidth: 280, boxShadow: "0 8px 32px rgba(17,24,39,.12)", zIndex: 100 }}>
-                <Link href="/register" onClick={() => setAccountOpen(false)}
-                  style={{ display: "block", background: "#e2372b", color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
-                  Register
-                </Link>
-                <p style={{ margin: "16px 0 0", fontSize: 14, color: "#66707d", textAlign: "center" }}>
-                  Already have an account?{" "}
-                  <Link href="/register?signin=1" onClick={() => setAccountOpen(false)} style={{ color: "#101820", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
-                </p>
-              </div>
-            )}
+            {accountOpen && <AccountDropdown isLoggedIn={isLoggedIn} onClose={() => setAccountOpen(false)} minWidth={280} />}
           </div>
         </div>
 
@@ -133,18 +127,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
               </svg>
               <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase" as const }}>Account</span>
             </button>
-            {accountOpen && (
-              <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "24px 20px", minWidth: 280, boxShadow: "0 8px 32px rgba(17,24,39,.12)", zIndex: 100 }}>
-                <Link href="/register" onClick={() => setAccountOpen(false)}
-                  style={{ display: "block", background: "#e2372b", color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
-                  Register
-                </Link>
-                <p style={{ margin: "16px 0 0", fontSize: 14, color: "#66707d", textAlign: "center" }}>
-                  Already have an account?{" "}
-                  <Link href="/register?signin=1" onClick={() => setAccountOpen(false)} style={{ color: "#101820", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
-                </p>
-              </div>
-            )}
+            {accountOpen && <AccountDropdown isLoggedIn={isLoggedIn} onClose={() => setAccountOpen(false)} minWidth={280} />}
           </div>
         </div>
 
@@ -172,18 +155,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
               </svg>
               <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase" as const }}>Account</span>
             </button>
-            {accountOpen && (
-              <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "24px 20px", minWidth: 260, boxShadow: "0 8px 32px rgba(17,24,39,.12)", zIndex: 100 }}>
-                <Link href="/register" onClick={() => setAccountOpen(false)}
-                  style={{ display: "block", background: "#e2372b", color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
-                  Register
-                </Link>
-                <p style={{ margin: "16px 0 0", fontSize: 14, color: "#66707d", textAlign: "center" }}>
-                  Already have an account?{" "}
-                  <Link href="/register?signin=1" onClick={() => setAccountOpen(false)} style={{ color: "#101820", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
-                </p>
-              </div>
-            )}
+            {accountOpen && <AccountDropdown isLoggedIn={isLoggedIn} onClose={() => setAccountOpen(false)} minWidth={260} />}
           </div>
         </div>
 
@@ -239,6 +211,41 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
           <span>Samsara Premier League · Season 3</span>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function AccountDropdown({ isLoggedIn, onClose, minWidth }: { isLoggedIn: boolean; onClose: () => void; minWidth: number }) {
+  function signOut() {
+    localStorage.removeItem("spl_token");
+    onClose();
+    window.location.href = "/";
+  }
+
+  return (
+    <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "24px 20px", minWidth, boxShadow: "0 8px 32px rgba(17,24,39,.12)", zIndex: 100 }}>
+      {isLoggedIn ? (
+        <>
+          <Link href="/manager" onClick={onClose}
+            style={{ display: "block", background: "#101820", color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
+            My Portal
+          </Link>
+          <p style={{ margin: "16px 0 0", fontSize: 14, color: "#66707d", textAlign: "center" }}>
+            <button type="button" onClick={signOut} style={{ background: "none", border: "none", color: "#101820", fontWeight: 600, cursor: "pointer", fontSize: 14, fontFamily: "inherit" }}>Sign out</button>
+          </p>
+        </>
+      ) : (
+        <>
+          <Link href="/register" onClick={onClose}
+            style={{ display: "block", background: "#e2372b", color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
+            Register
+          </Link>
+          <p style={{ margin: "16px 0 0", fontSize: 14, color: "#66707d", textAlign: "center" }}>
+            Already have an account?{" "}
+            <Link href="/register?signin=1" onClick={onClose} style={{ color: "#101820", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
+          </p>
+        </>
+      )}
     </div>
   );
 }

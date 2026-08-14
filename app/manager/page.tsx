@@ -7,9 +7,15 @@ const COLORS = [
   ["#101820", "Black"], ["#ffffff", "White"],
 ];
 
-type Screen = "squad" | "kit" | "submit" | "account";
+type Screen = "squad" | "fixtures" | "kit" | "submit" | "account";
 type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null; nationality: string | null };
 type Club = { id: string; name: string; short_code: string; home_ground: string; community: string; home_color: string; away_color: string; home_trim: string; away_trim: string };
+type Fixture = {
+  id: string; week: number; venue: string | null; played_at: string | null; status: string;
+  home_club: { id: string; name: string; short_code: string };
+  away_club: { id: string; name: string; short_code: string };
+  results: { home_score: number; away_score: number }[] | null;
+};
 
 function authHeader(): Record<string, string> {
   const token = typeof window !== "undefined" ? localStorage.getItem("spl_token") : null;
@@ -24,6 +30,7 @@ export default function ManagerPage() {
   const [screen, setScreen] = useState<Screen>("squad");
   const [club, setClub] = useState<Club | null>(null);
   const [squad, setSquad] = useState<Player[]>([]);
+  const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -49,9 +56,10 @@ export default function ManagerPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [clubRes, squadRes] = await Promise.all([
+      const [clubRes, squadRes, fixRes] = await Promise.all([
         apiFetch("/api/manager/club"),
         apiFetch("/api/manager/squad"),
+        apiFetch("/api/manager/fixtures"),
       ]);
       if (clubRes.status === 401) { window.location.href = "/register"; return; }
       if (clubRes.ok) {
@@ -63,6 +71,7 @@ export default function ManagerPage() {
         setAwayTrim(c.away_trim || "#b3122b");
       }
       if (squadRes.ok) setSquad(await squadRes.json());
+      if (fixRes.ok) setFixtures(await fixRes.json());
     } catch { setError("Failed to load club data."); }
     finally { setLoading(false); }
   }, []);
@@ -173,9 +182,9 @@ export default function ManagerPage() {
             </div>
           </div>
           <nav style={{ display: "flex", gap: 0, overflowX: "auto", marginTop: 20 }}>
-            {(["squad", "kit", "submit", "account"] as Screen[]).map(s => (
+            {(["squad", "fixtures", "kit", "submit", "account"] as Screen[]).map(s => (
               <button key={s} type="button" className={`mgr-nav-btn${screen === s ? " mgr-nav-active" : ""}`} onClick={() => setScreen(s)}>
-                {s === "squad" ? "Squad" : s === "kit" ? "Kit colours" : s === "submit" ? "Submit for approval" : "Account"}
+                {s === "squad" ? "Squad" : s === "fixtures" ? "Fixtures" : s === "kit" ? "Kit colours" : s === "submit" ? "Submit for approval" : "Account"}
               </button>
             ))}
           </nav>
@@ -268,6 +277,50 @@ export default function ManagerPage() {
                 <span style={{ marginLeft: "auto" }}>Min 11, max 22 players</span>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* FIXTURES */}
+        {screen === "fixtures" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            {fixtures.length === 0 && (
+              <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 48, textAlign: "center", color: "#66707d" }}>
+                No fixtures scheduled yet.
+              </div>
+            )}
+            {fixtures.map(f => {
+              const result = f.results?.[0] ?? null;
+              const isHome = f.home_club?.name === club?.name;
+              const opponent = isHome ? f.away_club : f.home_club;
+              const completed = f.status === "completed";
+              return (
+                <div key={f.id} style={{ background: "#fff", border: `1px solid ${completed ? "rgba(31,107,55,.2)" : "rgba(17,24,39,.10)"}`, borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#66707d", minWidth: 44 }}>Wk {f.week}</div>
+                  <div style={{ flex: 1, minWidth: 120 }}>
+                    <div style={{ fontWeight: 600, fontSize: 16 }}>{isHome ? "vs" : "@"} {opponent?.name}</div>
+                    <div style={{ fontSize: 13, color: "#98a1ab", marginTop: 3 }}>
+                      {isHome ? "Home" : "Away"}
+                      {f.venue ? ` · ${f.venue}` : ""}
+                    </div>
+                  </div>
+                  {f.played_at && (
+                    <div style={{ fontSize: 13, color: "#66707d" }}>
+                      {new Date(f.played_at).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })}
+                    </div>
+                  )}
+                  {completed && result && (
+                    <div style={{ fontWeight: 700, fontSize: 20, letterSpacing: ".04em", color: "#101820" }}>
+                      {isHome ? result.home_score : result.away_score}
+                      <span style={{ color: "#98a1ab", fontWeight: 400, margin: "0 6px" }}>-</span>
+                      {isHome ? result.away_score : result.home_score}
+                    </div>
+                  )}
+                  <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6, background: completed ? "#eef7f0" : "#f4f4f1", color: completed ? "#1f6b37" : "#66707d", textTransform: "capitalize" as const }}>
+                    {f.status}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
 
