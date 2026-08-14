@@ -136,7 +136,8 @@ export default function AdminPage() {
     const data = await res.json();
     setInvBusy(false);
     if (!res.ok) { setInvMsg(data.error || "Failed."); return; }
-    setInvMsg(`Code: ${data.code}`);
+    if (data.emailWarning) { setInvMsg(`Code: ${data.code} (email failed — copy manually)`); }
+    else { setInvMsg(`Invite sent to ${data.managerEmail}`); }
     setNewClub(""); setNewEmail(""); loadInvites();
   }
 

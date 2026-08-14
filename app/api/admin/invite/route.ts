@@ -41,15 +41,14 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Email disabled until domain verified in Resend — enable before launch
-  // try {
-  //   await sendInviteEmail({ to: managerEmail, clubName, code, season });
-  // } catch (emailErr) {
-  //   console.error("Email send failed:", emailErr);
-  //   return NextResponse.json({ code, clubName, managerEmail, emailWarning: "Invite saved but email failed to send." });
-  // }
+  try {
+    await sendInviteEmail({ to: managerEmail, clubName, code, season });
+  } catch (emailErr) {
+    console.error("Email send failed:", emailErr);
+    return NextResponse.json({ code, clubName, managerEmail, emailWarning: "Invite saved but email failed to send. Copy the code manually." });
+  }
 
-  return NextResponse.json({ code, clubName, managerEmail, note: "Email not sent — enable Resend before launch." });
+  return NextResponse.json({ code, clubName, managerEmail });
 }
 
 export async function GET() {

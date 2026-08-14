@@ -59,14 +59,7 @@ export async function POST(req: NextRequest) {
     await supabaseAdmin.from("players").insert(playerRows);
   }
 
-  // 4. Create registration record
-  await supabaseAdmin.from("registrations").insert({
-    club_id: clubId,
-    invite_code: code,
-    status: "pending",
-  });
-
-  // 5. Mark invite as used
+  // 4. Mark invite as used
   await supabaseAdmin
     .from("invites")
     .update({ used: true, used_by: userId })
