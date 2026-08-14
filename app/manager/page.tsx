@@ -158,6 +158,7 @@ export default function ManagerPage() {
   }
 
   async function signOut() {
+    localStorage.removeItem("spl_token");
     await supabase.auth.signOut();
     window.location.href = "/register";
   }

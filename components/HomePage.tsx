@@ -5,6 +5,7 @@ import Image from "next/image";
 import LeagueTableSection from "@/components/LeagueTableSection";
 import FixturesResultsSection from "@/components/FixturesResultsSection";
 import Modal from "@/components/Modal";
+import { supabase } from "@/lib/supabase";
 
 const RED = "#e2372b";
 const DARK = "#101820";
@@ -432,8 +433,9 @@ export default function HomePage() {
 }
 
 function HomeAccountDropdown({ isLoggedIn, onClose, minWidth }: { isLoggedIn: boolean; onClose: () => void; minWidth: number }) {
-  function signOut() {
+  async function signOut() {
     localStorage.removeItem("spl_token");
+    await supabase.auth.signOut();
     onClose();
     window.location.href = "/";
   }

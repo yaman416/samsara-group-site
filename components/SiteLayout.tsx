@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase";
 
 interface SiteLayoutProps {
   children: React.ReactNode;
@@ -216,8 +217,9 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
 }
 
 function AccountDropdown({ isLoggedIn, onClose, minWidth }: { isLoggedIn: boolean; onClose: () => void; minWidth: number }) {
-  function signOut() {
+  async function signOut() {
     localStorage.removeItem("spl_token");
+    await supabase.auth.signOut();
     onClose();
     window.location.href = "/";
   }
