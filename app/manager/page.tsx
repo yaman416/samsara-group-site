@@ -207,6 +207,23 @@ export default function ManagerPage() {
               <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(22px,3vw,30px)", letterSpacing: "-.015em", margin: "6px 0 0", lineHeight: 1.2 }}>{club?.name || "My Club"}</h1>
             </div>
             <div style={{ marginLeft: "auto", display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              {(() => {
+                const now = new Date();
+                const next = fixtures.filter(f => f.status === "scheduled" && f.played_at && new Date(f.played_at) >= now).sort((a, b) => new Date(a.played_at!).getTime() - new Date(b.played_at!).getTime())[0];
+                if (!next) return null;
+                const isHome = next.home_club?.id === club?.id;
+                const opponent = isHome ? next.away_club?.name : next.home_club?.name;
+                const d = new Date(next.played_at!);
+                const dateStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" });
+                const timeStr = d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" });
+                return (
+                  <div style={{ background: "#f4f4f1", borderRadius: 12, padding: "10px 16px", fontSize: 13, color: "#4a545f", textAlign: "right" }}>
+                    <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: ".1em", textTransform: "uppercase", color: "#98a1ab", marginBottom: 3 }}>Next match</div>
+                    <div style={{ fontWeight: 600, color: "#101820" }}>vs {opponent}</div>
+                    <div style={{ color: "#66707d", marginTop: 2 }}>{isHome ? "Home" : "Away"} · {dateStr} {timeStr}</div>
+                  </div>
+                );
+              })()}
               <div style={{ fontSize: 13, color: "#66707d" }}>{squad.length} / 22 players</div>
               <button type="button" onClick={() => { setScreen("squad"); setAddOpen(true); }}
                 style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "#101820", color: "#fff", border: 0, fontSize: 14, fontWeight: 500, padding: "11px 20px", borderRadius: 999, cursor: "pointer" }}>
