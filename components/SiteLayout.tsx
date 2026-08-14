@@ -98,7 +98,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
               <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "24px 20px", minWidth: 280, boxShadow: "0 8px 32px rgba(17,24,39,.12)", zIndex: 100 }}>
                 <Link href="/register" onClick={() => setAccountOpen(false)}
                   style={{ display: "block", background: "#e2372b", color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
-                  Create account
+                  Register
                 </Link>
                 <p style={{ margin: "16px 0 0", fontSize: 14, color: "#66707d", textAlign: "center" }}>
                   Already have an account?{" "}
@@ -137,7 +137,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
               <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "24px 20px", minWidth: 280, boxShadow: "0 8px 32px rgba(17,24,39,.12)", zIndex: 100 }}>
                 <Link href="/register" onClick={() => setAccountOpen(false)}
                   style={{ display: "block", background: "#e2372b", color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
-                  Create account
+                  Register
                 </Link>
                 <p style={{ margin: "16px 0 0", fontSize: 14, color: "#66707d", textAlign: "center" }}>
                   Already have an account?{" "}
@@ -176,7 +176,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
               <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "24px 20px", minWidth: 260, boxShadow: "0 8px 32px rgba(17,24,39,.12)", zIndex: 100 }}>
                 <Link href="/register" onClick={() => setAccountOpen(false)}
                   style={{ display: "block", background: "#e2372b", color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
-                  Create account
+                  Register
                 </Link>
                 <p style={{ margin: "16px 0 0", fontSize: 14, color: "#66707d", textAlign: "center" }}>
                   Already have an account?{" "}

@@ -5,13 +5,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const { status, notes } = await req.json();
 
-  if (!["approved", "changes", "rejected"].includes(status)) {
+  if (!["approved", "changes_requested", "rejected"].includes(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
   const { error } = await supabaseAdmin
     .from("registrations")
-    .update({ status, reviewer_notes: notes || null })
+    .update({ status, reviewer_notes: notes || null, reviewed_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
