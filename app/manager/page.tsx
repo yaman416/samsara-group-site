@@ -156,7 +156,7 @@ export default function ManagerPage() {
     else { setSubmitMsg("Squad submitted for approval. The committee will review within 3 business days."); }
   }
 
-  function signOut() {
+  async function signOut() {
     await supabase.auth.signOut();
     window.location.href = "/register";
   }
