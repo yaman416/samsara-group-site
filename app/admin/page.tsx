@@ -55,7 +55,7 @@ function Btn({ variant = "dark", children, ...props }: React.ButtonHTMLAttribute
 }
 
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(false);
+  const [authed, setAuthed] = useState(() => typeof window !== "undefined" && !!localStorage.getItem(ADMIN_KEY));
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState("");
   const [screen, setScreen] = useState<Screen>("invites");
