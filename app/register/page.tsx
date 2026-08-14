@@ -60,8 +60,12 @@ export default function RegisterPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setSetupError(data.error || "Registration failed. Try again."); }
-      else { setView("done"); }
+      if (!res.ok) { setSetupError(data.error || "Registration failed. Try again."); return; }
+      // auto sign in so browser session is established
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      if (authError || !authData.session) { setView("done"); return; }
+      localStorage.setItem("spl_token", authData.session.access_token);
+      window.location.href = "/manager";
     } catch { setSetupError("Network error. Try again."); }
     finally { setBusy(false); }
   }
