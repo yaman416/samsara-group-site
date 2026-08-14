@@ -18,13 +18,15 @@ type Fixture = {
   results: { home_score: number; away_score: number }[] | null;
 };
 
-function authHeader(): Record<string, string> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("spl_token") : null;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+async function getToken(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
 }
 
 async function apiFetch(path: string, opts: RequestInit = {}) {
-  return fetch(path, { ...opts, headers: { "Content-Type": "application/json", ...authHeader(), ...(opts.headers ?? {}) } });
+  const token = await getToken();
+  const auth = token ? { Authorization: `Bearer ${token}` } : {};
+  return fetch(path, { ...opts, headers: { "Content-Type": "application/json", ...auth, ...(opts.headers ?? {}) } });
 }
 
 export default function ManagerPage() {
@@ -155,7 +157,7 @@ export default function ManagerPage() {
   }
 
   function signOut() {
-    localStorage.removeItem("spl_token");
+    await supabase.auth.signOut();
     window.location.href = "/register";
   }
 
