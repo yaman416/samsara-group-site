@@ -8,7 +8,8 @@ type RegStatus = "pending" | "approved" | "changes_requested" | "rejected";
 
 type Invite = { id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
 type Reg = { id: string; status: RegStatus; reviewer_notes: string | null; submitted_at: string; clubs: { name: string; community: string } | null };
-type Club = { id: string; name: string; short_code: string; community: string; home_color: string };
+type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_ground: string; founded: number | null; manager_id: string | null };
+type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null };
 type Season = { id: string; name: string; year: number; is_active: boolean };
 type Fixture = {
   id: string; week: number; venue: string | null; played_at: string | null; status: string;
@@ -75,6 +76,15 @@ export default function AdminPage() {
   const [regBusy, setRegBusy] = useState(false);
 
   const [clubs, setClubs] = useState<Club[]>([]);
+  const [editClub, setEditClub] = useState<Club | null>(null);
+  const [editClubBusy, setEditClubBusy] = useState(false);
+  const [editClubMsg, setEditClubMsg] = useState("");
+  const [clubPlayers, setClubPlayers] = useState<Player[]>([]);
+  const [clubPlayersId, setClubPlayersId] = useState<string | null>(null);
+  const [editPlayer, setEditPlayer] = useState<Player | null>(null);
+  const [playerBusy, setPlayerBusy] = useState(false);
+  const [addPlayerOpen, setAddPlayerOpen] = useState(false);
+  const [newPlayer, setNewPlayer] = useState({ full_name: "", jersey_number: "", position: "MF", date_of_birth: "" });
 
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [weekFilter, setWeekFilter] = useState("");
@@ -145,6 +155,53 @@ export default function AdminPage() {
     if (!confirm(`Delete invite ${code}?`)) return;
     await api("/api/admin/invite", { method: "DELETE", body: JSON.stringify({ code }) });
     loadInvites();
+  }
+
+  async function saveClub() {
+    if (!editClub) return;
+    setEditClubBusy(true); setEditClubMsg("");
+    const res = await api("/api/admin/clubs", { method: "PATCH", body: JSON.stringify(editClub) });
+    setEditClubBusy(false);
+    if (res.ok) { setEditClubMsg("Saved."); loadClubs(); setTimeout(() => setEditClubMsg(""), 2000); }
+    else { const d = await res.json(); setEditClubMsg(d.error || "Save failed."); }
+  }
+
+  async function deleteClub(id: string, name: string) {
+    if (!confirm(`Delete ${name} and all their players? This cannot be undone.`)) return;
+    await api("/api/admin/clubs", { method: "DELETE", body: JSON.stringify({ id }) });
+    setEditClub(null); loadClubs();
+  }
+
+  async function loadClubPlayers(clubId: string) {
+    setClubPlayersId(clubId);
+    const r = await api(`/api/admin/players?club_id=${clubId}`);
+    if (r.ok) setClubPlayers(await r.json());
+  }
+
+  async function addPlayer() {
+    if (!clubPlayersId) return;
+    const num = parseInt(newPlayer.jersey_number);
+    if (!newPlayer.full_name.trim() || !num) return;
+    setPlayerBusy(true);
+    await api("/api/admin/players", { method: "POST", body: JSON.stringify({ club_id: clubPlayersId, full_name: newPlayer.full_name.trim(), jersey_number: num, position: newPlayer.position, date_of_birth: newPlayer.date_of_birth || null }) });
+    setNewPlayer({ full_name: "", jersey_number: "", position: "MF", date_of_birth: "" });
+    setAddPlayerOpen(false);
+    setPlayerBusy(false);
+    loadClubPlayers(clubPlayersId);
+  }
+
+  async function savePlayer() {
+    if (!editPlayer) return;
+    setPlayerBusy(true);
+    await api("/api/admin/players", { method: "PATCH", body: JSON.stringify(editPlayer) });
+    setEditPlayer(null); setPlayerBusy(false);
+    if (clubPlayersId) loadClubPlayers(clubPlayersId);
+  }
+
+  async function deletePlayer(id: string) {
+    if (!confirm("Remove this player?")) return;
+    await api("/api/admin/players", { method: "DELETE", body: JSON.stringify({ id }) });
+    if (clubPlayersId) loadClubPlayers(clubPlayersId);
   }
 
   async function updateReg(id: string, status: RegStatus) {
@@ -337,30 +394,148 @@ export default function AdminPage() {
 
         {/* CLUBS */}
         {screen === "clubs" && (
-          <div className="card" style={{ overflow: "hidden" }}>
-            <div style={{ overflowX: "auto" }}>
-              <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead style={{ background: "rgba(17,24,39,.03)" }}>
-                  <tr><th>Club</th><th>Code</th><th>Community</th><th>Color</th></tr>
-                </thead>
-                <tbody>
-                  {clubs.length === 0 && <tr><td colSpan={4} style={{ textAlign: "center", color: "#98a1ab", padding: 32 }}>No clubs yet.</td></tr>}
-                  {clubs.map(c => (
-                    <tr key={c.id}>
-                      <td style={{ fontWeight: 500 }}>{c.name}</td>
-                      <td><code style={{ fontFamily: "ui-monospace,monospace", fontSize: 13 }}>{c.short_code}</code></td>
-                      <td style={{ color: "#66707d" }}>{c.community}</td>
-                      <td>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <div style={{ width: 20, height: 20, borderRadius: 4, background: c.home_color, border: "1px solid rgba(17,24,39,.12)" }} />
-                          <span style={{ fontSize: 13, color: "#66707d" }}>{c.home_color}</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div style={{ display: "grid", gap: 20 }}>
+            {/* Club list */}
+            <div className="card" style={{ overflow: "hidden" }}>
+              <div style={{ overflowX: "auto" }}>
+                <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead style={{ background: "rgba(17,24,39,.03)" }}>
+                    <tr><th>Club</th><th>Code</th><th>Community</th><th>Kit</th><th>Ground</th><th></th></tr>
+                  </thead>
+                  <tbody>
+                    {clubs.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", color: "#98a1ab", padding: 32 }}>No clubs yet.</td></tr>}
+                    {clubs.map(c => (
+                      <tr key={c.id} style={{ background: editClub?.id === c.id ? "#f8f8f6" : undefined }}>
+                        <td style={{ fontWeight: 500 }}>{c.name}</td>
+                        <td><code style={{ fontFamily: "ui-monospace,monospace", fontSize: 13 }}>{c.short_code}</code></td>
+                        <td style={{ color: "#66707d" }}>{c.community}</td>
+                        <td>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <div title="Home" style={{ width: 18, height: 18, borderRadius: 4, background: c.home_color, border: "1px solid rgba(17,24,39,.12)" }} />
+                            <div title="Away" style={{ width: 18, height: 18, borderRadius: 4, background: c.away_color, border: "1px solid rgba(17,24,39,.12)" }} />
+                          </div>
+                        </td>
+                        <td style={{ color: "#66707d", fontSize: 13 }}>{c.home_ground || "-"}</td>
+                        <td style={{ textAlign: "right" }}>
+                          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                            <Btn variant="ghost" style={{ fontSize: 13, padding: "6px 12px" }} onClick={() => { setEditClub(c); setEditClubMsg(""); setClubPlayersId(null); }}>Edit</Btn>
+                            <Btn variant="ghost" style={{ fontSize: 13, padding: "6px 12px" }} onClick={() => loadClubPlayers(c.id)}>Players</Btn>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
+
+            {/* Edit club panel */}
+            {editClub && (
+              <div className="card" style={{ padding: 28 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600 }}>Edit: {editClub.name}</div>
+                  <Btn variant="ghost" style={{ fontSize: 13, padding: "6px 12px" }} onClick={() => setEditClub(null)}>Close</Btn>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 16 }}>
+                  <div><label style={label11}>Club name</label><input value={editClub.name} onChange={e => setEditClub(c => c && ({ ...c, name: e.target.value }))} style={inputSm} /></div>
+                  <div><label style={label11}>Short code</label><input value={editClub.short_code} onChange={e => setEditClub(c => c && ({ ...c, short_code: e.target.value.toUpperCase().slice(0,4) }))} style={inputSm} /></div>
+                  <div><label style={label11}>Community</label><input value={editClub.community} onChange={e => setEditClub(c => c && ({ ...c, community: e.target.value }))} style={inputSm} /></div>
+                  <div><label style={label11}>Home ground</label><input value={editClub.home_ground || ""} onChange={e => setEditClub(c => c && ({ ...c, home_ground: e.target.value }))} style={inputSm} /></div>
+                  <div><label style={label11}>Founded</label><input type="number" value={editClub.founded || ""} onChange={e => setEditClub(c => c && ({ ...c, founded: parseInt(e.target.value) || null }))} style={inputSm} /></div>
+                  <div>
+                    <label style={label11}>Home colour</label>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <input type="color" value={editClub.home_color} onChange={e => setEditClub(c => c && ({ ...c, home_color: e.target.value }))} style={{ width: 40, height: 38, padding: 2, border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, cursor: "pointer" }} />
+                      <input value={editClub.home_color} onChange={e => setEditClub(c => c && ({ ...c, home_color: e.target.value }))} style={{ ...inputSm, flex: 1 }} />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={label11}>Away colour</label>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <input type="color" value={editClub.away_color || "#ffffff"} onChange={e => setEditClub(c => c && ({ ...c, away_color: e.target.value }))} style={{ width: 40, height: 38, padding: 2, border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, cursor: "pointer" }} />
+                      <input value={editClub.away_color || ""} onChange={e => setEditClub(c => c && ({ ...c, away_color: e.target.value }))} style={{ ...inputSm, flex: 1 }} />
+                    </div>
+                  </div>
+                </div>
+                {editClubMsg && <div style={{ fontSize: 13, color: editClubMsg === "Saved." ? "#1f6b37" : "#a3211a", marginBottom: 12 }}>{editClubMsg}</div>}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <Btn variant="dark" onClick={saveClub} disabled={editClubBusy}>{editClubBusy ? "Saving..." : "Save changes"}</Btn>
+                  <Btn variant="red" onClick={() => deleteClub(editClub.id, editClub.name)}>Delete club</Btn>
+                </div>
+              </div>
+            )}
+
+            {/* Players panel */}
+            {clubPlayersId && (
+              <div className="card" style={{ padding: 28 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600 }}>Players: {clubs.find(c => c.id === clubPlayersId)?.name}</div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <Btn variant="dark" style={{ fontSize: 13, padding: "8px 14px" }} onClick={() => setAddPlayerOpen(o => !o)}>+ Add player</Btn>
+                    <Btn variant="ghost" style={{ fontSize: 13, padding: "8px 14px" }} onClick={() => { setClubPlayersId(null); setAddPlayerOpen(false); setEditPlayer(null); }}>Close</Btn>
+                  </div>
+                </div>
+
+                {addPlayerOpen && (
+                  <div style={{ background: "#f8f8f6", borderRadius: 12, padding: 20, marginBottom: 20 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginBottom: 12 }}>
+                      <div><label style={label11}>Name</label><input value={newPlayer.full_name} onChange={e => setNewPlayer(p => ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
+                      <div><label style={label11}>Jersey no.</label><input type="number" min={1} max={99} value={newPlayer.jersey_number} onChange={e => setNewPlayer(p => ({ ...p, jersey_number: e.target.value }))} style={inputSm} /></div>
+                      <div><label style={label11}>Position</label>
+                        <select value={newPlayer.position} onChange={e => setNewPlayer(p => ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
+                          <option value="GK">Goalkeeper</option><option value="DF">Defender</option><option value="MF">Midfielder</option><option value="FW">Forward</option>
+                        </select>
+                      </div>
+                      <div><label style={label11}>Date of birth</label><input type="date" value={newPlayer.date_of_birth} onChange={e => setNewPlayer(p => ({ ...p, date_of_birth: e.target.value }))} style={inputSm} /></div>
+                    </div>
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <Btn variant="dark" onClick={addPlayer} disabled={playerBusy}>{playerBusy ? "Adding..." : "Add"}</Btn>
+                      <Btn variant="ghost" onClick={() => setAddPlayerOpen(false)}>Cancel</Btn>
+                    </div>
+                  </div>
+                )}
+
+                <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead style={{ background: "rgba(17,24,39,.03)" }}><tr><th>No.</th><th>Name</th><th>Position</th><th>DOB</th><th></th></tr></thead>
+                  <tbody>
+                    {clubPlayers.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "#98a1ab", padding: 24 }}>No players.</td></tr>}
+                    {clubPlayers.map(p => editPlayer?.id === p.id ? (
+                      <tr key={p.id} style={{ background: "#fafaf8" }}>
+                        <td colSpan={5} style={{ padding: "14px 12px" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10, marginBottom: 10 }}>
+                            <div><label style={label11}>Name</label><input value={editPlayer.full_name} onChange={e => setEditPlayer(p => p && ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
+                            <div><label style={label11}>Jersey no.</label><input type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => p && ({ ...p, jersey_number: parseInt(e.target.value) }))} style={inputSm} /></div>
+                            <div><label style={label11}>Position</label>
+                              <select value={editPlayer.position} onChange={e => setEditPlayer(p => p && ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
+                                <option value="GK">Goalkeeper</option><option value="DF">Defender</option><option value="MF">Midfielder</option><option value="FW">Forward</option>
+                              </select>
+                            </div>
+                            <div><label style={label11}>DOB</label><input type="date" value={editPlayer.date_of_birth || ""} onChange={e => setEditPlayer(p => p && ({ ...p, date_of_birth: e.target.value || null }))} style={inputSm} /></div>
+                          </div>
+                          <div style={{ display: "flex", gap: 10 }}>
+                            <Btn variant="dark" onClick={savePlayer} disabled={playerBusy}>{playerBusy ? "Saving..." : "Save"}</Btn>
+                            <Btn variant="ghost" onClick={() => setEditPlayer(null)}>Cancel</Btn>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={p.id}>
+                        <td><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 6, background: "#101820", color: "#fff", fontSize: 13, fontWeight: 600 }}>{p.jersey_number}</span></td>
+                        <td style={{ fontWeight: 500 }}>{p.full_name}</td>
+                        <td><span style={{ background: "rgba(17,24,39,.07)", borderRadius: 6, padding: "3px 8px", fontSize: 12, fontWeight: 500 }}>{p.position}</span></td>
+                        <td style={{ color: "#66707d", fontSize: 13 }}>{p.date_of_birth || "-"}</td>
+                        <td style={{ textAlign: "right" }}>
+                          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                            <Btn variant="ghost" style={{ fontSize: 12, padding: "5px 10px" }} onClick={() => setEditPlayer(p)}>Edit</Btn>
+                            <Btn variant="ghost" style={{ fontSize: 12, padding: "5px 10px", color: "#a3211a" }} onClick={() => deletePlayer(p.id)}>Remove</Btn>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
