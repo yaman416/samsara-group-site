@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import SiteLayout from "@/components/SiteLayout";
+import { supabase } from "@/lib/supabase";
 
 type View = "public" | "code" | "setup" | "done" | "signin";
 
@@ -69,13 +70,10 @@ export default function RegisterPage() {
     if (!siEmail || !siPass) { setSiError("Enter your email and password."); return; }
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/signin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: siEmail, password: siPass }) });
-      const data = await res.json();
-      if (!res.ok) { setSiError(data.error || "Sign in failed."); }
-      else {
-        localStorage.setItem("spl_token", data.access_token);
-        window.location.href = "/manager";
-      }
+      const { data, error } = await supabase.auth.signInWithPassword({ email: siEmail, password: siPass });
+      if (error || !data.session) { setSiError("Incorrect email or password."); return; }
+      localStorage.setItem("spl_token", data.session.access_token);
+      window.location.href = "/manager";
     } catch { setSiError("Network error. Try again."); }
     finally { setBusy(false); }
   }
