@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import LeagueTableSection from "@/components/LeagueTableSection";
 import FixturesResultsSection from "@/components/FixturesResultsSection";
 import Modal from "@/components/Modal";
@@ -32,28 +33,6 @@ const HERO_SHOTS = [
   { src: P.final7, pos: "center 45%", alt: "Supporters on the sideline at Nicholls" },
 ];
 
-const CLUBS = [
-  { name: "Khukuri FC", crest: "/team/Khukuri.png" },
-  { name: "Thuenlam FC", crest: "/team/Thuenlam.png" },
-  { name: "Azhas FC", crest: "/team/azhas.png" },
-  { name: "Queanbeyan Nepalese United FC", crest: "/team/Queanbeyan.png" },
-  { name: "JA Brothers FC", crest: "/team/JA.png" },
-  { name: "Everest FC", crest: "/team/Everest.png" },
-  { name: "Phuensum FC", crest: "/team/phuensum.png" },
-  { name: "FC Yeedzin", crest: "/team/Yeedzin.png" },
-  { name: "ACE FC", crest: "/team/Aces.png" },
-  { name: "Bicchi FC", crest: "/team/Bicchi.png" },
-  { name: "Friends Football Club", crest: "/team/Friends.png" },
-  { name: "Bros and Ball FC", crest: "/team/BrosnBall.png" },
-];
-
-const FAQS = [
-  { q: "Who can enter Season 3?", a: "Entry is invitation-only. Clubs receive a code from Samsara Group, then register a manager account online." },
-  { q: "How many players can a squad hold?", a: "Up to 22 players. Each player needs a name and a jersey number, and no two players in a squad can share a number." },
-  { q: "Where are matches played?", a: "Nicholls Synthetic Field in Canberra, the same ground used for Season 2 and the Nepalese New Year Cup." },
-  { q: "When does Season 3 start?", a: "Saturday 14 November 2026. The full fixture list is published once all squads are approved." },
-  { q: "What is the Running Shield?", a: "It goes to the club that finishes top of the league stage. The champions are decided separately, in the final." },
-];
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -63,7 +42,7 @@ export default function HomePage() {
   const [slide, setSlide] = useState(0);
   const [cd, setCd] = useState({ dd: "--", hh: "--", mm: "--", ss: "--" });
   const [menuOpen, setMenuOpen] = useState(false);
-  const [faqOpen, setFaqOpen] = useState<number>(-1);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [showHub, setShowHub] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<"spl" | "nnyc" | null>(null);
 
@@ -71,6 +50,11 @@ export default function HomePage() {
     const id = setInterval(() => setSlide((s) => (s + 1) % HERO_SHOTS.length), 5200);
     return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
 
   useEffect(() => {
     function tick() {
@@ -89,59 +73,159 @@ export default function HomePage() {
   return (
     <div style={{ background: BG, fontFamily: "'DM Sans',system-ui,sans-serif", color: DARK, overflowX: "hidden" }}>
 
-      {/* ── TOP UTILITY BAR ── */}
-      <div style={{ background: DARK, color: DARK_MUTED, fontSize: 13 }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "10px 24px", display: "flex", flexWrap: "wrap" as const, gap: "12px 28px", alignItems: "center" }}>
-          <a href="mailto:samsaragroup.cbr@gmail.com" style={{ color: DARK_MUTED, textDecoration: "none" }}>samsaragroup.cbr@gmail.com</a>
-          <a href="tel:+61449981624" style={{ color: DARK_MUTED, textDecoration: "none" }}>+61 449 981 624</a>
-          <span style={{ marginLeft: "auto", display: "flex", gap: 20 }}>
-            <a href="https://www.instagram.com/samsaragroup.cbr" style={{ color: DARK_MUTED, textDecoration: "none" }}>Instagram</a>
-            <a href="https://www.facebook.com" style={{ color: DARK_MUTED, textDecoration: "none" }}>Facebook</a>
-            <a href="https://www.youtube.com/@SamsaraGroupCanberra" style={{ color: DARK_MUTED, textDecoration: "none" }}>YouTube</a>
-          </span>
-        </div>
-      </div>
+      {/* ── HEADER (includes utility bar so both stay above nav overlay) ── */}
+      <header style={{ position: "sticky", top: 0, zIndex: 60, backdropFilter: "blur(14px)" }}>
 
-      {/* ── HEADER ── */}
-      <header style={{ position: "sticky", top: 0, zIndex: 60, background: "rgba(244,244,241,.94)", backdropFilter: "blur(14px)", borderBottom: "1px solid rgba(17,24,39,.10)" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", height: 76, display: "flex", alignItems: "center", gap: 32 }}>
-          <a href="/" style={{ display: "flex", alignItems: "center", gap: 12, color: DARK, textDecoration: "none", flexShrink: 0 }}>
-            <img src="/logo.png" alt="Samsara Group Canberra" style={{ height: 40, width: "auto" }} />
-            <span style={{ fontWeight: 500, fontSize: 16, letterSpacing: "-.012em", lineHeight: 1.2 }}>
-              Samsara Group<br /><span style={{ color: MUTED }}>Canberra</span>
+        {/* ── TOP UTILITY BAR ── */}
+        <div style={{ background: DARK, color: DARK_MUTED, fontSize: 13 }}>
+          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "10px 28px", display: "flex", justifyContent: "flex-end", gap: 20, alignItems: "center" }}>
+            <a href="https://www.instagram.com/samsaragroup.cbr" aria-label="Instagram" style={{ color: DARK_MUTED, textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+            </a>
+            <a href="https://www.facebook.com" aria-label="Facebook" style={{ color: DARK_MUTED, textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="https://www.youtube.com/@SamsaraGroupCanberra" aria-label="YouTube" style={{ color: DARK_MUTED, textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
+              <svg width="22" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        {/* Nav row */}
+        <div style={{ background: "rgba(244,244,241,.96)", borderBottom: "1px solid rgba(17,24,39,.10)" }}>
+
+        {/* Account icon button — reused across layouts */}
+        {/* Wide (≥1100px): logo left | nav center | account right — NO hamburger */}
+        <div className="spl-header-wide" style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", height: 72, display: "flex", alignItems: "center", gap: 24 }}>
+          <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, color: DARK, textDecoration: "none", flexShrink: 0 }}>
+            <img src="/other logos/logo-dark.png" alt="Samsara Group Canberra" style={{ height: 38, width: "auto" }} />
+            <span style={{ fontWeight: 600, fontSize: 15, letterSpacing: "-.012em", lineHeight: 1.2 }}>
+              Samsara Group<br /><span style={{ color: MUTED, fontWeight: 400 }}>Canberra</span>
             </span>
           </a>
-
-          {/* Desktop nav — centered */}
-          <nav className="spl-desktop" style={{ display: "flex", alignItems: "center", gap: 28, margin: "0 auto", fontSize: 15, fontWeight: 400 }}>
-            <a href="/" style={{ color: DARK, textDecoration: "none", borderBottom: `2px solid ${RED}`, paddingBottom: 4 }}>Home</a>
-            <a href="/season" style={{ color: "#4a545f", textDecoration: "none" }}>Season 3</a>
-            <a href="/clubs" style={{ color: "#4a545f", textDecoration: "none" }}>Clubs</a>
-            <a href="/gallery" style={{ color: "#4a545f", textDecoration: "none" }}>Gallery</a>
-            <a href="/partners" style={{ color: "#4a545f", textDecoration: "none" }}>Partners</a>
+          <nav style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 14, fontWeight: 500, margin: "0 auto", letterSpacing: ".02em", textTransform: "uppercase" as const }}>
+            {[["Home", "/"], ["About", "/about"], ["Season 3", "/season"], ["Archive", "/archive"], ["Clubs", "/clubs"], ["Gallery", "/gallery"], ["Partners", "/partners"]].map(([label, href]) => (
+              <a key={label} href={href} style={{ color: href === "/" ? DARK : "#4a545f", textDecoration: "none", padding: "6px 12px", borderBottom: href === "/" ? `2px solid ${RED}` : "none", paddingBottom: href === "/" ? 4 : 6 }}>{label}</a>
+            ))}
           </nav>
-
-          <a href="/register/team" className="spl-desktop" style={{ background: RED, color: "#fff", fontSize: 14, fontWeight: 500, padding: "13px 24px", borderRadius: 999, whiteSpace: "nowrap", textDecoration: "none", flexShrink: 0 }}>
-            Register a club
-          </a>
-
-          {/* Hamburger */}
-          <button type="button" onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" className="spl-mobile" style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", padding: 8, display: "none", flexDirection: "column", gap: 5 }}>
-            <span style={{ display: "block", width: 22, height: 2, background: DARK, borderRadius: 2 }} />
-            <span style={{ display: "block", width: 22, height: 2, background: DARK, borderRadius: 2 }} />
-            <span style={{ display: "block", width: 22, height: 2, background: DARK, borderRadius: 2 }} />
-          </button>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <button type="button" onClick={() => setAccountOpen((v) => !v)}
+              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: DARK, padding: "6px 12px" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase" as const }}>Account</span>
+            </button>
+            {accountOpen && (
+              <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "24px 20px", minWidth: 280, boxShadow: "0 8px 32px rgba(17,24,39,.12)", zIndex: 100 }}>
+                <a href="/register" onClick={() => setAccountOpen(false)}
+                  style={{ display: "block", background: RED, color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
+                  Create account
+                </a>
+                <p style={{ margin: "16px 0 0", fontSize: 14, color: MUTED, textAlign: "center" }}>
+                  Already have an account?{" "}
+                  <a href="/register?signin=1" onClick={() => setAccountOpen(false)} style={{ color: DARK, fontWeight: 600, textDecoration: "none" }}>Sign in</a>
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
-        {menuOpen && (
-          <div className="spl-mobile" style={{ background: "rgba(244,244,241,.98)", borderTop: "1px solid rgba(17,24,39,.10)", padding: "16px 24px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
-            {[["Home", "/"], ["Season 3", "/season"], ["Clubs", "/clubs"], ["Gallery", "/gallery"], ["Partners", "/partners"]].map(([label, href]) => (
-              <a key={label} href={href} onClick={() => setMenuOpen(false)} style={{ color: DARK, fontWeight: 500, fontSize: 16, textDecoration: "none" }}>{label}</a>
-            ))}
-            <a href="/register/team" style={{ background: RED, color: "#fff", fontSize: 14, fontWeight: 500, padding: "12px 22px", borderRadius: 999, textDecoration: "none", textAlign: "center", marginTop: 4 }}>Register a club</a>
+        {/* Medium (768-1099px): hamburger left | logo center | account right */}
+        <div className="spl-header-mid" style={{ padding: "0 24px", height: 72, display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
+          <button type="button" onClick={() => { setMenuOpen((v) => !v); setAccountOpen(false); }} aria-label={menuOpen ? "Close menu" : "Open menu"}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 8, justifySelf: "start", color: DARK, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {menuOpen ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            )}
+          </button>
+          <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, color: DARK, textDecoration: "none" }}>
+            <img src="/other logos/logo-dark.png" alt="Samsara Group Canberra" style={{ height: 36, width: "auto" }} />
+            <span style={{ fontWeight: 600, fontSize: 15, letterSpacing: "-.012em", lineHeight: 1.2 }}>
+              Samsara Group<br /><span style={{ color: MUTED, fontWeight: 400 }}>Canberra</span>
+            </span>
+          </a>
+          <div style={{ position: "relative", justifySelf: "end" }}>
+            <button type="button" onClick={() => { setAccountOpen((v) => !v); setMenuOpen(false); }}
+              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: DARK, padding: "6px 4px" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase" as const }}>Account</span>
+            </button>
+            {accountOpen && (
+              <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "24px 20px", minWidth: 280, boxShadow: "0 8px 32px rgba(17,24,39,.12)", zIndex: 100 }}>
+                <a href="/register" onClick={() => setAccountOpen(false)}
+                  style={{ display: "block", background: RED, color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
+                  Create account
+                </a>
+                <p style={{ margin: "16px 0 0", fontSize: 14, color: MUTED, textAlign: "center" }}>
+                  Already have an account?{" "}
+                  <a href="/register?signin=1" onClick={() => setAccountOpen(false)} style={{ color: DARK, fontWeight: 600, textDecoration: "none" }}>Sign in</a>
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+
+        {/* Mobile (<768px): hamburger left | logo center | account right */}
+        <div className="spl-header-mobile" style={{ padding: "0 16px", height: 72, display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
+          <button type="button" onClick={() => { setMenuOpen((v) => !v); setAccountOpen(false); }} aria-label={menuOpen ? "Close menu" : "Open menu"}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 8, justifySelf: "start", color: DARK, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {menuOpen ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            )}
+          </button>
+          <a href="/" style={{ display: "flex", alignItems: "center", gap: 8, color: DARK, textDecoration: "none" }}>
+            <img src="/other logos/logo-dark.png" alt="Samsara Group Canberra" style={{ height: 34, width: "auto" }} />
+            <span style={{ fontWeight: 600, fontSize: 13, letterSpacing: "-.01em", lineHeight: 1.2 }}>
+              Samsara Group<br /><span style={{ color: MUTED, fontWeight: 400 }}>Canberra</span>
+            </span>
+          </a>
+          <div style={{ position: "relative", justifySelf: "end" }}>
+            <button type="button" onClick={() => { setAccountOpen((v) => !v); setMenuOpen(false); }}
+              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: DARK, padding: "6px 4px" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase" as const }}>Account</span>
+            </button>
+            {accountOpen && (
+              <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "24px 20px", minWidth: 260, boxShadow: "0 8px 32px rgba(17,24,39,.12)", zIndex: 100 }}>
+                <a href="/register" onClick={() => setAccountOpen(false)}
+                  style={{ display: "block", background: RED, color: "#fff", fontSize: 14, fontWeight: 600, padding: "14px 20px", borderRadius: 999, textDecoration: "none", textAlign: "center", letterSpacing: ".04em", textTransform: "uppercase" as const }}>
+                  Create account
+                </a>
+                <p style={{ margin: "16px 0 0", fontSize: 14, color: MUTED, textAlign: "center" }}>
+                  Already have an account?{" "}
+                  <a href="/register?signin=1" onClick={() => setAccountOpen(false)} style={{ color: DARK, fontWeight: 600, textDecoration: "none" }}>Sign in</a>
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        </div>{/* end Nav row */}
       </header>
+
+      {/* Full-overlay nav menu (Arsenal style) — outside header to escape backdrop-filter stacking context */}
+      {menuOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 58, background: "#fff", overflowY: "auto", paddingTop: 109 }}>
+          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+            {[["Home", "/"], ["About", "/about"], ["Season 3", "/season"], ["Archive", "/archive"], ["Clubs", "/clubs"], ["Gallery", "/gallery"], ["Partners", "/partners"]].map(([label, href]) => (
+              <a key={label} href={href} onClick={() => setMenuOpen(false)}
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: DARK, fontSize: 18, fontWeight: 400, padding: "20px 24px", textDecoration: "none", borderBottom: "1px solid rgba(17,24,39,.08)" }}>
+                {label}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── HERO — dark centered ── */}
       <section id="top" style={{ position: "relative", minHeight: "min(86vh,820px)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", overflow: "hidden", background: DARK }}>
@@ -153,13 +237,13 @@ export default function HomePage() {
         <div style={{ position: "relative", width: "100%", maxWidth: 900, padding: "120px 24px", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 10, border: "1px solid rgba(255,255,255,.34)", borderRadius: 999, padding: "8px 18px", fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const }}>
             <span style={{ width: 7, height: 7, borderRadius: "50%", background: RED, animation: "spl-pulse 1.8s ease-in-out infinite", display: "inline-block" }} />
-            Samsara Group Canberra presents
+            SBA Property Group Presents
           </div>
           <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(42px,6.4vw,86px)", lineHeight: 1.06, letterSpacing: "-.02em", margin: "26px 0 0", textWrap: "balance" as any }}>
             Samsara Premier League
           </h1>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 22, flexWrap: "wrap" as const, justifyContent: "center" }}>
-            <span style={{ background: RED, color: "#fff", fontSize: 12, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, padding: "9px 16px", borderRadius: 6 }}>Season 03 · 2026–27</span>
+            <span style={{ background: RED, color: "#fff", fontSize: 12, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, padding: "9px 16px", borderRadius: 6 }}>Season 03 · 2026-27</span>
             <span style={{ fontSize: 15, color: "rgba(255,255,255,.82)" }}>Kick-off Saturday 14 November 2026</span>
           </div>
           <p style={{ maxWidth: "56ch", margin: "22px 0 0", fontSize: 18, lineHeight: 1.7, color: "rgba(255,255,255,.86)" }}>
@@ -167,7 +251,7 @@ export default function HomePage() {
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, justifyContent: "center", marginTop: 34 }}>
             <a href="#register" style={{ background: RED, color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 30px", borderRadius: 999, textDecoration: "none" }}>Register a club</a>
-            <a href="#about" style={{ border: "1px solid rgba(255,255,255,.42)", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 30px", borderRadius: 999, textDecoration: "none" }}>About the league</a>
+            <a href="/about" style={{ border: "1px solid rgba(255,255,255,.42)", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 30px", borderRadius: 999, textDecoration: "none" }}>About us</a>
           </div>
 
           {/* Slide dots */}
@@ -211,106 +295,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── ABOUT ── */}
-      <section id="about" style={{ background: BG, padding: "104px 0" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 56, alignItems: "center" }}>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>About Samsara Group</div>
-            <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(30px,4vw,50px)", lineHeight: 1.14, letterSpacing: "-.012em", margin: "16px 0 0" }}>Fostering community, empowering growth</h2>
-            <p style={{ margin: "22px 0 0", fontSize: 17, lineHeight: 1.72, color: "#4a545f", maxWidth: "58ch" }}>
-              Samsara Group Canberra is a volunteer-led organisation connecting Canberra&apos;s Nepalese and Bhutanese communities through football, culture and events. The Premier League is our flagship competition, run once a year, every year since 2024.
-            </p>
-            <div style={{ marginTop: 36, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 24, borderTop: "1px solid rgba(17,24,39,.10)", paddingTop: 26 }}>
-              {[{ val: "2024", label: "First season" }, { val: "45", label: "Matches played" }, { val: "155", label: "Goals scored" }].map((s) => (
-                <div key={s.label}>
-                  <div style={{ fontSize: 29, fontWeight: 500, letterSpacing: "-.018em" }}>{s.val}</div>
-                  <div style={{ fontSize: 11, letterSpacing: ".11em", textTransform: "uppercase" as const, color: MUTED, marginTop: 6 }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-            <a href="#clubs" style={{ display: "inline-block", marginTop: 34, background: DARK, color: "#fff", fontSize: 15, fontWeight: 500, padding: "15px 28px", borderRadius: 999, textDecoration: "none" }}>Meet the clubs</a>
-          </div>
-
-          <div>
-            <div style={{ position: "relative", borderRadius: 18, overflow: "hidden", minHeight: 420 }}>
-              <img src={P.final6} alt="Khukuri Canberra FC receive the Season 2 winners cheque" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-            </div>
-            <div style={{ background: RED, color: "#fff", borderRadius: 14, marginTop: -46, marginLeft: 32, marginRight: 32, position: "relative", padding: "26px 30px", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", gap: 18, flexWrap: "wrap" as const }}>
-              <span style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: 40, lineHeight: 1 }}>$4,000</span>
-              <span style={{ fontSize: 14, lineHeight: 1.5, color: "rgba(255,255,255,.92)" }}>champions prize, presented by<br />SBA Property Group</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── CLUBS — dark ── */}
-      <section id="clubs" style={{ background: DARK, color: "#fff", padding: "88px 0" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, flexWrap: "wrap" as const, marginBottom: 44 }}>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>The twelve</div>
-              <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(30px,4vw,48px)", lineHeight: 1.14, letterSpacing: "-.012em", margin: "16px 0 0" }}>Clubs confirmed for Season 3</h2>
-            </div>
-            <a href="#clubs" style={{ border: "1px solid rgba(255,255,255,.34)", color: "#fff", fontSize: 15, fontWeight: 500, padding: "15px 28px", borderRadius: 999, textDecoration: "none" }}>All twelve clubs</a>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(120px,1fr))", gap: 14 }}>
-            {CLUBS.map((c) => (
-              <div key={c.name} style={{ background: "#161f28", border: "1px solid rgba(255,255,255,.08)", borderRadius: 14, padding: "22px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, textAlign: "center", color: "#fff" }}>
-                <img src={c.crest} alt="" style={{ width: 52, height: 52, objectFit: "contain" }} />
-                <span style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.4 }}>{c.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOW THE SEASON RUNS ── */}
-      <section style={{ background: BG, padding: "104px 0" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 56, alignItems: "center" }}>
-          <div style={{ position: "relative", borderRadius: 18, overflow: "hidden", minHeight: 440 }}>
-            <img src={P.final4} alt="Champions lift the Samsara Premier League trophy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>How the season runs</div>
-            <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(30px,4vw,48px)", lineHeight: 1.14, letterSpacing: "-.012em", margin: "16px 0 0" }}>One season a year, run properly</h2>
-            <div style={{ marginTop: 36, display: "grid", gap: 0 }}>
-              {[
-                { n: "01", title: "Invitation-only entry", body: "Clubs receive a code, then register a manager account and squad online." },
-                { n: "02", title: "League stage", body: "Every club plays the field. The team top of the table takes the Running Shield." },
-                { n: "03", title: "Finals", body: "The season closes with a final at Nicholls, and the champions prize presented on the day." },
-              ].map((step, i) => (
-                <div key={step.n} style={{ display: "grid", gridTemplateColumns: "auto minmax(0,1fr)", gap: 22, padding: "24px 0", borderTop: "1px solid rgba(17,24,39,.10)", ...(i === 2 ? { borderBottom: "1px solid rgba(17,24,39,.10)" } : {}) }}>
-                  <span style={{ fontFamily: "Lora,Georgia,serif", fontSize: 20, color: RED }}>{step.n}</span>
-                  <div>
-                    <div style={{ fontSize: 19, fontWeight: 500, letterSpacing: "-.008em" }}>{step.title}</div>
-                    <p style={{ margin: "8px 0 0", fontSize: 16, lineHeight: 1.72, color: "#4a545f", maxWidth: "52ch" }}>{step.body}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ── HONOURS BOARD ── */}
       <section style={{ position: "relative", padding: "120px 0", overflow: "hidden" }}>
-        <img src={P.khukuri2} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        <img src={P.final7} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
         <div style={{ position: "absolute", inset: 0, background: "rgba(16,24,32,.76)" }} />
         <div style={{ position: "relative", maxWidth: 1340, margin: "0 auto", padding: "0 24px", color: "#fff", textAlign: "center" }}>
-          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: "#ff6a5e" }}>Season 2 · 2025–26</div>
+          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: "#ff6a5e" }}>Season 2 · 2025-26</div>
           <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(30px,4vw,50px)", lineHeight: 1.16, letterSpacing: "-.012em", margin: "16px auto 0", maxWidth: "20ch" }}>The honours board</h2>
           <div style={{ marginTop: 52, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 20 }}>
             {[
-              { crest: "/team/khukuri.png", label: "Champions", name: "Khukuri Canberra FC" },
-              { crest: "/team/thuenlam.png", label: "Runners-up", name: "Thuenlam FC" },
-              { crest: "/team/thuenlam.png", label: "Running Shield", name: "Thuenlam FC" },
-              { icon: "S1", label: "Season 1 · 2024–25", name: "The first season" },
-            ].map((card) => (
-              <div key={card.label} style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 16, padding: "32px 26px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-                {card.crest
-                  ? <img src={card.crest} alt="" style={{ width: 62, height: 62, objectFit: "contain" }} />
-                  : <span style={{ width: 62, height: 62, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Lora,Georgia,serif", fontSize: 30, color: "#ff6a5e" }}>{card.icon}</span>
-                }
+              { crest: "/team logos/Khukuri.png", label: "Champions", name: "Khukuri Canberra FC" },
+              { crest: "/team logos/Thuenlam.png", label: "Running Shield", name: "Thuenlam FC" },
+            ].map((card, i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 16, padding: "32px 26px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                <img src={card.crest} alt="" style={{ width: 62, height: 62, objectFit: "contain" }} />
                 <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, color: DARK_MUTED }}>{card.label}</div>
                 <div style={{ fontSize: 19, fontWeight: 500 }}>{card.name}</div>
               </div>
@@ -319,112 +317,37 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── GALLERY ── */}
-      <section id="gallery" style={{ background: BG, padding: "104px 0" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, flexWrap: "wrap" as const, marginBottom: 40 }}>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>Gallery</div>
-              <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(30px,4vw,48px)", lineHeight: 1.14, letterSpacing: "-.012em", margin: "16px 0 0" }}>Matchdays, kept</h2>
-            </div>
-            <a href="/gallery" style={{ border: "1px solid rgba(17,24,39,.18)", color: DARK, fontSize: 15, fontWeight: 500, padding: "15px 28px", borderRadius: 999, textDecoration: "none" }}>Open the gallery</a>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
-            {[P.final1, P.final4, P.celebration, P.final7].map((src) => (
-              <a key={src} href="/gallery" style={{ position: "relative", aspectRatio: "4/3", borderRadius: 14, overflow: "hidden", background: "#e6e6e1", display: "block", textDecoration: "none" }}>
-                <img src={src} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-              </a>
-            ))}
+      {/* ── SPONSOR SLIDER ── */}
+      <section style={{ background: "#fff", borderTop: "1px solid rgba(17,24,39,.08)", padding: "56px 0" }}>
+        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px 28px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
+            <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: MUTED }}>Our partners</div>
+            <a href="/partners" style={{ fontSize: 13, fontWeight: 500, color: RED, textDecoration: "none", letterSpacing: ".04em" }}>View all partners</a>
           </div>
         </div>
-      </section>
-
-      {/* ── FAQ ── */}
-      <section id="faq" style={{ background: DARK, color: "#fff", padding: "104px 0" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 56, alignItems: "start" }}>
-          <div style={{ position: "relative", borderRadius: 18, overflow: "hidden", minHeight: 440 }}>
-            <img src={P.final5} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-          </div>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>Questions</div>
-            <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(30px,4vw,48px)", lineHeight: 1.14, letterSpacing: "-.012em", margin: "16px 0 36px" }}>Before you enter</h2>
-            {FAQS.map((f, i) => (
-              <div key={i} style={{ borderTop: "1px solid rgba(255,255,255,.14)" }}>
-                <button type="button" onClick={() => setFaqOpen(faqOpen === i ? -1 : i)}
-                  style={{ width: "100%", background: "none", border: 0, padding: "22px 0", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, cursor: "pointer", textAlign: "left", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 18, fontWeight: 500 }}>
-                  <span>{f.q}</span>
-                  <span style={{ fontSize: 22, color: RED, lineHeight: 1 }}>{faqOpen === i ? "–" : "+"}</span>
-                </button>
-                {faqOpen === i && (
-                  <p style={{ margin: 0, padding: "0 0 24px", fontSize: 16, lineHeight: 1.72, color: DARK_MUTED, maxWidth: "56ch" }}>{f.a}</p>
-                )}
-              </div>
-            ))}
-            <div style={{ borderTop: "1px solid rgba(255,255,255,.14)" }} />
-          </div>
-        </div>
-      </section>
-
-      {/* ── PARTNERS ── */}
-      <section id="partners" style={{ background: "#fff", padding: "88px 0" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 44, alignItems: "center" }}>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, color: RED }}>Title sponsor</div>
-              <img src="/sponsor/sba.png" alt="SBA Property Group" style={{ maxWidth: 250, width: "100%", height: "auto", objectFit: "contain", marginTop: 24 }} />
-              <p style={{ margin: "22px 0 0", fontSize: 17, lineHeight: 1.72, color: "#4a545f", maxWidth: "44ch" }}>SBA Property Group presents the Samsara Premier League and the $4,000 champions prize.</p>
-            </div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, color: MUTED }}>Major partners</div>
-              <div style={{ display: "flex", gap: 36, alignItems: "center", flexWrap: "wrap" as const, marginTop: 24 }}>
-                <img src="/sponsor/gtm.png" alt="GTM Facility Services" style={{ height: 52, width: "auto", objectFit: "contain" }} />
-                <img src="/sponsor/lhotse.png" alt="Lhotse" style={{ height: 44, width: "auto", objectFit: "contain" }} />
-              </div>
-              <a href="#partners" style={{ display: "inline-block", marginTop: 32, border: "1px solid rgba(17,24,39,.18)", color: DARK, fontSize: 15, fontWeight: 500, padding: "15px 28px", borderRadius: 999, textDecoration: "none" }}>All partners</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── UPDATES ── */}
-      <section id="updates" style={{ background: BG, padding: "104px 0" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: 44 }}>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>Latest update</div>
-              <a href="#clubs" style={{ display: "block", marginTop: 20, borderRadius: 18, overflow: "hidden", color: DARK, textDecoration: "none" }}>
-                <div style={{ position: "relative", aspectRatio: "16/10" }}>
-                  <img src={P.final7} alt="Supporters on the sideline at Nicholls" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-                </div>
-                <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderTop: 0, padding: 30 }}>
-                  <div style={{ fontSize: 12, letterSpacing: ".1em", textTransform: "uppercase" as const, color: MUTED }}>Season 3</div>
-                  <h3 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: 26, lineHeight: 1.26, letterSpacing: "-.01em", margin: "12px 0 10px" }}>Twelve clubs confirmed for Season 3</h3>
-                  <p style={{ margin: 0, fontSize: 16, lineHeight: 1.72, color: "#4a545f" }}>Six Nepalese and six Bhutanese clubs have accepted their invitations. Squad registration is open now.</p>
-                </div>
-              </a>
-            </div>
-
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>Upcoming</div>
-              <div style={{ marginTop: 20, display: "grid", gap: 14 }}>
+        <div style={{ overflow: "hidden" }}>
+          <div style={{ display: "flex", width: "max-content", animation: "spl-marquee 32s linear infinite", alignItems: "center", gap: 64 }}>
+            {[0, 1].map((i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 64, padding: "0 32px" }}>
                 {[
-                  { date: "14", month: "Nov", title: "Season 3 kick-off", sub: "Nicholls Synthetic Field, Canberra" },
-                  { date: "Now", month: "", title: "Squad registration open", sub: "Invitation code required · max 22 players" },
-                  { date: "TBC", month: "", title: "Fixture draw", sub: "Published once all squads are approved" },
-                ].map((ev) => (
-                  <div key={ev.title} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 16, padding: "26px 28px", display: "grid", gridTemplateColumns: "auto minmax(0,1fr)", gap: 22, alignItems: "center" }}>
-                    <div style={{ textAlign: "center", minWidth: 58 }}>
-                      <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 30, lineHeight: 1 }}>{ev.date}</div>
-                      {ev.month && <div style={{ fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase" as const, color: MUTED, marginTop: 4 }}>{ev.month}</div>}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 18, fontWeight: 500 }}>{ev.title}</div>
-                      <div style={{ fontSize: 15, color: MUTED, marginTop: 4 }}>{ev.sub}</div>
-                    </div>
-                  </div>
+                  { src: "/sponsor/sba.png", alt: "SBA Property Group", h: 44 },
+                  { src: "/sponsor/gtm.png", alt: "GTM Facility Services", h: 40 },
+                  { src: "/sponsor/lhotse.png", alt: "Lhotse", h: 36 },
+                  { src: "/sponsor/dikshant.png", alt: "Dikshant", h: 36 },
+                  { src: "/sponsor/expert.png", alt: "Expert", h: 36 },
+                  { src: "/sponsor/momo.png", alt: "Momo", h: 36 },
+                  { src: "/sponsor/monkeytemple.png", alt: "Monkey Temple", h: 36 },
+                  { src: "/sponsor/nepalihaat.png", alt: "Nepali Haat", h: 36 },
+                  { src: "/sponsor/ooshman.png", alt: "Ooshman", h: 36 },
+                  { src: "/sponsor/zenith.png", alt: "Zenith", h: 36 },
+                ].map((s) => (
+                  <img key={s.alt} src={s.src} alt={s.alt} style={{ height: s.h, width: "auto", objectFit: "contain", opacity: .7, filter: "grayscale(100%)", transition: "opacity .2s, filter .2s" }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "1"; (e.currentTarget as HTMLImageElement).style.filter = "none"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = ".7"; (e.currentTarget as HTMLImageElement).style.filter = "grayscale(100%)"; }}
+                  />
                 ))}
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -437,7 +360,7 @@ export default function HomePage() {
             <p style={{ margin: 0, fontSize: 18, lineHeight: 1.7, maxWidth: "46ch", color: "rgba(255,255,255,.92)" }}>
               Registration for Season 3 is invitation-only. Enter your club&apos;s code to set up a manager account and register your squad.
             </p>
-            <a href="/register/team" style={{ background: "#0b0e11", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 32px", borderRadius: 999, textDecoration: "none" }}>Start registration</a>
+            <a href="/register" style={{ background: "#0b0e11", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 32px", borderRadius: 999, textDecoration: "none" }}>Start registration</a>
           </div>
         </div>
       </section>
@@ -446,12 +369,12 @@ export default function HomePage() {
       <footer style={{ background: DARK, color: DARK_MUTED, padding: "80px 0 36px" }}>
         <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 44 }}>
           <div>
-            <img src="/samsara-logo-light.png" alt="Samsara Group Canberra" style={{ height: 46, width: "auto", objectFit: "contain", marginBottom: 20 }} />
+            <img src="/other logos/logo-light.png" alt="Samsara Group Canberra" style={{ height: 46, width: "auto", objectFit: "contain", marginBottom: 20 }} />
             <p style={{ margin: 0, fontSize: 15, lineHeight: 1.72, maxWidth: "32ch" }}>Fostering community, empowering growth. Canberra, Australia.</p>
           </div>
           <div style={{ display: "grid", gap: 12, fontSize: 15, alignContent: "start" }}>
             <div style={{ color: "#fff", fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, marginBottom: 6 }}>League</div>
-            {[["About", "#about"], ["Clubs", "#clubs"], ["Gallery", "/gallery"], ["FAQ", "#faq"]].map(([label, href]) => (
+            {[["About Us", "/about"], ["Clubs", "/clubs"], ["Gallery", "/gallery"], ["Season 3", "/season"]].map(([label, href]) => (
               <a key={label} href={href} style={{ color: DARK_MUTED, textDecoration: "none" }}>{label}</a>
             ))}
           </div>
@@ -463,9 +386,9 @@ export default function HomePage() {
           </div>
           <div>
             <div style={{ color: "#fff", fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, marginBottom: 18 }}>Season updates</div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" as const }}>
-              <input type="email" placeholder="Email address" style={{ flex: "1 1 160px", minWidth: 0, background: "#161f28", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, padding: "13px 20px", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, outline: "none" }} />
-              <button type="button" style={{ background: RED, color: "#fff", border: 0, borderRadius: 999, padding: "13px 24px", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, cursor: "pointer" }}>Subscribe</button>
+            <div style={{ display: "flex", gap: 0, background: "#161f28", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, overflow: "hidden" }}>
+              <input type="email" placeholder="Email address" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "13px 20px", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, outline: "none" }} />
+              <button type="button" style={{ background: RED, color: "#fff", border: 0, borderRadius: 999, padding: "13px 24px", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, cursor: "pointer", flexShrink: 0 }}>Subscribe</button>
             </div>
           </div>
         </div>
@@ -514,10 +437,22 @@ export default function HomePage() {
         @keyframes spl-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         @keyframes spl-pulse { 0%,100% { opacity:1; } 50% { opacity:.25; } }
         .spl-desktop { display: flex !important; }
-        .spl-mobile { display: none !important; }
+        .spl-mobile-only { display: none !important; }
+        /* Wide: full nav, no hamburger */
+        .spl-header-wide { display: flex !important; }
+        .spl-header-mid { display: none !important; }
+        .spl-header-mobile { display: none !important; }
+        @media (max-width: 1099px) {
+          /* Medium: logo left, hamburger right, no nav */
+          .spl-header-wide { display: none !important; }
+          .spl-header-mid { display: grid !important; }
+        }
         @media (max-width: 767px) {
+          /* Mobile: hamburger left, logo center, account right */
           .spl-desktop { display: none !important; }
-          .spl-mobile { display: flex !important; }
+          .spl-mobile-only { display: flex !important; }
+          .spl-header-mid { display: none !important; }
+          .spl-header-mobile { display: grid !important; }
         }
       `}</style>
     </div>

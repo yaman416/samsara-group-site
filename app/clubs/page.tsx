@@ -5,18 +5,18 @@ import Image from "next/image";
 import SiteLayout from "@/components/SiteLayout";
 
 const CREST: Record<string, string> = {
-  khukuri: "/team/Khukuri.png",
-  thuenlam: "/team/Thuenlam.png",
-  azhas: "/team/azhas.png",
-  queanbeyan: "/team/Queanbeyan.png",
-  jabrothers: "/team/JA.png",
-  everest: "/team/Everest.png",
-  phuensum: "/team/phuensum.png",
-  yeedzin: "/team/Yeedzin.png",
-  ace: "/team/Aces.png",
-  bicchi: "/team/Bicchi.png",
-  friends: "/team/Friends.png",
-  brosandball: "/team/BrosnBall.png",
+  khukuri: "/team logos/Khukuri.png",
+  thuenlam: "/team logos/Thuenlam.png",
+  azhas: "/team logos/azhas.png",
+  queanbeyan: "/team logos/Queanbeyan.png",
+  jabrothers: "/team logos/JA.png",
+  everest: "/team logos/Everest.png",
+  phuensum: "/team logos/phuensum.png",
+  yeedzin: "/team logos/Yeedzin.png",
+  ace: "/team logos/Aces.png",
+  bicchi: "/team logos/Bicchi.png",
+  friends: "/team logos/Friends.png",
+  brosandball: "/team logos/BrosnBall.png",
 };
 
 const ALL_CLUBS = [
@@ -28,10 +28,10 @@ const ALL_CLUBS = [
   { slug: "everest", name: "Everest FC", country: "Nepal", note: "Seventh in Season 2", returning: true },
   { slug: "phuensum", name: "Phuensum FC", country: "Bhutan", note: "Eighth in Season 2", returning: true },
   { slug: "yeedzin", name: "FC Yeedzin", country: "Bhutan", note: "New for Season 3", returning: false },
-  { slug: "ace", name: "ACE FC", country: "Bhutan", note: "New for Season 3", returning: false },
+  { slug: "ace", name: "Aces FC", country: "Bhutan", note: "New for Season 3", returning: false },
   { slug: "bicchi", name: "Bicchi FC", country: "Nepal", note: "New for Season 3", returning: false },
-  { slug: "friends", name: "Friends Football Club", country: "Nepal", note: "New for Season 3", returning: false },
-  { slug: "brosandball", name: "Bros and Ball FC", country: "Nepal", note: "New for Season 3", returning: false },
+  { slug: "friends", name: "Friends FC", country: "Nepal", note: "New for Season 3", returning: false },
+  { slug: "brosandball", name: "Bros & Ball FC", country: "Nepal", note: "New for Season 3", returning: false },
 ];
 
 const FILTERS = ["All clubs", "Returning", "New for Season 3"] as const;
@@ -51,11 +51,11 @@ export default function ClubsPage() {
   return (
     <SiteLayout activeNav="clubs">
       {/* Hero */}
-      <section style={{ background: "#101820", color: "#fff", padding: "64px 0 56px" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px" }}>
+      <section style={{ background: "#101820", color: "#fff", padding: "64px 24px 56px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#e2372b" }}>Season 3 · 2026-27</div>
           <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(34px,5vw,58px)", lineHeight: 1.1, letterSpacing: "-.02em", margin: "16px 0 0" }}>The clubs</h1>
-          <p style={{ margin: "20px 0 0", fontSize: 18, lineHeight: 1.7, color: "#98a1ab", maxWidth: "56ch" }}>
+          <p style={{ margin: "20px 0 0", fontSize: 18, lineHeight: 1.7, color: "#98a1ab" }}>
             Twelve clubs from Canberra and Queanbeyan, drawn from the Nepalese and Bhutanese communities. Seven return from Season 2; five join for the first time.
           </p>
           <div style={{ marginTop: 40, display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -80,9 +80,9 @@ export default function ClubsPage() {
       </section>
 
       {/* Club grid */}
-      <section style={{ background: "#f4f4f1", padding: "56px 0 104px" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 16 }}>
+      <section style={{ background: "#f4f4f1", padding: "56px 24px 88px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(280px,100%),1fr))", gap: 16 }}>
             {clubs.map(c => {
               const crest = CREST[c.slug];
               return (

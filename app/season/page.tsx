@@ -5,18 +5,18 @@ import Image from "next/image";
 import SiteLayout from "@/components/SiteLayout";
 
 const CREST: Record<string, string> = {
-  khukuri: "/team/Khukuri.png",
-  thuenlam: "/team/Thuenlam.png",
-  azhas: "/team/azhas.png",
-  queanbeyan: "/team/Queanbeyan.png",
-  jabrothers: "/team/JA.png",
-  everest: "/team/Everest.png",
-  phuensum: "/team/phuensum.png",
-  yeedzin: "/team/Yeedzin.png",
-  ace: "/team/Aces.png",
-  bicchi: "/team/Bicchi.png",
-  friends: "/team/Friends.png",
-  brosandball: "/team/BrosnBall.png",
+  khukuri: "/team logos/Khukuri.png",
+  thuenlam: "/team logos/Thuenlam.png",
+  azhas: "/team logos/azhas.png",
+  queanbeyan: "/team logos/Queanbeyan.png",
+  jabrothers: "/team logos/JA.png",
+  everest: "/team logos/Everest.png",
+  phuensum: "/team logos/phuensum.png",
+  yeedzin: "/team logos/Yeedzin.png",
+  ace: "/team logos/Aces.png",
+  bicchi: "/team logos/Bicchi.png",
+  friends: "/team logos/Friends.png",
+  brosandball: "/team logos/BrosnBall.png",
 };
 
 const CLUBS_RAW = [
@@ -28,10 +28,10 @@ const CLUBS_RAW = [
   ["Everest FC", "everest", "NP"],
   ["Phuensum FC", "phuensum", "BT"],
   ["FC Yeedzin", "yeedzin", "BT"],
-  ["ACE FC", "ace", "BT"],
+  ["Aces FC", "ace", "BT"],
   ["Bicchi FC", "bicchi", "NP"],
-  ["Friends Football Club", "friends", "NP"],
-  ["Bros and Ball FC", "brosandball", "NP"],
+  ["Friends FC", "friends", "NP"],
+  ["Bros & Ball FC", "brosandball", "NP"],
 ] as const;
 
 function initials(name: string) {
@@ -85,7 +85,7 @@ export default function SeasonPage() {
       {/* Hero with photo bg */}
       <section style={{ position: "relative", background: "#101820", color: "#fff", overflow: "hidden" }}>
         <Image
-          src="/gallery/FINAL%20SPL%202025-26/644055873_122201103818559639_8722394492457535109_n.jpg"
+          src="/gallery/FINAL%20SPL%202025-26/644195431_122200984940559639_7106563034665718509_n.jpg"
           alt=""
           fill
           style={{ objectFit: "cover", objectPosition: "center 38%", opacity: 0.32 }}
@@ -100,6 +100,7 @@ export default function SeasonPage() {
 
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32, flexWrap: "wrap", marginTop: 22 }}>
             <div>
+              <Image src="/other logos/spl-logo-main.png" alt="SPL" width={64} height={64} style={{ width: 64, height: 64, objectFit: "contain", marginBottom: 16 }} />
               <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(34px,5vw,60px)", lineHeight: 1.08, letterSpacing: "-.02em", margin: 0 }}>Samsara Premier League</h1>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 18, flexWrap: "wrap" }}>
                 <span style={{ background: "#e2372b", color: "#fff", fontSize: 12, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", padding: "8px 15px", borderRadius: 6 }}>Season 03 · 2026-27</span>
@@ -167,8 +168,8 @@ export default function SeasonPage() {
             <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36 }}>
               <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d" }}>Format</div>
               <div style={{ marginTop: 20, display: "grid", gap: 14, fontSize: 16, color: "#4a545f" }}>
-                {[["Clubs", "12"], ["Squad limit", "22 players"], ["Structure", "League then finals"], ["League winner", "Running Shield"]].map(([k, v]) => (
-                  <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 16, borderBottom: k !== "League winner" ? "1px solid rgba(17,24,39,.08)" : undefined, paddingBottom: k !== "League winner" ? 14 : 0 }}>
+                {[["Teams", "12"], ["Format", "11-a-side"], ["Game days", "Saturdays 4-8 pm"], ["Structure", "11 weeks + finals"], ["Squad limit", "22 players"]].map(([k, v], i, arr) => (
+                  <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 16, borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,.08)" : undefined, paddingBottom: i < arr.length - 1 ? 14 : 0 }}>
                     <span>{k}</span><span style={{ color: "#101820", fontWeight: 500 }}>{v}</span>
                   </div>
                 ))}
@@ -186,8 +187,8 @@ export default function SeasonPage() {
             <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, overflow: "hidden", display: "flex", flexDirection: "column" }}>
               <div style={{ position: "relative", aspectRatio: "16/10" }}>
                 <Image
-                  src="/gallery/FINAL%20SPL%202025-26/645045304_122201108054559639_700231387386612553_n.jpg"
-                  alt="Khukuri Canberra FC receive the Season 2 winners cheque"
+                  src="/gallery/FINAL%20SPL%202025-26/SPL%20Championship%20Trophies.jpg"
+                  alt="SPL Championship Trophies"
                   fill style={{ objectFit: "cover" }}
                 />
               </div>

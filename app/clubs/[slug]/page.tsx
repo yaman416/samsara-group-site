@@ -4,18 +4,18 @@ import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
 
 const CREST: Record<string, string> = {
-  khukuri: "/team/Khukuri.png",
-  thuenlam: "/team/Thuenlam.png",
-  azhas: "/team/azhas.png",
-  queanbeyan: "/team/Queanbeyan.png",
-  jabrothers: "/team/JA.png",
-  everest: "/team/Everest.png",
-  phuensum: "/team/phuensum.png",
-  yeedzin: "/team/Yeedzin.png",
-  ace: "/team/Aces.png",
-  bicchi: "/team/Bicchi.png",
-  friends: "/team/Friends.png",
-  brosandball: "/team/BrosnBall.png",
+  khukuri: "/team logos/Khukuri.png",
+  thuenlam: "/team logos/Thuenlam.png",
+  azhas: "/team logos/azhas.png",
+  queanbeyan: "/team logos/Queanbeyan.png",
+  jabrothers: "/team logos/JA.png",
+  everest: "/team logos/Everest.png",
+  phuensum: "/team logos/phuensum.png",
+  yeedzin: "/team logos/Yeedzin.png",
+  ace: "/team logos/Aces.png",
+  bicchi: "/team logos/Bicchi.png",
+  friends: "/team logos/Friends.png",
+  brosandball: "/team logos/BrosnBall.png",
 };
 
 type Rec = [number, number, number, number, number, number] | null;
@@ -35,17 +35,17 @@ interface ClubData {
 
 const CLUBS: ClubData[] = [
   { slug: "khukuri", name: "Khukuri Canberra FC", short: "Khukuri", country: "Nepal", founded: "2021", home: "#1f6fd0", away: "#101820", rec: [11,8,2,1,30,26], finish: "2nd", honours: [{ title: "Champions", season: "Season 2" }] },
-  { slug: "thuenlam", name: "Thuenlam FC", short: "Thuenlam", country: "Bhutan", founded: "—", home: "#5ec8d8", away: "#101820", rec: [11,9,0,2,13,27], finish: "1st", honours: [{ title: "Running Shield", season: "Season 2" }, { title: "Runners-up", season: "Season 2" }] },
+  { slug: "thuenlam", name: "Thuenlam FC", short: "Thuenlam", country: "Bhutan", founded: "Unknown", home: "#5ec8d8", away: "#101820", rec: [11,9,0,2,13,27], finish: "1st", honours: [{ title: "Running Shield", season: "Season 2" }, { title: "Runners-up", season: "Season 2" }] },
   { slug: "azhas", name: "Azhas FC", short: "Azhas", country: "Bhutan", founded: "2022", home: "#e63329", away: "#101820", rec: [11,7,4,0,14,25], finish: "3rd", honours: [] },
   { slug: "queanbeyan", name: "Queanbeyan Nepalese United FC", short: "QNUFC", country: "Nepal", founded: "2021", home: "#e01b24", away: "#1b3a8c", rec: [11,4,4,3,9,16], finish: "6th", honours: [] },
   { slug: "jabrothers", name: "JA Brothers FC", short: "JA Brothers", country: "Nepal", founded: "2022", home: "#d81f26", away: "#0f3f8c", rec: [11,5,3,3,7,18], finish: "5th", honours: [] },
   { slug: "everest", name: "Everest FC", short: "Everest", country: "Nepal", founded: "2020", home: "#2b2a72", away: "#f08a26", rec: [11,4,3,4,3,15], finish: "7th", honours: [] },
   { slug: "phuensum", name: "Phuensum FC", short: "Phuensum", country: "Bhutan", founded: "2022", home: "#101820", away: "#d9b444", rec: [11,3,4,4,-1,13], finish: "8th", honours: [] },
-  { slug: "yeedzin", name: "FC Yeedzin", short: "Yeedzin", country: "Bhutan", founded: "—", home: "#e6e6e1", away: "#101820", rec: null, honours: [] },
-  { slug: "ace", name: "ACE FC", short: "ACE", country: "Bhutan", founded: "2025", home: "#c9a227", away: "#101820", rec: null, honours: [] },
-  { slug: "bicchi", name: "Bicchi FC", short: "Bicchi", country: "Nepal", founded: "—", home: "#12294d", away: "#f0932b", rec: null, honours: [] },
-  { slug: "friends", name: "Friends Football Club", short: "Friends", country: "Nepal", founded: "2025", home: "#1140a8", away: "#f2ede1", rec: null, honours: [] },
-  { slug: "brosandball", name: "Bros and Ball FC", short: "Bros and Ball", country: "Nepal", founded: "—", home: "#1f3352", away: "#c8353c", rec: null, honours: [] },
+  { slug: "yeedzin", name: "FC Yeedzin", short: "Yeedzin", country: "Bhutan", founded: "Unknown", home: "#e6e6e1", away: "#101820", rec: null, honours: [] },
+  { slug: "ace", name: "Aces FC", short: "Aces", country: "Bhutan", founded: "2025", home: "#c9a227", away: "#101820", rec: null, honours: [] },
+  { slug: "bicchi", name: "Bicchi FC", short: "Bicchi", country: "Nepal", founded: "Unknown", home: "#12294d", away: "#f0932b", rec: null, honours: [] },
+  { slug: "friends", name: "Friends FC", short: "Friends", country: "Nepal", founded: "2025", home: "#1140a8", away: "#f2ede1", rec: null, honours: [] },
+  { slug: "brosandball", name: "Bros & Ball FC", short: "Bros & Ball", country: "Nepal", founded: "Unknown", home: "#1f3352", away: "#c8353c", rec: null, honours: [] },
 ];
 
 function initials(name: string) {
