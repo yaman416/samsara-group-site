@@ -201,10 +201,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
           </div>
           <div>
             <div style={{ color: "#fff", fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, marginBottom: 18 }}>Season updates</div>
-            <div style={{ display: "flex", gap: 0, background: "#161f28", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, overflow: "hidden" }}>
-              <input type="email" placeholder="Email address" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "13px 20px", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, outline: "none" }} />
-              <button type="button" style={{ background: "#e2372b", color: "#fff", border: 0, borderRadius: 999, padding: "13px 24px", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, cursor: "pointer", flexShrink: 0 }}>Subscribe</button>
-            </div>
+            <FooterSubscribe />
           </div>
         </div>
         <div style={{ maxWidth: 1340, margin: "52px auto 0", padding: "26px 24px 0", borderTop: "1px solid rgba(255,255,255,.12)", fontSize: 14, display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap" as const }}>
@@ -248,6 +245,50 @@ function AccountDropdown({ isLoggedIn, onClose, minWidth }: { isLoggedIn: boolea
           </p>
         </>
       )}
+    </div>
+  );
+}
+
+function FooterSubscribe() {
+  const [email, setEmail] = useState("");
+  const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    if (!email) return;
+    setBusy(true);
+    setMsg("");
+    const res = await fetch("/api/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    setBusy(false);
+    if (res.ok) { setMsg("Subscribed!"); setEmail(""); }
+    else { const d = await res.json(); setMsg(d.error ?? "Something went wrong."); }
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 0, background: "#161f28", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, overflow: "hidden" }}>
+        <input
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && submit()}
+          placeholder="Email address"
+          style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "13px 20px", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, outline: "none" }}
+        />
+        <button
+          type="button"
+          onClick={submit}
+          disabled={busy}
+          style={{ background: "#e2372b", color: "#fff", border: 0, borderRadius: 999, padding: "13px 24px", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, cursor: "pointer", flexShrink: 0, opacity: busy ? 0.7 : 1 }}
+        >
+          {busy ? "..." : "Subscribe"}
+        </button>
+      </div>
+      {msg && <p style={{ margin: "8px 0 0", fontSize: 13, color: msg === "Subscribed!" ? "#6ee7a0" : "#f87171" }}>{msg}</p>}
     </div>
   );
 }
