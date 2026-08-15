@@ -41,15 +41,15 @@ const F = "'DM Sans',system-ui,sans-serif";
 const label11: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase", color: "#66707d", marginBottom: 6 };
 const inputSm: React.CSSProperties = { width: "100%", boxSizing: "border-box", border: "1px solid rgba(17,24,39,.18)", borderRadius: 10, fontSize: 14, padding: "10px 13px", color: "#101820", fontFamily: F, background: "#fff" };
 
-function Btn({ variant = "dark", children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "dark" | "ghost" | "red" | "green" }) {
-  const styles: Record<string, React.CSSProperties> = {
+function Btn({ variant = "dark", children, style, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "dark" | "ghost" | "red" | "green" }) {
+  const variants: Record<string, React.CSSProperties> = {
     dark:  { background: "#101820", color: "#fff", border: 0 },
     red:   { background: "#e2372b", color: "#fff", border: 0 },
     green: { background: "#1f6b37", color: "#fff", border: 0 },
     ghost: { background: "none",    color: "#101820", border: "1px solid rgba(17,24,39,.18)" },
   };
   return (
-    <button type="button" style={{ fontFamily: F, fontSize: 14, fontWeight: 500, padding: "10px 20px", borderRadius: 999, cursor: "pointer", ...styles[variant], ...(props.disabled ? { opacity: 0.6 } : {}) }} {...props}>
+    <button type="button" style={{ fontFamily: F, fontSize: 14, fontWeight: 500, padding: "10px 20px", borderRadius: 999, cursor: "pointer", ...variants[variant], ...(props.disabled ? { opacity: 0.6 } : {}), ...style }} {...props}>
       {children}
     </button>
   );
