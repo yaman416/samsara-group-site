@@ -3,12 +3,12 @@ import { useState, useEffect, useCallback } from "react";
 
 const ADMIN_KEY = "spl_admin";
 
-type Screen = "invites" | "clubs" | "squads" | "fixtures" | "matchday" | "table";
+type Screen = "invites" | "clubs" | "squads" | "fixtures" | "matchday" | "table" | "emails";
 type Reg = { id: string; status: string; submitted_at: string; reviewer_notes: string | null; clubs: { id: string; name: string; community: string; manager: { email: string } | null } | null };
 type Invite ={ id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
 type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_ground: string; founded: number | null; manager_id: string | null; logo_url?: string | null };
 type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null };
-type Season = { id: string; name: string; year: number; is_active: boolean };
+type Season = { id: string; name: string; year: number; is_active: boolean; squad_deadline: string | null };
 type Fixture = {
   id: string; week: number; venue: string | null; played_at: string | null; status: string;
   home_club: { id: string; name: string; short_code: string };
@@ -55,6 +55,16 @@ export default function AdminPage() {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [activeSeason, setActiveSeason] = useState<Season | null>(null);
 
+  const [deadlineInput, setDeadlineInput] = useState("");
+  const [deadlineMsg, setDeadlineMsg] = useState("");
+
+  type Subscriber = { id: string; email: string; subscribed_at: string };
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [emailBusy, setEmailBusy] = useState(false);
+  const [emailMsg, setEmailMsg] = useState("");
+
   const [invites, setInvites] = useState<Invite[]>([]);
   const [newClub, setNewClub] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -100,7 +110,8 @@ export default function AdminPage() {
   }, []);
 
   const loadInvites  = useCallback(async () => { const r = await api("/api/admin/invite"); if (r.ok) setInvites(await r.json()); }, []);
-  const loadRegs     = useCallback(async () => { const r = await api("/api/admin/registrations"); if (r.ok) setRegs(await r.json()); }, []);
+  const loadRegs         = useCallback(async () => { const r = await api("/api/admin/registrations"); if (r.ok) setRegs(await r.json()); }, []);
+  const loadSubscribers  = useCallback(async () => { const r = await api("/api/admin/email"); if (r.ok) setSubscribers(await r.json()); }, []);
   const loadClubs    = useCallback(async () => { const r = await api("/api/admin/clubs"); if (r.ok) setClubs(await r.json()); }, []);
   const loadAuthUsers = useCallback(async () => { const r = await api("/api/admin/users"); if (r.ok) setAuthUsers(await r.json()); }, []);
   const loadFixtures = useCallback(async () => {
@@ -120,9 +131,10 @@ export default function AdminPage() {
     if (screen === "invites")  loadInvites();
     if (screen === "clubs")    loadClubs();
     if (screen === "squads")   loadRegs();
+    if (screen === "emails")   loadSubscribers();
     if (screen === "fixtures" || screen === "matchday") loadFixtures();
     if (screen === "table")    loadTable();
-  }, [authed, screen, loadInvites, loadRegs, loadClubs, loadFixtures, loadTable]);
+  }, [authed, screen, loadInvites, loadRegs, loadClubs, loadFixtures, loadTable, loadSubscribers]);
 
   async function login() {
     if (!pw.trim()) return;
@@ -237,6 +249,7 @@ export default function AdminPage() {
     { key: "fixtures", label: "Fixtures" },
     { key: "matchday", label: "Matchday" },
     { key: "table",    label: "League Table" },
+    { key: "emails",   label: "Emails" },
   ];
 
   if (!authed) return (
@@ -285,6 +298,37 @@ export default function AdminPage() {
         {/* INVITES */}
         {screen === "invites" && (
           <div style={{ display: "grid", gap: 20 }}>
+            {activeSeason && (
+              <div className="card" style={{ padding: 28 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Squad registration deadline</div>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
+                  <div>
+                    <label style={label11}>Deadline date and time</label>
+                    <input
+                      type="datetime-local"
+                      value={deadlineInput || (activeSeason.squad_deadline ? activeSeason.squad_deadline.slice(0, 16) : "")}
+                      onChange={e => setDeadlineInput(e.target.value)}
+                      style={inputSm}
+                    />
+                  </div>
+                  <Btn variant="dark" onClick={async () => {
+                    const val = deadlineInput || (activeSeason.squad_deadline ? activeSeason.squad_deadline.slice(0, 16) : "");
+                    if (!val) return;
+                    const res = await api("/api/admin/seasons", { method: "PATCH", body: JSON.stringify({ id: activeSeason.id, squad_deadline: new Date(val).toISOString() }) });
+                    if (res.ok) {
+                      setDeadlineMsg("Saved.");
+                      loadSeasons();
+                    } else {
+                      setDeadlineMsg("Save failed.");
+                    }
+                    setTimeout(() => setDeadlineMsg(""), 3000);
+                  }}>Save</Btn>
+                  {deadlineMsg && <span style={{ fontSize: 13, color: deadlineMsg === "Saved." ? "#1f6b37" : "#a3211a", fontWeight: 500 }}>{deadlineMsg}</span>}
+                </div>
+                <p style={{ marginTop: 10, fontSize: 13, color: "#98a1ab" }}>After this deadline, managers cannot add, edit, or remove players. Currently active season: {activeSeason.name}.</p>
+              </div>
+            )}
+
             <div className="card" style={{ padding: 28 }}>
               <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Generate invite code</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 16, alignItems: "end" }}>
@@ -720,6 +764,64 @@ export default function AdminPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {screen === "emails" && (
+          <div style={{ display: "grid", gap: 20 }}>
+            <div className="card" style={{ padding: 28 }}>
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Subscribers</div>
+              <div style={{ fontSize: 13, color: "#66707d", marginBottom: 16 }}>{subscribers.length} subscriber{subscribers.length !== 1 ? "s" : ""}</div>
+              {subscribers.length > 0 && (
+                <div style={{ overflowX: "auto" }}>
+                  <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead style={{ background: "rgba(17,24,39,.03)" }}>
+                      <tr><th>Email</th><th>Subscribed</th></tr>
+                    </thead>
+                    <tbody>
+                      {subscribers.map(s => (
+                        <tr key={s.id}>
+                          <td>{s.email}</td>
+                          <td style={{ color: "#66707d", fontSize: 13 }}>{new Date(s.subscribed_at).toLocaleDateString("en-AU")}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="card" style={{ padding: 28 }}>
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Send email blast</div>
+              <div style={{ display: "grid", gap: 14 }}>
+                <div>
+                  <label style={label11}>Subject</label>
+                  <input value={emailSubject} onChange={e => setEmailSubject(e.target.value)} placeholder="Season 3 update" style={inputSm} />
+                </div>
+                <div>
+                  <label style={label11}>Message (HTML allowed)</label>
+                  <textarea
+                    value={emailBody}
+                    onChange={e => setEmailBody(e.target.value)}
+                    placeholder="<p>Hello everyone...</p>"
+                    rows={8}
+                    style={{ ...inputSm, resize: "vertical", fontFamily: "ui-monospace,monospace", fontSize: 13 }}
+                  />
+                </div>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <Btn variant="dark" disabled={emailBusy || !emailSubject || !emailBody} onClick={async () => {
+                    if (!emailSubject || !emailBody) return;
+                    setEmailBusy(true); setEmailMsg("");
+                    const res = await api("/api/admin/email", { method: "POST", body: JSON.stringify({ subject: emailSubject, body: emailBody }) });
+                    const data = await res.json();
+                    setEmailBusy(false);
+                    if (res.ok) setEmailMsg(`Sent to ${data.sent} subscriber${data.sent !== 1 ? "s" : ""}${data.failed ? `, ${data.failed} failed` : ""}.`);
+                    else setEmailMsg(data.error ?? "Send failed.");
+                  }}>{emailBusy ? "Sending..." : `Send to ${subscribers.length} subscriber${subscribers.length !== 1 ? "s" : ""}`}</Btn>
+                  {emailMsg && <span style={{ fontSize: 13, color: emailMsg.includes("failed") || emailMsg.includes("error") || emailMsg.includes("failed") ? "#a3211a" : "#1f6b37", fontWeight: 500 }}>{emailMsg}</span>}
+                </div>
               </div>
             </div>
           </div>

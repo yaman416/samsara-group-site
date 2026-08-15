@@ -13,14 +13,21 @@ export async function GET(req: NextRequest) {
   const userId = await getUserId(req);
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await supabaseAdmin
+  const { data: club, error } = await supabaseAdmin
     .from("clubs")
     .select("*")
     .eq("manager_id", userId)
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
-  return NextResponse.json(data);
+
+  const { data: season } = await supabaseAdmin
+    .from("seasons")
+    .select("squad_deadline")
+    .eq("year", club.season)
+    .single();
+
+  return NextResponse.json({ ...club, squad_deadline: season?.squad_deadline ?? null });
 }
 
 export async function PATCH(req: NextRequest) {

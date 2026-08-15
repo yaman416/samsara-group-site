@@ -1,6 +1,7 @@
 // components/MainFooter.tsx
 import Link from "next/link";
 import { ORG } from "@/lib/splData";
+import SubscribeForm from "@/components/SubscribeForm";
 
 export default function MainFooter() {
   const year = new Date().getFullYear();
@@ -27,6 +28,10 @@ export default function MainFooter() {
               >
                 Follow us on Facebook
               </a>
+
+              <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#607181]">Email updates</p>
+              <p className="mt-1 text-xs text-[#607181]">Get fixture schedules and league news straight to your inbox.</p>
+              <SubscribeForm />
             </div>
 
             <div className="flex flex-col items-center sm:items-start">

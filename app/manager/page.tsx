@@ -10,7 +10,7 @@ const COLORS = [
 
 type Screen = "squad" | "fixtures" | "kit" | "club" | "account";
 type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null; nationality: string | null };
-type Club = { id: string; name: string; short_code: string; home_ground: string; community: string; home_color: string; away_color: string; home_trim: string; away_trim: string };
+type Club = { id: string; name: string; short_code: string; home_ground: string; community: string; home_color: string; away_color: string; home_trim: string; away_trim: string; squad_deadline: string | null };
 type Fixture = {
   id: string; week: number; venue: string | null; played_at: string | null; status: string;
   home_club: { id: string; name: string; short_code: string };
@@ -257,6 +257,20 @@ export default function ManagerPage() {
         {/* SQUAD */}
         {screen === "squad" && (
           <div style={{ display: "grid", gap: 24 }}>
+            {(() => {
+              const deadline = club?.squad_deadline ? new Date(club.squad_deadline) : null;
+              const locked = deadline ? new Date() > deadline : false;
+              if (!deadline) return null;
+              return locked ? (
+                <div style={{ background: "#fdecea", border: "1px solid #f5c6c3", borderRadius: 14, padding: "14px 20px", fontSize: 14, color: "#a3211a", fontWeight: 500 }}>
+                  Squad registration closed on {deadline.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}. Contact the committee to make changes.
+                </div>
+              ) : (
+                <div style={{ background: "#fff6ec", border: "1px solid #f0d7b8", borderRadius: 14, padding: "14px 20px", fontSize: 14, color: "#8a5a12" }}>
+                  Squad registration closes {deadline.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}.
+                </div>
+              );
+            })()}
             {/* Add player form */}
             {addOpen && (
               <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 28 }}>
