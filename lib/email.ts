@@ -15,7 +15,8 @@ export async function sendEmail({
   subject: string;
   html: string;
 }) {
-  return resend.emails.send({ from: FROM, to, subject, html });
+  const replyTo = process.env.EMAIL_REPLY_TO ?? undefined;
+  return resend.emails.send({ from: FROM, to, subject, html, ...(replyTo ? { replyTo } : {}) });
 }
 
 export function unsubscribeUrl(token: string) {
