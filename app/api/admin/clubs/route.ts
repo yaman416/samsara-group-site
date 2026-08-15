@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   if (deny) return deny;
   const { data, error } = await supabaseAdmin
     .from("clubs")
-    .select("*, players(count)")
+    .select("*")
     .order("name");
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
