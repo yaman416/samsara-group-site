@@ -79,6 +79,7 @@ export default function AdminPage() {
   const [editClub, setEditClub] = useState<Club | null>(null);
   const [editClubBusy, setEditClubBusy] = useState(false);
   const [editClubMsg, setEditClubMsg] = useState("");
+  const [authUsers, setAuthUsers] = useState<{ id: string; email: string }[]>([]);
   const [clubPlayers, setClubPlayers] = useState<Player[]>([]);
   const [clubPlayersId, setClubPlayersId] = useState<string | null>(null);
   const [editPlayer, setEditPlayer] = useState<Player | null>(null);
@@ -110,6 +111,7 @@ export default function AdminPage() {
   const loadInvites  = useCallback(async () => { const r = await api("/api/admin/invite"); if (r.ok) setInvites(await r.json()); }, []);
   const loadRegs     = useCallback(async () => { const r = await api("/api/admin/registrations"); if (r.ok) setRegs(await r.json()); }, []);
   const loadClubs    = useCallback(async () => { const r = await api("/api/admin/clubs"); if (r.ok) setClubs(await r.json()); }, []);
+  const loadAuthUsers = useCallback(async () => { const r = await api("/api/admin/users"); if (r.ok) setAuthUsers(await r.json()); }, []);
   const loadFixtures = useCallback(async () => {
     const url = weekFilter ? `/api/admin/fixtures?week=${weekFilter}` : "/api/admin/fixtures";
     const r = await api(url);
@@ -121,7 +123,7 @@ export default function AdminPage() {
     if (r.ok) setTable(await r.json());
   }, [activeSeason]);
 
-  useEffect(() => { if (authed) { loadSeasons(); loadClubs(); } }, [authed, loadSeasons, loadClubs]);
+  useEffect(() => { if (authed) { loadSeasons(); loadClubs(); loadAuthUsers(); } }, [authed, loadSeasons, loadClubs, loadAuthUsers]);
   useEffect(() => {
     if (!authed) return;
     if (screen === "invites")  loadInvites();
@@ -456,6 +458,22 @@ export default function AdminPage() {
                       <input value={editClub.away_color || ""} onChange={e => setEditClub(c => c && ({ ...c, away_color: e.target.value }))} style={{ ...inputSm, flex: 1 }} />
                     </div>
                   </div>
+                </div>
+                <div>
+                  <label style={label11}>Manager (assigned user)</label>
+                  <select
+                    value={editClub.manager_id ?? ""}
+                    onChange={e => setEditClub(c => c && ({ ...c, manager_id: e.target.value || null }))}
+                    style={{ ...inputSm, background: "#fff" }}
+                  >
+                    <option value="">-- No manager assigned --</option>
+                    {authUsers.map(u => (
+                      <option key={u.id} value={u.id}>{u.email}</option>
+                    ))}
+                  </select>
+                  {editClub.manager_id && (
+                    <div style={{ marginTop: 6, fontSize: 12, color: "#66707d", fontFamily: "monospace" }}>{editClub.manager_id}</div>
+                  )}
                 </div>
                 {editClubMsg && <div style={{ fontSize: 13, color: editClubMsg === "Saved." ? "#1f6b37" : "#a3211a", marginBottom: 12 }}>{editClubMsg}</div>}
                 <div style={{ display: "flex", gap: 10 }}>

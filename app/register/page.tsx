@@ -5,7 +5,7 @@ import Link from "next/link";
 import SiteLayout from "@/components/SiteLayout";
 import { supabase } from "@/lib/supabase";
 
-type View = "public" | "code" | "setup" | "done" | "signin";
+type View = "public" | "code" | "setup" | "done" | "signin" | "forgot" | "forgot_sent";
 
 export default function RegisterPage() {
   const [view, setView] = useState<View>("public");
@@ -26,6 +26,8 @@ export default function RegisterPage() {
   const [siPass, setSiPass] = useState("");
   const [siError, setSiError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotError, setForgotError] = useState("");
 
   async function verifyCode() {
     const v = code.trim().toUpperCase().replace(/\s/g, "");
@@ -80,6 +82,17 @@ export default function RegisterPage() {
       window.location.href = "/manager";
     } catch { setSiError("Network error. Try again."); }
     finally { setBusy(false); }
+  }
+
+  async function sendReset() {
+    if (!forgotEmail.trim()) { setForgotError("Enter your email address."); return; }
+    setBusy(true); setForgotError("");
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setBusy(false);
+    if (error) { setForgotError(error.message); return; }
+    setView("forgot_sent");
   }
 
   const inputStyle = { width: "100%", boxSizing: "border-box" as const, border: "1px solid rgba(17,24,39,.18)", borderRadius: 12, fontSize: 16, padding: "14px 16px", color: "#101820", fontFamily: "'DM Sans',system-ui,sans-serif" };
@@ -227,13 +240,52 @@ export default function RegisterPage() {
                 </div>
                 {siError && <div style={{ background: "#fdecea", border: "1px solid #f5c6c0", borderRadius: 12, padding: "13px 16px", fontSize: 14, color: "#a3211a" }}>{siError}</div>}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                  <a href="mailto:samsaragroup.cbr@gmail.com?subject=Password reset request" style={{ fontSize: 14, color: "#66707d" }}>Forgot password?</a>
+                  <button type="button" onClick={() => { setForgotEmail(siEmail); setForgotError(""); setView("forgot"); }} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: 0, fontSize: 14, color: "#66707d", cursor: "pointer" }}>Forgot password?</button>
                   <button type="button" onClick={signIn} disabled={busy} style={btnPrimary}>{busy ? "Signing in..." : "Sign in"}</button>
                 </div>
               </div>
               <div style={{ marginTop: 28, borderTop: "1px solid rgba(17,24,39,.08)", paddingTop: 24, fontSize: 15, color: "#66707d" }}>
                 First time here? <button type="button" onClick={() => setView("code")} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: 0, color: "#e2372b", fontSize: 15, fontWeight: 500, cursor: "pointer" }}>Register with an invitation code</button>
               </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* FORGOT PASSWORD */}
+      {view === "forgot" && (
+        <section style={{ background: "#f4f4f1", padding: "72px 0 120px" }}>
+          <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 24px" }}>
+            <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: "clamp(32px,4vw,48px)" }}>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Password reset</div>
+              <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(24px,3vw,32px)", lineHeight: 1.2, letterSpacing: "-.015em", margin: "14px 0 0" }}>Forgot your password?</h1>
+              <p style={{ margin: "12px 0 0", fontSize: 16, lineHeight: 1.65, color: "#66707d" }}>Enter your account email and we will send you a link to reset your password.</p>
+              <div style={{ marginTop: 28, display: "grid", gap: 18 }}>
+                <div>
+                  <label style={labelStyle}>Email address</label>
+                  <input type="email" value={forgotEmail} onChange={e => { setForgotEmail(e.target.value); setForgotError(""); }} onKeyDown={e => e.key === "Enter" && sendReset()} placeholder="manager@yourclub.com.au" style={inputStyle} autoFocus />
+                </div>
+                {forgotError && <div style={{ background: "#fdecea", border: "1px solid #f5c6c0", borderRadius: 12, padding: "13px 16px", fontSize: 14, color: "#a3211a" }}>{forgotError}</div>}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
+                  <button type="button" onClick={() => setView("signin")} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: 0, fontSize: 14, color: "#66707d", cursor: "pointer" }}>Back to sign in</button>
+                  <button type="button" onClick={sendReset} disabled={busy} style={btnPrimary}>{busy ? "Sending..." : "Send reset link"}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* FORGOT SENT */}
+      {view === "forgot_sent" && (
+        <section style={{ background: "#f4f4f1", padding: "72px 0 120px" }}>
+          <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 24px" }}>
+            <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: "clamp(32px,4vw,48px)", textAlign: "center" }}>
+              <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#eef7f0", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 24 }}>✓</div>
+              <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(22px,3vw,30px)", lineHeight: 1.2, margin: "0 0 14px" }}>Check your email</h1>
+              <p style={{ fontSize: 16, lineHeight: 1.65, color: "#66707d", margin: 0 }}>If <strong style={{ color: "#101820" }}>{forgotEmail}</strong> is registered, you will receive a reset link shortly. Click it to set a new password.</p>
+              <p style={{ fontSize: 14, color: "#98a1ab", marginTop: 16 }}>Check your spam folder if it does not arrive within a few minutes. Make sure you registered with this exact email address.</p>
+              <button type="button" onClick={() => setView("signin")} style={{ ...btnPrimary, marginTop: 28 }}>Back to sign in</button>
             </div>
           </div>
         </section>
