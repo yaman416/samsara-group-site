@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 
 const ADMIN_KEY = "spl_admin";
 
-type Screen = "invites" | "regs" | "clubs" | "fixtures" | "matchday" | "table";
+type Screen = "invites" | "clubs" | "fixtures" | "matchday" | "table";
 type RegStatus = "pending" | "approved" | "changes_requested" | "rejected";
 
 type Invite = { id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
@@ -127,7 +127,6 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authed) return;
     if (screen === "invites")  loadInvites();
-    if (screen === "regs")     { loadInvites(); loadClubs(); }
     if (screen === "clubs")    loadClubs();
     if (screen === "fixtures" || screen === "matchday") loadFixtures();
     if (screen === "table")    loadTable();
@@ -240,7 +239,6 @@ export default function AdminPage() {
 
   const NAV: { key: Screen; label: string }[] = [
     { key: "invites",  label: "Invites" },
-    { key: "regs",     label: "Onboarding" },
     { key: "clubs",    label: "Clubs" },
     { key: "fixtures", label: "Fixtures" },
     { key: "matchday", label: "Matchday" },
@@ -342,61 +340,6 @@ export default function AdminPage() {
                         </td>
                       </tr>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* REGISTRATIONS — onboarding status */}
-        {screen === "regs" && (
-          <div style={{ display: "grid", gap: 20 }}>
-            {/* Summary cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 16 }}>
-              {[
-                { label: "Invites sent", value: invites.length },
-                { label: "Codes used", value: invites.filter(i => i.used).length },
-                { label: "Clubs registered", value: clubs.length },
-                { label: "Awaiting registration", value: invites.filter(i => !i.used).length },
-              ].map(s => (
-                <div key={s.label} className="card" style={{ padding: "22px 24px" }}>
-                  <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase", color: "#66707d" }}>{s.label}</div>
-                  <div style={{ fontSize: 32, fontWeight: 600, marginTop: 8 }}>{s.value}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Invite + registration status table */}
-            <div className="card" style={{ overflow: "hidden" }}>
-              <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(17,24,39,.08)", fontWeight: 600, fontSize: 15 }}>Invite status</div>
-              <div style={{ overflowX: "auto" }}>
-                <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead style={{ background: "rgba(17,24,39,.03)" }}>
-                    <tr><th>Club</th><th>Manager email</th><th>Code</th><th>Season</th><th>Status</th></tr>
-                  </thead>
-                  <tbody>
-                    {invites.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "#98a1ab", padding: 32 }}>No invites sent yet.</td></tr>}
-                    {invites.map(inv => {
-                      const registeredClub = clubs.find(c => {
-                        const matchedInvite = invites.find(i => i.club_name === c.name);
-                        return matchedInvite?.code === inv.code;
-                      });
-                      return (
-                        <tr key={inv.id}>
-                          <td style={{ fontWeight: 500 }}>{inv.club_name}</td>
-                          <td style={{ color: "#66707d", fontSize: 13 }}>{inv.manager_email || "-"}</td>
-                          <td style={{ fontFamily: "monospace", fontSize: 13 }}>{inv.code}</td>
-                          <td style={{ color: "#66707d" }}>Season {inv.season}</td>
-                          <td>
-                            {inv.used
-                              ? <span style={{ background: "#eef7f0", color: "#1f6b37", borderRadius: 6, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>Registered{registeredClub ? ` · ${registeredClub.name}` : ""}</span>
-                              : <span style={{ background: "#fff6ec", color: "#8a6216", borderRadius: 6, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>Pending</span>
-                            }
-                          </td>
-                        </tr>
-                      );
-                    })}
                   </tbody>
                 </table>
               </div>

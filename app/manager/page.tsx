@@ -8,7 +8,7 @@ const COLORS = [
   ["#101820", "Black"], ["#ffffff", "White"],
 ];
 
-type Screen = "squad" | "fixtures" | "kit" | "submit" | "account";
+type Screen = "squad" | "fixtures" | "kit" | "club" | "account";
 type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null; nationality: string | null };
 type Club = { id: string; name: string; short_code: string; home_ground: string; community: string; home_color: string; away_color: string; home_trim: string; away_trim: string };
 type Fixture = {
@@ -191,6 +191,9 @@ export default function ManagerPage() {
         .swatch:hover { transform: scale(1.1); }
       `}</style>
 
+      {/* Club color accent strip */}
+      <div style={{ height: 4, background: homeColor }} />
+
       {/* Top bar */}
       <div style={{ background: "#101820", color: "#98a1ab", fontSize: 13 }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -236,9 +239,9 @@ export default function ManagerPage() {
             </div>
           </div>
           <nav style={{ display: "flex", gap: 0, overflowX: "auto", marginTop: 20 }}>
-            {(["squad", "fixtures", "kit", "submit", "account"] as Screen[]).map(s => (
+            {(["squad", "fixtures", "kit", "club", "account"] as Screen[]).map(s => (
               <button key={s} type="button" className={`mgr-nav-btn${screen === s ? " mgr-nav-active" : ""}`} onClick={() => setScreen(s)}>
-                {s === "squad" ? "Squad" : s === "fixtures" ? "Fixtures" : s === "kit" ? "Kit colours" : s === "submit" ? "Submit for approval" : "Account"}
+                {s === "squad" ? "Squad" : s === "fixtures" ? "Fixtures" : s === "kit" ? "Kit colours" : s === "club" ? "Club details" : "Account"}
               </button>
             ))}
           </nav>
@@ -462,33 +465,73 @@ export default function ManagerPage() {
           </div>
         )}
 
-        {/* SUBMIT */}
-        {screen === "submit" && (
-          <div style={{ maxWidth: 640 }}>
-            <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36 }}>
-              <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: 26, margin: "0 0 16px" }}>Submit squad for approval</h2>
-              <div style={{ display: "grid", gap: 12, marginBottom: 28 }}>
-                {[["Club", club?.name || "-"], ["Squad size", `${squad.length} players`], ["Goalkeepers", String(squad.filter(p => p.position === "GK").length)], ["Kit", `Home ${homeColor} / Away ${awayColor}`]].map(([l, v]) => (
-                  <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 15, paddingBottom: 12, borderBottom: "1px solid rgba(17,24,39,.07)" }}>
-                    <span style={{ color: "#66707d" }}>{l}</span><span style={{ fontWeight: 500 }}>{v}</span>
+        {/* CLUB DETAILS */}
+        {screen === "club" && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 20, maxWidth: 900 }}>
+            {/* Club info */}
+            <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 32 }}>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#66707d", marginBottom: 20 }}>Club information</div>
+              <div style={{ display: "grid", gap: 14 }}>
+                {[
+                  ["Club name", club?.name || "-"],
+                  ["Short code", club?.short_code || "-"],
+                  ["Community", club?.community || "-"],
+                  ["Home ground", club?.home_ground || "Nicholls"],
+                  ["Season", "Season 3 · 2026-27"],
+                ].map(([l, v]) => (
+                  <div key={l} style={{ display: "flex", justifyContent: "space-between", gap: 16, fontSize: 15, paddingBottom: 14, borderBottom: "1px solid rgba(17,24,39,.07)" }}>
+                    <span style={{ color: "#66707d" }}>{l}</span>
+                    <span style={{ fontWeight: 500, textAlign: "right" as const }}>{v}</span>
                   </div>
                 ))}
               </div>
-              {squad.length < 11 && (
-                <div style={{ background: "#fff6ec", border: "1px solid #f0d7b8", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#8a5a12", marginBottom: 20 }}>
-                  At least 11 players are required. You have {squad.length}.
+            </div>
+
+            {/* Squad checklist */}
+            <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 32 }}>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#66707d", marginBottom: 20 }}>Registration checklist</div>
+              <div style={{ display: "grid", gap: 12 }}>
+                {[
+                  { label: "Club registered", done: true },
+                  { label: `Squad size (${squad.length} / min 11)`, done: squad.length >= 11 },
+                  { label: `Goalkeeper added (${squad.filter(p => p.position === "GK").length})`, done: squad.filter(p => p.position === "GK").length >= 1 },
+                  { label: "Kit colours set", done: !!(homeColor && awayColor) },
+                ].map(item => (
+                  <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 15 }}>
+                    <span style={{ width: 24, height: 24, borderRadius: "50%", background: item.done ? "#eef7f0" : "#f4f4f1", border: `1px solid ${item.done ? "#c7e3ce" : "rgba(17,24,39,.14)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: item.done ? "#1f6b37" : "#98a1ab", flex: "none" }}>
+                      {item.done ? "✓" : "·"}
+                    </span>
+                    <span style={{ color: item.done ? "#101820" : "#66707d" }}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+              {squad.length >= 11 && squad.filter(p => p.position === "GK").length >= 1 ? (
+                <div style={{ marginTop: 24, background: "#eef7f0", border: "1px solid #c7e3ce", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#1f6b37" }}>
+                  Your club is ready for Season 3. The committee will be in touch before the draw.
+                </div>
+              ) : (
+                <div style={{ marginTop: 24, background: "#fff6ec", border: "1px solid #f0d7b8", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#8a5a12" }}>
+                  Complete the checklist above before the season draw. Contact the committee if you need help.
                 </div>
               )}
-              {submitError && <div style={{ background: "#fdecea", border: "1px solid #f5c6c0", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#a3211a", marginBottom: 16 }}>{submitError}</div>}
-              {submitMsg && <div style={{ background: "#eef7f0", border: "1px solid #c7e3ce", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#1f6b37", marginBottom: 16 }}>{submitMsg}</div>}
-              <button type="button" onClick={submitSquad} disabled={submitBusy || squad.length < 11}
-                style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "#e2372b", color: "#fff", border: 0, fontSize: 15, fontWeight: 500, padding: "15px 30px", borderRadius: 999, cursor: squad.length < 11 ? "not-allowed" : "pointer", opacity: (submitBusy || squad.length < 11) ? 0.6 : 1 }}>
-                {submitBusy ? "Submitting..." : "Submit for approval"}
+            </div>
+
+            {/* Kit preview */}
+            <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 32 }}>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#66707d", marginBottom: 20 }}>Kit colours</div>
+              <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+                {[["Home", homeColor, homeTrim], ["Away", awayColor, awayTrim]].map(([label, primary, trim]) => (
+                  <div key={label} style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 72, height: 88, borderRadius: 10, background: primary, border: "1px solid rgba(17,24,39,.10)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 8 }}>
+                      <span style={{ width: "100%", height: 16, borderRadius: 4, background: trim, display: "block" }} />
+                    </div>
+                    <span style={{ fontSize: 12, color: "#66707d" }}>{label}</span>
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={() => setScreen("kit")} style={{ marginTop: 20, fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: "1px solid rgba(17,24,39,.18)", color: "#101820", fontSize: 13, fontWeight: 500, padding: "9px 18px", borderRadius: 999, cursor: "pointer" }}>
+                Edit kit colours
               </button>
-              <p style={{ marginTop: 18, fontSize: 14, lineHeight: 1.65, color: "#66707d" }}>
-                The committee reviews within 3 business days and will email you with the outcome.
-                You can update your squad until the draw is published.
-              </p>
             </div>
           </div>
         )}
