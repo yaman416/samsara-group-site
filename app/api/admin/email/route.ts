@@ -44,3 +44,12 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ sent, failed });
 }
+
+export async function DELETE(req: NextRequest) {
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
+  const { id } = await req.json();
+  const { error } = await supabaseAdmin.from("subscribers").delete().eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}

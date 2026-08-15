@@ -98,6 +98,10 @@ export default function AdminPage() {
   const [nfVenue, setNfVenue] = useState("");
   const [nfDate, setNfDate] = useState("");
 
+  type EditFixture = { id: string; week: string; home_club_id: string; away_club_id: string; venue: string; played_at: string };
+  const [editFixture, setEditFixture] = useState<EditFixture | null>(null);
+  const [editFixBusy, setEditFixBusy] = useState(false);
+
   const [table, setTable] = useState<TableRow[]>([]);
 
   const loadSeasons = useCallback(async () => {
@@ -228,6 +232,22 @@ export default function AdminPage() {
   async function deleteFixture(id: string) {
     if (!confirm("Delete this fixture?")) return;
     await api("/api/admin/fixtures", { method: "DELETE", body: JSON.stringify({ id }) });
+    loadFixtures();
+  }
+
+  async function saveEditFixture() {
+    if (!editFixture) return;
+    setEditFixBusy(true);
+    await api("/api/admin/fixtures", { method: "PATCH", body: JSON.stringify({
+      id: editFixture.id,
+      week: parseInt(editFixture.week),
+      home_club_id: editFixture.home_club_id,
+      away_club_id: editFixture.away_club_id,
+      venue: editFixture.venue || null,
+      played_at: editFixture.played_at || null,
+    }) });
+    setEditFixBusy(false);
+    setEditFixture(null);
     loadFixtures();
   }
 
@@ -695,7 +715,8 @@ export default function AdminPage() {
                             {f.status}
                           </span>
                         </td>
-                        <td>
+                        <td style={{ display: "flex", gap: 10 }}>
+                          <button type="button" onClick={() => setEditFixture({ id: f.id, week: String(f.week), home_club_id: f.home_club?.id ?? "", away_club_id: f.away_club?.id ?? "", venue: f.venue ?? "", played_at: f.played_at ? f.played_at.slice(0, 16) : "" })} style={{ background: "none", border: "none", color: "#1a56db", fontSize: 13, cursor: "pointer", fontFamily: F }}>Edit</button>
                           <button type="button" onClick={() => deleteFixture(f.id)} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Delete</button>
                         </td>
                       </tr>
@@ -704,6 +725,36 @@ export default function AdminPage() {
                 </table>
               </div>
             </div>
+
+            {/* Edit fixture modal */}
+            {editFixture && (
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+                <div className="card" style={{ padding: 28, width: "100%", maxWidth: 560 }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Edit fixture</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                    <div><label style={label11}>Week</label><input type="number" value={editFixture.week} onChange={e => setEditFixture(x => x && ({ ...x, week: e.target.value }))} style={inputSm} /></div>
+                    <div><label style={label11}>Date and time</label><input type="datetime-local" value={editFixture.played_at} onChange={e => setEditFixture(x => x && ({ ...x, played_at: e.target.value }))} style={inputSm} /></div>
+                    <div>
+                      <label style={label11}>Home team</label>
+                      <select value={editFixture.home_club_id} onChange={e => setEditFixture(x => x && ({ ...x, home_club_id: e.target.value }))} style={inputSm}>
+                        {clubs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={label11}>Away team</label>
+                      <select value={editFixture.away_club_id} onChange={e => setEditFixture(x => x && ({ ...x, away_club_id: e.target.value }))} style={inputSm}>
+                        {clubs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+                    <div style={{ gridColumn: "1 / -1" }}><label style={label11}>Venue</label><input value={editFixture.venue} onChange={e => setEditFixture(x => x && ({ ...x, venue: e.target.value }))} placeholder="Nicholls Oval" style={inputSm} /></div>
+                  </div>
+                  <div style={{ marginTop: 20, display: "flex", gap: 12 }}>
+                    <Btn variant="ghost" onClick={() => setEditFixture(null)}>Cancel</Btn>
+                    <Btn variant="dark" onClick={saveEditFixture} disabled={editFixBusy}>{editFixBusy ? "Saving..." : "Save"}</Btn>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -778,13 +829,14 @@ export default function AdminPage() {
                 <div style={{ overflowX: "auto" }}>
                   <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead style={{ background: "rgba(17,24,39,.03)" }}>
-                      <tr><th>Email</th><th>Subscribed</th></tr>
+                      <tr><th>Email</th><th>Subscribed</th><th></th></tr>
                     </thead>
                     <tbody>
                       {subscribers.map(s => (
                         <tr key={s.id}>
                           <td>{s.email}</td>
                           <td style={{ color: "#66707d", fontSize: 13 }}>{new Date(s.subscribed_at).toLocaleDateString("en-AU")}</td>
+                          <td><button type="button" onClick={async () => { if (!confirm("Remove subscriber?")) return; await api("/api/admin/email", { method: "DELETE", body: JSON.stringify({ id: s.id }) }); loadSubscribers(); }} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Remove</button></td>
                         </tr>
                       ))}
                     </tbody>
