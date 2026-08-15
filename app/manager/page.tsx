@@ -518,7 +518,7 @@ export default function ManagerPage() {
                   )}
                   {regStatus === "pending" && (
                     <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#1e40af" }}>
-                      Squad submitted, awaiting approval.
+                      Squad submitted and awaiting approval. Any player changes will trigger a re-review.
                     </div>
                   )}
                   {regStatus === "changes_requested" && (

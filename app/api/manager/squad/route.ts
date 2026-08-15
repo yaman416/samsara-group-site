@@ -12,6 +12,14 @@ async function getClubId(req: NextRequest): Promise<string | null> {
   return data?.id ?? null;
 }
 
+async function resetRegistration(clubId: string) {
+  // If a registration exists (any status), reset to pending so admin re-reviews
+  await supabaseAdmin
+    .from("registrations")
+    .update({ status: "pending", submitted_at: new Date().toISOString(), reviewer_notes: null })
+    .eq("club_id", clubId);
+}
+
 export async function GET(req: NextRequest) {
   const clubId = await getClubId(req);
   if (!clubId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -38,6 +46,7 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await resetRegistration(clubId);
   return NextResponse.json(data);
 }
 
@@ -53,6 +62,7 @@ export async function PATCH(req: NextRequest) {
     .eq("club_id", clubId);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await resetRegistration(clubId);
   return NextResponse.json({ success: true });
 }
 
@@ -68,5 +78,6 @@ export async function DELETE(req: NextRequest) {
     .eq("club_id", clubId);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await resetRegistration(clubId);
   return NextResponse.json({ success: true });
 }
