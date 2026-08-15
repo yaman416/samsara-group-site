@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { checkAdminKey } from "@/lib/admin-auth";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const { id } = await params;
   const { status, notes } = await req.json();
 

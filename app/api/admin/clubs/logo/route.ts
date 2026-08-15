@@ -14,16 +14,22 @@ export async function POST(req: NextRequest) {
 
   if (!file || !clubId) return NextResponse.json({ error: "Missing file or club_id" }, { status: 400 });
 
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "png";
-  const allowed = ["png", "jpg", "jpeg", "webp", "svg"];
-  if (!allowed.includes(ext)) return NextResponse.json({ error: "Only PNG, JPG, WEBP or SVG allowed" }, { status: 400 });
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  const allowedExts = ["png", "jpg", "jpeg", "webp"];
+  if (!allowedExts.includes(ext)) return NextResponse.json({ error: "Only PNG, JPG, or WEBP allowed" }, { status: 400 });
+
+  const allowedMimes = ["image/png", "image/jpeg", "image/webp"];
+  if (!allowedMimes.includes(file.type)) return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
+
+  if (file.size > 2 * 1024 * 1024) return NextResponse.json({ error: "File must be under 2MB" }, { status: 400 });
 
   const path = `clubs/${clubId}/logo.${ext}`;
   const bytes = await file.arrayBuffer();
 
+  const mimeMap: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp" };
   const { error: upErr } = await supabaseAdmin.storage
     .from("club-logos")
-    .upload(path, bytes, { contentType: file.type, upsert: true });
+    .upload(path, bytes, { contentType: mimeMap[ext], upsert: true });
 
   if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
 

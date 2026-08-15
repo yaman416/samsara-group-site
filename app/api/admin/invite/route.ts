@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendInviteEmail } from "@/lib/email";
+import { checkAdminKey } from "@/lib/admin-auth";
 
 function generateCode(clubShort: string): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -11,6 +12,8 @@ function generateCode(clubShort: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const { clubName, managerEmail, season = 3, community = "Nepalese" } = await req.json();
   if (!clubName || !managerEmail) {
     return NextResponse.json({ error: "Club name and manager email required" }, { status: 400 });
@@ -52,7 +55,9 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ code, clubName, managerEmail });
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const { data, error } = await supabaseAdmin
     .from("invites")
     .select("*")
@@ -62,6 +67,8 @@ export async function GET() {
 }
 
 export async function DELETE(req: NextRequest) {
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const { code } = await req.json();
   const { error } = await supabaseAdmin.from("invites").delete().eq("code", code);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

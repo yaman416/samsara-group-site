@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { checkAdminKey } from "@/lib/admin-auth";
 
 export async function GET(req: NextRequest) {
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const week = req.nextUrl.searchParams.get("week");
   let query = supabaseAdmin
     .from("fixtures")
@@ -17,6 +20,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const body = await req.json();
   const { error, data } = await supabaseAdmin.from("fixtures").insert({
     season_id: body.season_id,
@@ -31,6 +36,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const { id, ...updates } = await req.json();
   const { error } = await supabaseAdmin.from("fixtures").update(updates).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -38,6 +45,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const { id } = await req.json();
   const { error } = await supabaseAdmin.from("fixtures").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
