@@ -336,7 +336,7 @@ export default function AdminPage() {
                         </td>
                         <td style={{ color: "#66707d", fontSize: 13 }}>{new Date(inv.created_at).toLocaleDateString("en-AU")}</td>
                         <td>
-                          {!inv.used && <button type="button" onClick={() => deleteInvite(inv.code)} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Delete</button>}
+                          <button type="button" onClick={() => deleteInvite(inv.code)} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Delete</button>
                         </td>
                       </tr>
                     ))}
