@@ -22,12 +22,12 @@ export async function POST(req: NextRequest) {
   const bytes = await file.arrayBuffer();
 
   const { error: upErr } = await supabaseAdmin.storage
-    .from("logos")
+    .from("club-logos")
     .upload(path, bytes, { contentType: file.type, upsert: true });
 
   if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
 
-  const { data: { publicUrl } } = supabaseAdmin.storage.from("logos").getPublicUrl(path);
+  const { data: { publicUrl } } = supabaseAdmin.storage.from("club-logos").getPublicUrl(path);
 
   const { error: dbErr } = await supabaseAdmin
     .from("clubs")
