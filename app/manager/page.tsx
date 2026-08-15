@@ -58,11 +58,6 @@ export default function ManagerPage() {
   const [kitSaving, setKitSaving] = useState(false);
   const [kitMsg, setKitMsg] = useState("");
 
-  // Submit
-  const [submitMsg, setSubmitMsg] = useState("");
-  const [submitError, setSubmitError] = useState("");
-  const [submitBusy, setSubmitBusy] = useState(false);
-
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -146,15 +141,6 @@ export default function ManagerPage() {
     setKitSaving(false);
     setKitMsg(res.ok ? "Kit colours saved." : "Save failed.");
     setTimeout(() => setKitMsg(""), 3000);
-  }
-
-  async function submitSquad() {
-    setSubmitBusy(true); setSubmitError(""); setSubmitMsg("");
-    const res = await apiFetch("/api/manager/submit", { method: "POST" });
-    const data = await res.json();
-    setSubmitBusy(false);
-    if (!res.ok) { setSubmitError(data.error || "Submission failed."); }
-    else { setSubmitMsg("Squad submitted for approval. The committee will review within 3 business days."); }
   }
 
   async function signOut() {
@@ -507,11 +493,11 @@ export default function ManagerPage() {
               </div>
               {squad.length >= 11 && squad.filter(p => p.position === "GK").length >= 1 ? (
                 <div style={{ marginTop: 24, background: "#eef7f0", border: "1px solid #c7e3ce", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#1f6b37" }}>
-                  Your club is ready for Season 3. The committee will be in touch before the draw.
+                  Squad ready for Season 3.
                 </div>
               ) : (
                 <div style={{ marginTop: 24, background: "#fff6ec", border: "1px solid #f0d7b8", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#8a5a12" }}>
-                  Complete the checklist above before the season draw. Contact the committee if you need help.
+                  Complete the checklist before the season draw.
                 </div>
               )}
             </div>

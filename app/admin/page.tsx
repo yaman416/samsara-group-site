@@ -4,10 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 const ADMIN_KEY = "spl_admin";
 
 type Screen = "invites" | "clubs" | "fixtures" | "matchday" | "table";
-type RegStatus = "pending" | "approved" | "changes_requested" | "rejected";
-
-type Invite = { id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
-type Reg = { id: string; status: RegStatus; reviewer_notes: string | null; submitted_at: string; clubs: { name: string; community: string } | null };
+type Invite ={ id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
 type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_ground: string; founded: number | null; manager_id: string | null; logo_url?: string | null };
 type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null };
 type Season = { id: string; name: string; year: number; is_active: boolean };
@@ -29,13 +26,6 @@ function adminHeader() {
 async function api(path: string, opts: RequestInit = {}) {
   return fetch(path, { ...opts, headers: { ...adminHeader(), ...(opts.headers as Record<string, string> ?? {}) } });
 }
-
-const STATUS_STYLE: Record<RegStatus, { bg: string; color: string; label: string }> = {
-  pending:            { bg: "#fff6ec", color: "#8a5a12", label: "Pending" },
-  approved:           { bg: "#eef7f0", color: "#1f6b37", label: "Approved" },
-  changes_requested:  { bg: "#eff6ff", color: "#1e40af", label: "Changes requested" },
-  rejected:           { bg: "#fdecea", color: "#a3211a", label: "Rejected" },
-};
 
 const F = "'DM Sans',system-ui,sans-serif";
 const label11: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase", color: "#66707d", marginBottom: 6 };
@@ -71,11 +61,6 @@ export default function AdminPage() {
   const [invBusy, setInvBusy] = useState(false);
   const [invMsg, setInvMsg] = useState("");
 
-  const [regs, setRegs] = useState<Reg[]>([]);
-  const [openReg, setOpenReg] = useState<Reg | null>(null);
-  const [regNote, setRegNote] = useState("");
-  const [regBusy, setRegBusy] = useState(false);
-
   const [clubs, setClubs] = useState<Club[]>([]);
   const [editClub, setEditClub] = useState<Club | null>(null);
   const [editClubBusy, setEditClubBusy] = useState(false);
@@ -110,7 +95,6 @@ export default function AdminPage() {
   }, []);
 
   const loadInvites  = useCallback(async () => { const r = await api("/api/admin/invite"); if (r.ok) setInvites(await r.json()); }, []);
-  const loadRegs     = useCallback(async () => { const r = await api("/api/admin/registrations"); if (r.ok) setRegs(await r.json()); }, []);
   const loadClubs    = useCallback(async () => { const r = await api("/api/admin/clubs"); if (r.ok) setClubs(await r.json()); }, []);
   const loadAuthUsers = useCallback(async () => { const r = await api("/api/admin/users"); if (r.ok) setAuthUsers(await r.json()); }, []);
   const loadFixtures = useCallback(async () => {
@@ -131,7 +115,7 @@ export default function AdminPage() {
     if (screen === "clubs")    loadClubs();
     if (screen === "fixtures" || screen === "matchday") loadFixtures();
     if (screen === "table")    loadTable();
-  }, [authed, screen, loadInvites, loadRegs, loadClubs, loadFixtures, loadTable]);
+  }, [authed, screen, loadInvites, loadClubs, loadFixtures, loadTable]);
 
   async function login() {
     if (!pw.trim()) return;
@@ -204,12 +188,6 @@ export default function AdminPage() {
     if (!confirm("Remove this player?")) return;
     await api("/api/admin/players", { method: "DELETE", body: JSON.stringify({ id }) });
     if (clubPlayersId) loadClubPlayers(clubPlayersId);
-  }
-
-  async function updateReg(id: string, status: RegStatus) {
-    setRegBusy(true);
-    await api(`/api/admin/registrations/${id}`, { method: "PATCH", body: JSON.stringify({ status, reviewer_notes: regNote }) });
-    setRegBusy(false); setOpenReg(null); loadRegs();
   }
 
   async function createFixture() {
