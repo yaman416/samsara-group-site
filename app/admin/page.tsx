@@ -363,10 +363,10 @@ export default function AdminPage() {
               <div style={{ overflowX: "auto" }}>
                 <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead style={{ background: "rgba(17,24,39,.03)" }}>
-                    <tr><th>Club</th><th>Code</th><th>Community</th><th>Kit</th><th>Ground</th><th></th></tr>
+                    <tr><th>Club</th><th>Code</th><th>Community</th><th>Kit</th><th></th></tr>
                   </thead>
                   <tbody>
-                    {clubs.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", color: "#98a1ab", padding: 32 }}>No clubs yet.</td></tr>}
+                    {clubs.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "#98a1ab", padding: 32 }}>No clubs yet.</td></tr>}
                     {clubs.map(c => (
                       <tr key={c.id} style={{ background: editClub?.id === c.id ? "#f8f8f6" : undefined }}>
                         <td style={{ fontWeight: 500 }}>{c.name}</td>
@@ -378,7 +378,6 @@ export default function AdminPage() {
                             <div title="Away" style={{ width: 18, height: 18, borderRadius: 4, background: c.away_color, border: "1px solid rgba(17,24,39,.12)" }} />
                           </div>
                         </td>
-                        <td style={{ color: "#66707d", fontSize: 13 }}>{c.home_ground || "-"}</td>
                         <td style={{ textAlign: "right" }}>
                           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                             <Btn variant="ghost" style={{ fontSize: 13, padding: "6px 12px" }} onClick={() => { setEditClub(c); setEditClubMsg(""); setClubPlayersId(null); }}>Edit</Btn>
