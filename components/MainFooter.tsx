@@ -1,4 +1,5 @@
 // components/MainFooter.tsx
+"use client";
 import Link from "next/link";
 import { ORG } from "@/lib/splData";
 import SubscribeForm from "@/components/SubscribeForm";
