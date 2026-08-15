@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from("invites")
-    .select("code, club_name, used")
+    .select("code, club_name, used, community")
     .eq("code", clean)
     .single();
 
@@ -20,5 +20,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "That code has already been used to register a club." }, { status: 409 });
   }
 
-  return NextResponse.json({ clubName: data.club_name, code: clean });
+  return NextResponse.json({ clubName: data.club_name, community: data.community ?? "Nepalese", code: clean });
 }

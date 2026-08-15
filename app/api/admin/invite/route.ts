@@ -11,7 +11,7 @@ function generateCode(clubShort: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { clubName, managerEmail, season = 3 } = await req.json();
+  const { clubName, managerEmail, season = 3, community = "Nepalese" } = await req.json();
   if (!clubName || !managerEmail) {
     return NextResponse.json({ error: "Club name and manager email required" }, { status: 400 });
   }
@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
     club_name: clubName,
     manager_email: managerEmail,
     season,
+    community,
     used: false,
   });
 

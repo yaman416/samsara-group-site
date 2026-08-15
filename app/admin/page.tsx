@@ -67,6 +67,7 @@ export default function AdminPage() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [newClub, setNewClub] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [newCommunity, setNewCommunity] = useState<"Nepalese" | "Bhutanese">("Nepalese");
   const [invBusy, setInvBusy] = useState(false);
   const [invMsg, setInvMsg] = useState("");
 
@@ -143,13 +144,13 @@ export default function AdminPage() {
   async function createInvite() {
     if (!newClub.trim()) { setInvMsg("Club name required."); return; }
     setInvBusy(true); setInvMsg("");
-    const res = await api("/api/admin/invite", { method: "POST", body: JSON.stringify({ clubName: newClub.trim(), managerEmail: newEmail.trim() || "noemail@placeholder.com", season: activeSeason?.year ?? 3 }) });
+    const res = await api("/api/admin/invite", { method: "POST", body: JSON.stringify({ clubName: newClub.trim(), managerEmail: newEmail.trim() || "noemail@placeholder.com", season: activeSeason?.year ?? 3, community: newCommunity }) });
     const data = await res.json();
     setInvBusy(false);
     if (!res.ok) { setInvMsg(data.error || "Failed."); return; }
     if (data.emailWarning) { setInvMsg(`Code: ${data.code} (email failed — copy manually)`); }
     else { setInvMsg(`Invite sent to ${data.managerEmail}`); }
-    setNewClub(""); setNewEmail(""); loadInvites();
+    setNewClub(""); setNewEmail(""); setNewCommunity("Nepalese"); loadInvites();
   }
 
   async function deleteInvite(code: string) {
@@ -293,10 +294,17 @@ export default function AdminPage() {
           <div style={{ display: "grid", gap: 20 }}>
             <div className="card" style={{ padding: 28 }}>
               <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Generate invite code</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 16, alignItems: "end" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 16, alignItems: "end" }}>
                 <div>
                   <label style={label11}>Club name</label>
                   <input value={newClub} onChange={e => setNewClub(e.target.value)} placeholder="Nepal United FC" style={inputSm} />
+                </div>
+                <div>
+                  <label style={label11}>Community</label>
+                  <select value={newCommunity} onChange={e => setNewCommunity(e.target.value as "Nepalese" | "Bhutanese")} style={inputSm}>
+                    <option value="Nepalese">Nepalese</option>
+                    <option value="Bhutanese">Bhutanese</option>
+                  </select>
                 </div>
                 <div>
                   <label style={label11}>Manager email (optional)</label>

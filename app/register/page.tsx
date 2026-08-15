@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState("");
   const [clubName, setClubName] = useState("");
+  const [community, setCommunity] = useState("Nepalese");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
@@ -37,7 +38,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/invite", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: v }) });
       const data = await res.json();
       if (!res.ok) { setCodeError(data.error); }
-      else { setClubName(data.clubName); setView("setup"); setCodeError(""); }
+      else { setClubName(data.clubName); setCommunity(data.community ?? "Nepalese"); setView("setup"); setCodeError(""); }
     } catch { setCodeError("Network error. Try again."); }
     finally { setBusy(false); }
   }
@@ -56,7 +57,7 @@ export default function RegisterPage() {
           code: code.trim().toUpperCase().replace(/\s/g, ""),
           acct: { name: "", email, phone: "", pass: password, pass2: password2 },
           club: { name: clubName, short: "", ground: "", founded: "" },
-          community: "Nepalese",
+          community,
           kit: { hp: "#b3122b", hs: "#101820", ap: "#ffffff", as: "#b3122b" },
           squad: [],
         }),
