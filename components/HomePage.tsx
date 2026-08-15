@@ -51,6 +51,18 @@ export default function HomePage() {
   }, []);
   const [showHub, setShowHub] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<"spl" | "nnyc" | null>(null);
+  const [subEmail, setSubEmail] = useState("");
+  const [subMsg, setSubMsg] = useState("");
+  const [subBusy, setSubBusy] = useState(false);
+
+  async function handleSubscribe() {
+    if (!subEmail) return;
+    setSubBusy(true); setSubMsg("");
+    const res = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: subEmail }) });
+    setSubBusy(false);
+    if (res.ok) { setSubMsg("Subscribed!"); setSubEmail(""); }
+    else { const d = await res.json(); setSubMsg(d.error ?? "Something went wrong."); }
+  }
 
   useEffect(() => {
     const id = setInterval(() => setSlide((s) => (s + 1) % HERO_SHOTS.length), 5200);
@@ -360,9 +372,10 @@ export default function HomePage() {
           <div>
             <div style={{ color: "#fff", fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, marginBottom: 18 }}>Season updates</div>
             <div style={{ display: "flex", gap: 0, background: "#161f28", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, overflow: "hidden" }}>
-              <input type="email" placeholder="Email address" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "13px 20px", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, outline: "none" }} />
-              <button type="button" style={{ background: RED, color: "#fff", border: 0, borderRadius: 999, padding: "13px 24px", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, cursor: "pointer", flexShrink: 0 }}>Subscribe</button>
+              <input type="email" value={subEmail} onChange={e => setSubEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSubscribe()} placeholder="Email address" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "13px 20px", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, outline: "none" }} />
+              <button type="button" onClick={handleSubscribe} disabled={subBusy} style={{ background: RED, color: "#fff", border: 0, borderRadius: 999, padding: "13px 24px", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, cursor: "pointer", flexShrink: 0, opacity: subBusy ? 0.7 : 1 }}>{subBusy ? "..." : "Subscribe"}</button>
             </div>
+            {subMsg && <p style={{ margin: "8px 0 0", fontSize: 13, color: subMsg === "Subscribed!" ? "#6ee7a0" : "#f87171" }}>{subMsg}</p>}
           </div>
         </div>
         <div style={{ maxWidth: 1340, margin: "52px auto 0", padding: "26px 24px 0", borderTop: "1px solid rgba(255,255,255,.12)", fontSize: 14, display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap" as const }}>
