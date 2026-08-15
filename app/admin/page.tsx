@@ -391,156 +391,160 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Edit club panel */}
-            {editClub && (
-              <div className="card" style={{ padding: 28 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600 }}>Edit: {editClub.name}</div>
-                  <Btn variant="ghost" style={{ fontSize: 13, padding: "6px 12px" }} onClick={() => setEditClub(null)}>Close</Btn>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 16 }}>
-                  <div><label style={label11}>Club name</label><input value={editClub.name} onChange={e => setEditClub(c => c && ({ ...c, name: e.target.value }))} style={inputSm} /></div>
-                  <div><label style={label11}>Short code</label><input value={editClub.short_code} onChange={e => setEditClub(c => c && ({ ...c, short_code: e.target.value.toUpperCase().slice(0,4) }))} style={inputSm} /></div>
-                  <div><label style={label11}>Community</label><input value={editClub.community} onChange={e => setEditClub(c => c && ({ ...c, community: e.target.value }))} style={inputSm} /></div>
-                  <div><label style={label11}>Home ground</label><input value={editClub.home_ground || ""} onChange={e => setEditClub(c => c && ({ ...c, home_ground: e.target.value }))} style={inputSm} /></div>
-                  <div><label style={label11}>Founded</label><input type="number" value={editClub.founded || ""} onChange={e => setEditClub(c => c && ({ ...c, founded: parseInt(e.target.value) || null }))} style={inputSm} /></div>
-                  <div>
-                    <label style={label11}>Home colour</label>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <input type="color" value={editClub.home_color} onChange={e => setEditClub(c => c && ({ ...c, home_color: e.target.value }))} style={{ width: 40, height: 38, padding: 2, border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, cursor: "pointer" }} />
-                      <input value={editClub.home_color} onChange={e => setEditClub(c => c && ({ ...c, home_color: e.target.value }))} style={{ ...inputSm, flex: 1 }} />
-                    </div>
-                  </div>
-                  <div>
-                    <label style={label11}>Away colour</label>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <input type="color" value={editClub.away_color || "#ffffff"} onChange={e => setEditClub(c => c && ({ ...c, away_color: e.target.value }))} style={{ width: 40, height: 38, padding: 2, border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, cursor: "pointer" }} />
-                      <input value={editClub.away_color || ""} onChange={e => setEditClub(c => c && ({ ...c, away_color: e.target.value }))} style={{ ...inputSm, flex: 1 }} />
-                    </div>
-                  </div>
-                </div>
-                <div style={{ marginBottom: 16 }}>
-                  <label style={label11}>Club logo</label>
-                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                    {editClub.logo_url && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={editClub.logo_url} alt="logo" style={{ width: 56, height: 56, objectFit: "contain", border: "1px solid rgba(17,24,39,.12)", borderRadius: 10 }} />
-                    )}
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                      onChange={async e => {
-                        const file = e.target.files?.[0];
-                        if (!file || !editClub) return;
-                        const fd = new FormData();
-                        fd.append("file", file);
-                        fd.append("club_id", editClub.id);
-                        setEditClubMsg("Uploading...");
-                        const res = await fetch("/api/admin/clubs/logo", { method: "POST", headers: { "x-admin-key": localStorage.getItem("spl_admin") || "" }, body: fd });
-                        const d = await res.json();
-                        if (res.ok) { setEditClub(c => c && ({ ...c, logo_url: d.logo_url })); setEditClubMsg("Logo uploaded."); loadClubs(); }
-                        else { setEditClubMsg(d.error || "Upload failed."); }
-                        setTimeout(() => setEditClubMsg(""), 3000);
-                      }}
-                      style={{ fontSize: 13, color: "#66707d" }}
-                    />
+          </div>
+        )}
+
+        {/* Edit club modal */}
+        {editClub && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.45)" }} onClick={() => setEditClub(null)} />
+            <div style={{ position: "relative", background: "#fff", borderRadius: 18, padding: 28, width: "100%", maxWidth: 680, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,.18)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div style={{ fontSize: 15, fontWeight: 600 }}>Edit: {editClub.name}</div>
+                <Btn variant="ghost" style={{ fontSize: 13, padding: "6px 12px" }} onClick={() => setEditClub(null)}>Close</Btn>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 16 }}>
+                <div><label style={label11}>Club name</label><input value={editClub.name} onChange={e => setEditClub(c => c && ({ ...c, name: e.target.value }))} style={inputSm} /></div>
+                <div><label style={label11}>Short code</label><input value={editClub.short_code} onChange={e => setEditClub(c => c && ({ ...c, short_code: e.target.value.toUpperCase().slice(0,4) }))} style={inputSm} /></div>
+                <div><label style={label11}>Community</label><input value={editClub.community} onChange={e => setEditClub(c => c && ({ ...c, community: e.target.value }))} style={inputSm} /></div>
+                <div><label style={label11}>Home ground</label><input value={editClub.home_ground || ""} onChange={e => setEditClub(c => c && ({ ...c, home_ground: e.target.value }))} style={inputSm} /></div>
+                <div><label style={label11}>Founded</label><input type="number" value={editClub.founded || ""} onChange={e => setEditClub(c => c && ({ ...c, founded: parseInt(e.target.value) || null }))} style={inputSm} /></div>
+                <div>
+                  <label style={label11}>Home colour</label>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input type="color" value={editClub.home_color} onChange={e => setEditClub(c => c && ({ ...c, home_color: e.target.value }))} style={{ width: 40, height: 38, padding: 2, border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, cursor: "pointer" }} />
+                    <input value={editClub.home_color} onChange={e => setEditClub(c => c && ({ ...c, home_color: e.target.value }))} style={{ ...inputSm, flex: 1 }} />
                   </div>
                 </div>
                 <div>
-                  <label style={label11}>Manager (assigned user)</label>
-                  <select
-                    value={editClub.manager_id ?? ""}
-                    onChange={e => setEditClub(c => c && ({ ...c, manager_id: e.target.value || null }))}
-                    style={{ ...inputSm, background: "#fff" }}
-                  >
-                    <option value="">-- No manager assigned --</option>
-                    {authUsers.map(u => (
-                      <option key={u.id} value={u.id}>{u.email}</option>
-                    ))}
-                  </select>
-                  {editClub.manager_id && (
-                    <div style={{ marginTop: 6, fontSize: 12, color: "#66707d", fontFamily: "monospace" }}>{editClub.manager_id}</div>
+                  <label style={label11}>Away colour</label>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input type="color" value={editClub.away_color || "#ffffff"} onChange={e => setEditClub(c => c && ({ ...c, away_color: e.target.value }))} style={{ width: 40, height: 38, padding: 2, border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, cursor: "pointer" }} />
+                    <input value={editClub.away_color || ""} onChange={e => setEditClub(c => c && ({ ...c, away_color: e.target.value }))} style={{ ...inputSm, flex: 1 }} />
+                  </div>
+                </div>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={label11}>Club logo</label>
+                <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                  {editClub.logo_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={editClub.logo_url} alt="logo" style={{ width: 56, height: 56, objectFit: "contain", border: "1px solid rgba(17,24,39,.12)", borderRadius: 10 }} />
                   )}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={async e => {
+                      const file = e.target.files?.[0];
+                      if (!file || !editClub) return;
+                      const fd = new FormData();
+                      fd.append("file", file);
+                      fd.append("club_id", editClub.id);
+                      setEditClubMsg("Uploading...");
+                      const res = await fetch("/api/admin/clubs/logo", { method: "POST", headers: { "x-admin-key": localStorage.getItem("spl_admin") || "" }, body: fd });
+                      const d = await res.json();
+                      if (res.ok) { setEditClub(c => c && ({ ...c, logo_url: d.logo_url })); setEditClubMsg("Logo uploaded."); loadClubs(); }
+                      else { setEditClubMsg(d.error || "Upload failed."); }
+                      setTimeout(() => setEditClubMsg(""), 3000);
+                    }}
+                    style={{ fontSize: 13, color: "#66707d" }}
+                  />
                 </div>
-                {editClubMsg && <div style={{ fontSize: 13, color: editClubMsg === "Saved." ? "#1f6b37" : "#a3211a", marginBottom: 12 }}>{editClubMsg}</div>}
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={label11}>Manager (assigned user)</label>
+                <select
+                  value={editClub.manager_id ?? ""}
+                  onChange={e => setEditClub(c => c && ({ ...c, manager_id: e.target.value || null }))}
+                  style={{ ...inputSm, background: "#fff" }}
+                >
+                  <option value="">-- No manager assigned --</option>
+                  {authUsers.map(u => (
+                    <option key={u.id} value={u.id}>{u.email}</option>
+                  ))}
+                </select>
+              </div>
+              {editClubMsg && <div style={{ fontSize: 13, color: editClubMsg === "Saved." || editClubMsg === "Logo uploaded." ? "#1f6b37" : "#a3211a", marginBottom: 12 }}>{editClubMsg}</div>}
+              <div style={{ display: "flex", gap: 10 }}>
+                <Btn variant="dark" onClick={saveClub} disabled={editClubBusy}>{editClubBusy ? "Saving..." : "Save changes"}</Btn>
+                <Btn variant="red" onClick={() => deleteClub(editClub.id, editClub.name)}>Delete club</Btn>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Players modal */}
+        {clubPlayersId && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,.45)" }} onClick={() => { setClubPlayersId(null); setAddPlayerOpen(false); setEditPlayer(null); }} />
+            <div style={{ position: "relative", background: "#fff", borderRadius: 18, padding: 28, width: "100%", maxWidth: 720, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,.18)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div style={{ fontSize: 15, fontWeight: 600 }}>Players: {clubs.find(c => c.id === clubPlayersId)?.name}</div>
                 <div style={{ display: "flex", gap: 10 }}>
-                  <Btn variant="dark" onClick={saveClub} disabled={editClubBusy}>{editClubBusy ? "Saving..." : "Save changes"}</Btn>
-                  <Btn variant="red" onClick={() => deleteClub(editClub.id, editClub.name)}>Delete club</Btn>
+                  <Btn variant="dark" style={{ fontSize: 13, padding: "8px 14px" }} onClick={() => setAddPlayerOpen(o => !o)}>+ Add player</Btn>
+                  <Btn variant="ghost" style={{ fontSize: 13, padding: "8px 14px" }} onClick={() => { setClubPlayersId(null); setAddPlayerOpen(false); setEditPlayer(null); }}>Close</Btn>
                 </div>
               </div>
-            )}
 
-            {/* Players panel */}
-            {clubPlayersId && (
-              <div className="card" style={{ padding: 28 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600 }}>Players: {clubs.find(c => c.id === clubPlayersId)?.name}</div>
+              {addPlayerOpen && (
+                <div style={{ background: "#f8f8f6", borderRadius: 12, padding: 20, marginBottom: 20 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginBottom: 12 }}>
+                    <div><label style={label11}>Name</label><input value={newPlayer.full_name} onChange={e => setNewPlayer(p => ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
+                    <div><label style={label11}>Jersey no.</label><input type="number" min={1} max={99} value={newPlayer.jersey_number} onChange={e => setNewPlayer(p => ({ ...p, jersey_number: e.target.value }))} style={inputSm} /></div>
+                    <div><label style={label11}>Position</label>
+                      <select value={newPlayer.position} onChange={e => setNewPlayer(p => ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
+                        <option value="GK">Goalkeeper</option><option value="DF">Defender</option><option value="MF">Midfielder</option><option value="FW">Forward</option>
+                      </select>
+                    </div>
+                    <div><label style={label11}>Date of birth</label><input type="date" value={newPlayer.date_of_birth} onChange={e => setNewPlayer(p => ({ ...p, date_of_birth: e.target.value }))} style={inputSm} /></div>
+                  </div>
                   <div style={{ display: "flex", gap: 10 }}>
-                    <Btn variant="dark" style={{ fontSize: 13, padding: "8px 14px" }} onClick={() => setAddPlayerOpen(o => !o)}>+ Add player</Btn>
-                    <Btn variant="ghost" style={{ fontSize: 13, padding: "8px 14px" }} onClick={() => { setClubPlayersId(null); setAddPlayerOpen(false); setEditPlayer(null); }}>Close</Btn>
+                    <Btn variant="dark" onClick={addPlayer} disabled={playerBusy}>{playerBusy ? "Adding..." : "Add"}</Btn>
+                    <Btn variant="ghost" onClick={() => setAddPlayerOpen(false)}>Cancel</Btn>
                   </div>
                 </div>
+              )}
 
-                {addPlayerOpen && (
-                  <div style={{ background: "#f8f8f6", borderRadius: 12, padding: 20, marginBottom: 20 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginBottom: 12 }}>
-                      <div><label style={label11}>Name</label><input value={newPlayer.full_name} onChange={e => setNewPlayer(p => ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
-                      <div><label style={label11}>Jersey no.</label><input type="number" min={1} max={99} value={newPlayer.jersey_number} onChange={e => setNewPlayer(p => ({ ...p, jersey_number: e.target.value }))} style={inputSm} /></div>
-                      <div><label style={label11}>Position</label>
-                        <select value={newPlayer.position} onChange={e => setNewPlayer(p => ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
-                          <option value="GK">Goalkeeper</option><option value="DF">Defender</option><option value="MF">Midfielder</option><option value="FW">Forward</option>
-                        </select>
-                      </div>
-                      <div><label style={label11}>Date of birth</label><input type="date" value={newPlayer.date_of_birth} onChange={e => setNewPlayer(p => ({ ...p, date_of_birth: e.target.value }))} style={inputSm} /></div>
-                    </div>
-                    <div style={{ display: "flex", gap: 10 }}>
-                      <Btn variant="dark" onClick={addPlayer} disabled={playerBusy}>{playerBusy ? "Adding..." : "Add"}</Btn>
-                      <Btn variant="ghost" onClick={() => setAddPlayerOpen(false)}>Cancel</Btn>
-                    </div>
-                  </div>
-                )}
-
-                <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead style={{ background: "rgba(17,24,39,.03)" }}><tr><th>No.</th><th>Name</th><th>Position</th><th>DOB</th><th></th></tr></thead>
-                  <tbody>
-                    {clubPlayers.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "#98a1ab", padding: 24 }}>No players.</td></tr>}
-                    {clubPlayers.map(p => editPlayer?.id === p.id ? (
-                      <tr key={p.id} style={{ background: "#fafaf8" }}>
-                        <td colSpan={5} style={{ padding: "14px 12px" }}>
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10, marginBottom: 10 }}>
-                            <div><label style={label11}>Name</label><input value={editPlayer.full_name} onChange={e => setEditPlayer(p => p && ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
-                            <div><label style={label11}>Jersey no.</label><input type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => p && ({ ...p, jersey_number: parseInt(e.target.value) }))} style={inputSm} /></div>
-                            <div><label style={label11}>Position</label>
-                              <select value={editPlayer.position} onChange={e => setEditPlayer(p => p && ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
-                                <option value="GK">Goalkeeper</option><option value="DF">Defender</option><option value="MF">Midfielder</option><option value="FW">Forward</option>
-                              </select>
-                            </div>
-                            <div><label style={label11}>DOB</label><input type="date" value={editPlayer.date_of_birth || ""} onChange={e => setEditPlayer(p => p && ({ ...p, date_of_birth: e.target.value || null }))} style={inputSm} /></div>
+              <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead style={{ background: "rgba(17,24,39,.03)" }}><tr><th>No.</th><th>Name</th><th>Position</th><th>DOB</th><th></th></tr></thead>
+                <tbody>
+                  {clubPlayers.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "#98a1ab", padding: 24 }}>No players.</td></tr>}
+                  {clubPlayers.map(p => editPlayer?.id === p.id ? (
+                    <tr key={p.id} style={{ background: "#fafaf8" }}>
+                      <td colSpan={5} style={{ padding: "14px 12px" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10, marginBottom: 10 }}>
+                          <div><label style={label11}>Name</label><input value={editPlayer.full_name} onChange={e => setEditPlayer(p => p && ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
+                          <div><label style={label11}>Jersey no.</label><input type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => p && ({ ...p, jersey_number: parseInt(e.target.value) }))} style={inputSm} /></div>
+                          <div><label style={label11}>Position</label>
+                            <select value={editPlayer.position} onChange={e => setEditPlayer(p => p && ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
+                              <option value="GK">Goalkeeper</option><option value="DF">Defender</option><option value="MF">Midfielder</option><option value="FW">Forward</option>
+                            </select>
                           </div>
-                          <div style={{ display: "flex", gap: 10 }}>
-                            <Btn variant="dark" onClick={savePlayer} disabled={playerBusy}>{playerBusy ? "Saving..." : "Save"}</Btn>
-                            <Btn variant="ghost" onClick={() => setEditPlayer(null)}>Cancel</Btn>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      <tr key={p.id}>
-                        <td><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 6, background: "#101820", color: "#fff", fontSize: 13, fontWeight: 600 }}>{p.jersey_number}</span></td>
-                        <td style={{ fontWeight: 500 }}>{p.full_name}</td>
-                        <td><span style={{ background: "rgba(17,24,39,.07)", borderRadius: 6, padding: "3px 8px", fontSize: 12, fontWeight: 500 }}>{p.position}</span></td>
-                        <td style={{ color: "#66707d", fontSize: 13 }}>{p.date_of_birth || "-"}</td>
-                        <td style={{ textAlign: "right" }}>
-                          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                            <Btn variant="ghost" style={{ fontSize: 12, padding: "5px 10px" }} onClick={() => setEditPlayer(p)}>Edit</Btn>
-                            <Btn variant="ghost" style={{ fontSize: 12, padding: "5px 10px", color: "#a3211a" }} onClick={() => deletePlayer(p.id)}>Remove</Btn>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                          <div><label style={label11}>DOB</label><input type="date" value={editPlayer.date_of_birth || ""} onChange={e => setEditPlayer(p => p && ({ ...p, date_of_birth: e.target.value || null }))} style={inputSm} /></div>
+                        </div>
+                        <div style={{ display: "flex", gap: 10 }}>
+                          <Btn variant="dark" onClick={savePlayer} disabled={playerBusy}>{playerBusy ? "Saving..." : "Save"}</Btn>
+                          <Btn variant="ghost" onClick={() => setEditPlayer(null)}>Cancel</Btn>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    <tr key={p.id}>
+                      <td><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 6, background: "#101820", color: "#fff", fontSize: 13, fontWeight: 600 }}>{p.jersey_number}</span></td>
+                      <td style={{ fontWeight: 500 }}>{p.full_name}</td>
+                      <td><span style={{ background: "rgba(17,24,39,.07)", borderRadius: 6, padding: "3px 8px", fontSize: 12, fontWeight: 500 }}>{p.position}</span></td>
+                      <td style={{ color: "#66707d", fontSize: 13 }}>{p.date_of_birth || "-"}</td>
+                      <td style={{ textAlign: "right" }}>
+                        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                          <Btn variant="ghost" style={{ fontSize: 12, padding: "5px 10px" }} onClick={() => setEditPlayer(p)}>Edit</Btn>
+                          <Btn variant="ghost" style={{ fontSize: 12, padding: "5px 10px", color: "#a3211a" }} onClick={() => deletePlayer(p.id)}>Remove</Btn>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
