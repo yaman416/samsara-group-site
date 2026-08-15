@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 
 const ADMIN_KEY = "spl_admin";
 
-type Screen = "invites" | "clubs" | "fixtures" | "matchday" | "table";
+type Screen = "invites" | "clubs" | "squads" | "fixtures" | "matchday" | "table";
+type Reg = { id: string; status: string; submitted_at: string; reviewer_notes: string | null; clubs: { id: string; name: string; community: string; manager: { email: string } | null } | null };
 type Invite ={ id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
 type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_ground: string; founded: number | null; manager_id: string | null; logo_url?: string | null };
 type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null };
@@ -73,6 +74,10 @@ export default function AdminPage() {
   const [addPlayerOpen, setAddPlayerOpen] = useState(false);
   const [newPlayer, setNewPlayer] = useState({ full_name: "", jersey_number: "", position: "MF", date_of_birth: "" });
 
+  const [regs, setRegs] = useState<Reg[]>([]);
+  const [regNote, setRegNote] = useState<Record<string, string>>({});
+  const [regBusy, setRegBusy] = useState<string | null>(null);
+
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [weekFilter, setWeekFilter] = useState("");
   const [fixBusy, setFixBusy] = useState(false);
@@ -95,6 +100,7 @@ export default function AdminPage() {
   }, []);
 
   const loadInvites  = useCallback(async () => { const r = await api("/api/admin/invite"); if (r.ok) setInvites(await r.json()); }, []);
+  const loadRegs     = useCallback(async () => { const r = await api("/api/admin/registrations"); if (r.ok) setRegs(await r.json()); }, []);
   const loadClubs    = useCallback(async () => { const r = await api("/api/admin/clubs"); if (r.ok) setClubs(await r.json()); }, []);
   const loadAuthUsers = useCallback(async () => { const r = await api("/api/admin/users"); if (r.ok) setAuthUsers(await r.json()); }, []);
   const loadFixtures = useCallback(async () => {
@@ -113,9 +119,10 @@ export default function AdminPage() {
     if (!authed) return;
     if (screen === "invites")  loadInvites();
     if (screen === "clubs")    loadClubs();
+    if (screen === "squads")   loadRegs();
     if (screen === "fixtures" || screen === "matchday") loadFixtures();
     if (screen === "table")    loadTable();
-  }, [authed, screen, loadInvites, loadClubs, loadFixtures, loadTable]);
+  }, [authed, screen, loadInvites, loadRegs, loadClubs, loadFixtures, loadTable]);
 
   async function login() {
     if (!pw.trim()) return;
@@ -190,6 +197,13 @@ export default function AdminPage() {
     if (clubPlayersId) loadClubPlayers(clubPlayersId);
   }
 
+  async function updateReg(id: string, status: string, note: string) {
+    setRegBusy(id);
+    await api(`/api/admin/registrations/${id}`, { method: "PATCH", body: JSON.stringify({ status, notes: note || null }) });
+    setRegBusy(null);
+    loadRegs();
+  }
+
   async function createFixture() {
     if (!nfWeek || !nfHome || !nfAway || !activeSeason) return;
     setFixBusy(true);
@@ -219,6 +233,7 @@ export default function AdminPage() {
   const NAV: { key: Screen; label: string }[] = [
     { key: "invites",  label: "Invites" },
     { key: "clubs",    label: "Clubs" },
+    { key: "squads",   label: "Squads" },
     { key: "fixtures", label: "Fixtures" },
     { key: "matchday", label: "Matchday" },
     { key: "table",    label: "League Table" },
@@ -523,6 +538,58 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* SQUADS */}
+        {screen === "squads" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            {regs.length === 0 && (
+              <div className="card" style={{ padding: 48, textAlign: "center", color: "#98a1ab" }}>No squad submissions yet.</div>
+            )}
+            {regs.map(reg => {
+              const club = reg.clubs;
+              const statusColors: Record<string, { bg: string; color: string }> = {
+                pending:           { bg: "#eff6ff", color: "#1e40af" },
+                approved:          { bg: "#eef7f0", color: "#1f6b37" },
+                changes_requested: { bg: "#fff6ec", color: "#8a5a12" },
+                rejected:          { bg: "#fdecea", color: "#a3211a" },
+              };
+              const sc = statusColors[reg.status] ?? { bg: "#f4f4f1", color: "#66707d" };
+              return (
+                <div key={reg.id} className="card" style={{ padding: 24 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 15 }}>{club?.name ?? "Unknown club"}</div>
+                      <div style={{ fontSize: 13, color: "#66707d", marginTop: 2 }}>{club?.manager?.email ?? "-"} · {club?.community}</div>
+                      <div style={{ fontSize: 12, color: "#98a1ab", marginTop: 2 }}>Submitted {new Date(reg.submitted_at).toLocaleDateString("en-AU")}</div>
+                    </div>
+                    <span style={{ background: sc.bg, color: sc.color, borderRadius: 8, padding: "5px 14px", fontSize: 13, fontWeight: 500, textTransform: "capitalize", whiteSpace: "nowrap" }}>
+                      {reg.status.replace("_", " ")}
+                    </span>
+                  </div>
+                  {reg.reviewer_notes && (
+                    <div style={{ background: "#f8f8f6", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#4a545f", marginBottom: 14 }}>
+                      <span style={{ fontWeight: 500 }}>Note: </span>{reg.reviewer_notes}
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                      <label style={label11}>Note to manager (optional)</label>
+                      <input
+                        value={regNote[reg.id] ?? ""}
+                        onChange={e => setRegNote(n => ({ ...n, [reg.id]: e.target.value }))}
+                        placeholder="Reason or instructions..."
+                        style={inputSm}
+                      />
+                    </div>
+                    <Btn variant="green" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "approved", regNote[reg.id] ?? "")}>Approve</Btn>
+                    <Btn variant="ghost" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "changes_requested", regNote[reg.id] ?? "")}>Request changes</Btn>
+                    <Btn variant="red" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "rejected", regNote[reg.id] ?? "")}>Reject</Btn>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 

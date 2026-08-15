@@ -58,13 +58,20 @@ export default function ManagerPage() {
   const [kitSaving, setKitSaving] = useState(false);
   const [kitMsg, setKitMsg] = useState("");
 
+  // Squad submission
+  const [regStatus, setRegStatus] = useState<string | null>(null);
+  const [submitBusy, setSubmitBusy] = useState(false);
+  const [submitMsg, setSubmitMsg] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [clubRes, squadRes, fixRes] = await Promise.all([
+      const [clubRes, squadRes, fixRes, regRes] = await Promise.all([
         apiFetch("/api/manager/club"),
         apiFetch("/api/manager/squad"),
         apiFetch("/api/manager/fixtures"),
+        apiFetch("/api/manager/registration"),
       ]);
       if (clubRes.status === 401) { window.location.href = "/register"; return; }
       if (clubRes.ok) {
@@ -77,6 +84,7 @@ export default function ManagerPage() {
       }
       if (squadRes.ok) setSquad(await squadRes.json());
       if (fixRes.ok) setFixtures(await fixRes.json());
+      if (regRes.ok) { const r = await regRes.json(); setRegStatus(r.status ?? null); }
     } catch { setError("Failed to load club data."); }
     finally { setLoading(false); }
   }, []);
@@ -141,6 +149,16 @@ export default function ManagerPage() {
     setKitSaving(false);
     setKitMsg(res.ok ? "Kit colours saved." : "Save failed.");
     setTimeout(() => setKitMsg(""), 3000);
+  }
+
+  async function submitSquad() {
+    setSubmitBusy(true); setSubmitError(""); setSubmitMsg("");
+    const res = await apiFetch("/api/manager/submit", { method: "POST" });
+    const data = await res.json();
+    setSubmitBusy(false);
+    if (!res.ok) { setSubmitError(data.error || "Submission failed."); return; }
+    setRegStatus("pending");
+    setSubmitMsg("Squad submitted for approval.");
   }
 
   async function signOut() {
@@ -492,12 +510,43 @@ export default function ManagerPage() {
                 ))}
               </div>
               {squad.length >= 11 && squad.filter(p => p.position === "GK").length >= 1 ? (
-                <div style={{ marginTop: 24, background: "#eef7f0", border: "1px solid #c7e3ce", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#1f6b37" }}>
-                  Squad ready for Season 3.
+                <div style={{ marginTop: 24, display: "grid", gap: 12 }}>
+                  {regStatus === "approved" && (
+                    <div style={{ background: "#eef7f0", border: "1px solid #c7e3ce", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#1f6b37", fontWeight: 500 }}>
+                      Squad approved by the committee.
+                    </div>
+                  )}
+                  {regStatus === "pending" && (
+                    <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#1e40af" }}>
+                      Squad submitted, awaiting approval.
+                    </div>
+                  )}
+                  {regStatus === "changes_requested" && (
+                    <div style={{ background: "#fff6ec", border: "1px solid #f0d7b8", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#8a5a12" }}>
+                      Changes requested by the committee. Update your squad and resubmit.
+                    </div>
+                  )}
+                  {regStatus === "rejected" && (
+                    <div style={{ background: "#fdecea", border: "1px solid #f5c6c3", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#a3211a" }}>
+                      Squad rejected. Contact the committee.
+                    </div>
+                  )}
+                  {(regStatus === null || regStatus === "changes_requested") && (
+                    <button
+                      type="button"
+                      onClick={submitSquad}
+                      disabled={submitBusy}
+                      style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "#101820", color: "#fff", border: 0, fontSize: 14, fontWeight: 500, padding: "12px 24px", borderRadius: 999, cursor: submitBusy ? "wait" : "pointer", opacity: submitBusy ? 0.7 : 1, alignSelf: "flex-start" }}
+                    >
+                      {submitBusy ? "Submitting..." : "Submit squad for approval"}
+                    </button>
+                  )}
+                  {submitMsg && <div style={{ fontSize: 14, color: "#1f6b37" }}>{submitMsg}</div>}
+                  {submitError && <div style={{ fontSize: 14, color: "#a3211a" }}>{submitError}</div>}
                 </div>
               ) : (
                 <div style={{ marginTop: 24, background: "#fff6ec", border: "1px solid #f0d7b8", borderRadius: 12, padding: "14px 18px", fontSize: 14, color: "#8a5a12" }}>
-                  Complete the checklist before the season draw.
+                  Complete the checklist before submitting.
                 </div>
               )}
             </div>
