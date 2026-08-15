@@ -8,7 +8,7 @@ type RegStatus = "pending" | "approved" | "changes_requested" | "rejected";
 
 type Invite = { id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
 type Reg = { id: string; status: RegStatus; reviewer_notes: string | null; submitted_at: string; clubs: { name: string; community: string } | null };
-type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_ground: string; founded: number | null; manager_id: string | null };
+type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_ground: string; founded: number | null; manager_id: string | null; logo_url?: string | null };
 type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null };
 type Season = { id: string; name: string; year: number; is_active: boolean };
 type Fixture = {
@@ -127,7 +127,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authed) return;
     if (screen === "invites")  loadInvites();
-    if (screen === "regs")     loadRegs();
+    if (screen === "regs")     { loadInvites(); loadClubs(); }
     if (screen === "clubs")    loadClubs();
     if (screen === "fixtures" || screen === "matchday") loadFixtures();
     if (screen === "table")    loadTable();
@@ -240,7 +240,7 @@ export default function AdminPage() {
 
   const NAV: { key: Screen; label: string }[] = [
     { key: "invites",  label: "Invites" },
-    { key: "regs",     label: "Registrations" },
+    { key: "regs",     label: "Onboarding" },
     { key: "clubs",    label: "Clubs" },
     { key: "fixtures", label: "Fixtures" },
     { key: "matchday", label: "Matchday" },
@@ -349,41 +349,51 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* REGISTRATIONS */}
+        {/* REGISTRATIONS — onboarding status */}
         {screen === "regs" && (
           <div style={{ display: "grid", gap: 20 }}>
-            {openReg && (
-              <div className="card" style={{ padding: 28 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                  <div style={{ fontSize: 16, fontWeight: 600 }}>Review: {openReg.clubs?.name}</div>
-                  <Btn variant="ghost" onClick={() => setOpenReg(null)} style={{ fontSize: 13, padding: "6px 16px" }}>Close</Btn>
+            {/* Summary cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 16 }}>
+              {[
+                { label: "Invites sent", value: invites.length },
+                { label: "Codes used", value: invites.filter(i => i.used).length },
+                { label: "Clubs registered", value: clubs.length },
+                { label: "Awaiting registration", value: invites.filter(i => !i.used).length },
+              ].map(s => (
+                <div key={s.label} className="card" style={{ padding: "22px 24px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase", color: "#66707d" }}>{s.label}</div>
+                  <div style={{ fontSize: 32, fontWeight: 600, marginTop: 8 }}>{s.value}</div>
                 </div>
-                <label style={label11}>Reviewer notes</label>
-                <textarea value={regNote} onChange={e => setRegNote(e.target.value)} rows={3} placeholder="Optional notes for the club..." style={{ ...inputSm, resize: "vertical", marginBottom: 16 }} />
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <Btn variant="green" onClick={() => updateReg(openReg.id, "approved")} disabled={regBusy}>Approve</Btn>
-                  <Btn variant="ghost" onClick={() => updateReg(openReg.id, "changes_requested")} disabled={regBusy}>Request changes</Btn>
-                  <Btn variant="red"   onClick={() => updateReg(openReg.id, "rejected")} disabled={regBusy}>Reject</Btn>
-                </div>
-              </div>
-            )}
+              ))}
+            </div>
+
+            {/* Invite + registration status table */}
             <div className="card" style={{ overflow: "hidden" }}>
+              <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(17,24,39,.08)", fontWeight: 600, fontSize: 15 }}>Invite status</div>
               <div style={{ overflowX: "auto" }}>
                 <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead style={{ background: "rgba(17,24,39,.03)" }}>
-                    <tr><th>Club</th><th>Community</th><th>Status</th><th>Submitted</th><th></th></tr>
+                    <tr><th>Club</th><th>Manager email</th><th>Code</th><th>Season</th><th>Status</th></tr>
                   </thead>
                   <tbody>
-                    {regs.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "#98a1ab", padding: 32 }}>No registrations yet.</td></tr>}
-                    {regs.map(r => {
-                      const s = STATUS_STYLE[r.status] ?? STATUS_STYLE.pending;
+                    {invites.length === 0 && <tr><td colSpan={5} style={{ textAlign: "center", color: "#98a1ab", padding: 32 }}>No invites sent yet.</td></tr>}
+                    {invites.map(inv => {
+                      const registeredClub = clubs.find(c => {
+                        const matchedInvite = invites.find(i => i.club_name === c.name);
+                        return matchedInvite?.code === inv.code;
+                      });
                       return (
-                        <tr key={r.id}>
-                          <td style={{ fontWeight: 500 }}>{r.clubs?.name || "-"}</td>
-                          <td style={{ color: "#66707d" }}>{r.clubs?.community || "-"}</td>
-                          <td><span style={{ background: s.bg, color: s.color, borderRadius: 6, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>{s.label}</span></td>
-                          <td style={{ color: "#66707d", fontSize: 13 }}>{new Date(r.submitted_at).toLocaleDateString("en-AU")}</td>
-                          <td><button type="button" onClick={() => { setOpenReg(r); setRegNote(r.reviewer_notes || ""); }} style={{ background: "none", border: "none", color: "#101820", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: F }}>Review</button></td>
+                        <tr key={inv.id}>
+                          <td style={{ fontWeight: 500 }}>{inv.club_name}</td>
+                          <td style={{ color: "#66707d", fontSize: 13 }}>{inv.manager_email || "-"}</td>
+                          <td style={{ fontFamily: "monospace", fontSize: 13 }}>{inv.code}</td>
+                          <td style={{ color: "#66707d" }}>Season {inv.season}</td>
+                          <td>
+                            {inv.used
+                              ? <span style={{ background: "#eef7f0", color: "#1f6b37", borderRadius: 6, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>Registered{registeredClub ? ` · ${registeredClub.name}` : ""}</span>
+                              : <span style={{ background: "#fff6ec", color: "#8a6216", borderRadius: 6, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>Pending</span>
+                            }
+                          </td>
                         </tr>
                       );
                     })}
@@ -457,6 +467,33 @@ export default function AdminPage() {
                       <input type="color" value={editClub.away_color || "#ffffff"} onChange={e => setEditClub(c => c && ({ ...c, away_color: e.target.value }))} style={{ width: 40, height: 38, padding: 2, border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, cursor: "pointer" }} />
                       <input value={editClub.away_color || ""} onChange={e => setEditClub(c => c && ({ ...c, away_color: e.target.value }))} style={{ ...inputSm, flex: 1 }} />
                     </div>
+                  </div>
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={label11}>Club logo</label>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                    {editClub.logo_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={editClub.logo_url} alt="logo" style={{ width: 56, height: 56, objectFit: "contain", border: "1px solid rgba(17,24,39,.12)", borderRadius: 10 }} />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      onChange={async e => {
+                        const file = e.target.files?.[0];
+                        if (!file || !editClub) return;
+                        const fd = new FormData();
+                        fd.append("file", file);
+                        fd.append("club_id", editClub.id);
+                        setEditClubMsg("Uploading...");
+                        const res = await fetch("/api/admin/clubs/logo", { method: "POST", headers: { "x-admin-key": localStorage.getItem("spl_admin") || "" }, body: fd });
+                        const d = await res.json();
+                        if (res.ok) { setEditClub(c => c && ({ ...c, logo_url: d.logo_url })); setEditClubMsg("Logo uploaded."); loadClubs(); }
+                        else { setEditClubMsg(d.error || "Upload failed."); }
+                        setTimeout(() => setEditClubMsg(""), 3000);
+                      }}
+                      style={{ fontSize: 13, color: "#66707d" }}
+                    />
                   </div>
                 </div>
                 <div>
