@@ -30,7 +30,7 @@ async function api(path: string, opts: RequestInit = {}) {
 
 const F = "'DM Sans',system-ui,sans-serif";
 const label11: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase", color: "#66707d", marginBottom: 6 };
-const inputSm: React.CSSProperties = { width: "100%", boxSizing: "border-box", border: "1px solid rgba(17,24,39,.18)", borderRadius: 10, fontSize: 14, padding: "10px 13px", color: "#101820", fontFamily: F, background: "#fff" };
+const inputSm: React.CSSProperties = { width: "100%", boxSizing: "border-box", border: "1px solid rgba(17,24,39,.18)", borderRadius: 10, fontSize: 16, padding: "10px 13px", color: "#101820", fontFamily: F, background: "#fff" };
 
 function Btn({ variant = "dark", children, style, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "dark" | "ghost" | "red" | "green" }) {
   const variants: Record<string, React.CSSProperties> = {
@@ -155,7 +155,7 @@ export default function AdminPage() {
     const data = await res.json();
     setInvBusy(false);
     if (!res.ok) { setInvMsg(data.error || "Failed."); return; }
-    if (data.emailWarning) { setInvMsg(`Code: ${data.code} (email failed — copy manually)`); }
+    if (data.emailWarning) { setInvMsg(`Code: ${data.code} (email failed, copy manually)`); }
     else { setInvMsg(`Invite sent to ${data.managerEmail}`); }
     setNewClub(""); setNewEmail(""); setNewCommunity("Nepalese"); loadInvites();
   }
@@ -294,11 +294,19 @@ export default function AdminPage() {
         .score-in { width: 48px; border: 1.5px solid rgba(17,24,39,.18); border-radius: 8px; font-size: 16px; font-weight: 600; padding: 6px 8px; text-align: center; font-family: inherit; color: #101820; }
         .score-in:focus { outline: none; border-color: #101820; }
         .card { background: #fff; border: 1px solid rgba(17,24,39,.10); border-radius: 18px; }
+        .admin-nav { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .admin-nav::-webkit-scrollbar { display: none; }
+        .admin-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 16px; align-items: end; }
+        .admin-pair-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 14px; }
+        @media (max-width: 767px) {
+          .card { border-radius: 14px; }
+          .admin-pad { padding: 20px !important; }
+        }
       `}</style>
 
       {/* Topbar */}
       <div style={{ background: "#101820", padding: "0 24px", position: "sticky", top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", display: "flex", gap: 4, alignItems: "center", height: 52, overflowX: "auto" }}>
+        <div className="admin-nav" style={{ maxWidth: 1340, margin: "0 auto", display: "flex", gap: 4, alignItems: "center", height: 52, overflowX: "auto" }}>
           <span style={{ color: "#fff", fontWeight: 700, fontSize: 15, marginRight: 16, whiteSpace: "nowrap" }}>SPL Admin</span>
           {NAV.map(n => (
             <button key={n.key} type="button" onClick={() => setScreen(n.key)}
@@ -321,8 +329,8 @@ export default function AdminPage() {
             {activeSeason && (
               <div className="card" style={{ padding: 28 }}>
                 <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Squad registration deadline</div>
-                <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
-                  <div>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
+                  <div style={{ flex: "1 1 220px", minWidth: 0 }}>
                     <label style={label11}>Deadline date and time</label>
                     <input
                       type="datetime-local"
@@ -351,7 +359,7 @@ export default function AdminPage() {
 
             <div className="card" style={{ padding: 28 }}>
               <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Generate invite code</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 16, alignItems: "end" }}>
+              <div className="admin-form-grid">
                 <div>
                   <label style={label11}>Club name</label>
                   <input value={newClub} onChange={e => setNewClub(e.target.value)} placeholder="Nepal United FC" style={inputSm} />
@@ -731,7 +739,7 @@ export default function AdminPage() {
               <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
                 <div className="card" style={{ padding: 28, width: "100%", maxWidth: 560 }}>
                   <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Edit fixture</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <div className="admin-pair-grid">
                     <div><label style={label11}>Week</label><input type="number" value={editFixture.week} onChange={e => setEditFixture(x => x && ({ ...x, week: e.target.value }))} style={inputSm} /></div>
                     <div><label style={label11}>Date and time</label><input type="datetime-local" value={editFixture.played_at} onChange={e => setEditFixture(x => x && ({ ...x, played_at: e.target.value }))} style={inputSm} /></div>
                     <div>
@@ -921,7 +929,7 @@ function MatchdayCard({ fixture, onSave, onDelete }: { fixture: Fixture; onSave:
 
   const hasResult = fixture.status === "completed";
   const F = "'DM Sans',system-ui,sans-serif";
-  const iSm: React.CSSProperties = { border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, fontSize: 13, padding: "8px 10px", fontFamily: F, color: "#101820", background: "#fff" };
+  const iSm: React.CSSProperties = { border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, fontSize: 16, padding: "8px 10px", fontFamily: F, color: "#101820", background: "#fff" };
 
   async function loadDetails() {
     const [gRes, cRes, hpRes, apRes] = await Promise.all([
@@ -1002,7 +1010,7 @@ function MatchdayCard({ fixture, onSave, onDelete }: { fixture: Fixture; onSave:
             {busy ? "Saving..." : hasResult ? "Update" : "Save result"}
           </button>
           {hasResult && <button type="button" onClick={remove} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Remove</button>}
-          {hasResult && <button type="button" onClick={toggleExpand} style={{ background: "none", border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, fontSize: 13, padding: "6px 12px", cursor: "pointer", fontFamily: F, color: "#101820" }}>{expanded ? "Close details" : "Goals & cards"}</button>}
+          {hasResult && <button type="button" onClick={toggleExpand} style={{ background: "none", border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, fontSize: 16, padding: "6px 12px", cursor: "pointer", fontFamily: F, color: "#101820" }}>{expanded ? "Close details" : "Goals & cards"}</button>}
         </div>
         {fixture.played_at && <div style={{ fontSize: 12, color: "#98a1ab", width: "100%" }}>{new Date(fixture.played_at).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })}{fixture.venue ? ` · ${fixture.venue}` : ""}</div>}
       </div>

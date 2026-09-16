@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-
-function checkAdmin(req: NextRequest) {
-  return req.headers.get("x-admin-key") === process.env.ADMIN_KEY;
-}
+import { checkAdminKey } from "@/lib/admin-auth";
 
 export async function GET(req: NextRequest) {
-  if (!checkAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const clubId = req.nextUrl.searchParams.get("club_id");
   if (!clubId) return NextResponse.json({ error: "club_id required" }, { status: 400 });
   const { data, error } = await supabaseAdmin
@@ -19,7 +17,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!checkAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const body = await req.json();
   const { data, error } = await supabaseAdmin.from("players").insert(body).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -27,7 +26,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  if (!checkAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const { id, ...updates } = await req.json();
   const { error } = await supabaseAdmin.from("players").update(updates).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -35,7 +35,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  if (!checkAdmin(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const deny = checkAdminKey(req);
+  if (deny) return deny;
   const { id } = await req.json();
   const { error } = await supabaseAdmin.from("players").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

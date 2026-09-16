@@ -1,14 +1,12 @@
+import { randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { sendInviteEmail } from "@/lib/email";
 import { checkAdminKey } from "@/lib/admin-auth";
 
 function generateCode(clubShort: string): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let rand = "";
-  for (let i = 0; i < 4; i++) rand += chars[Math.floor(Math.random() * chars.length)];
   const prefix = clubShort.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4).padEnd(4, "X");
-  return `SPL3-${prefix}`;
+  return `SPL3-${prefix}-${randomBytes(8).toString("hex").toUpperCase()}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -29,7 +27,7 @@ export async function POST(req: NextRequest) {
   while (attempts < 10) {
     const { data } = await supabaseAdmin.from("invites").select("code").eq("code", code).single();
     if (!data) break;
-    const rand4 = Math.random().toString(36).slice(2, 6).toUpperCase();
+    const rand4 = randomBytes(8).toString("hex").toUpperCase();
     code = `SPL3-${rand4}`;
     attempts++;
   }
