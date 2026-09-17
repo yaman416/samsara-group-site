@@ -16,13 +16,17 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(data);
 }
 
+// Fallback team_id: "Unattributed" row satisfies the NOT NULL FK on cards.team_id
+// until the DB schema is updated to make team_id nullable.
+const FALLBACK_TEAM_ID = "07b51ddc-6bd1-43a5-b912-b13dfc5d6aa2";
+
 export async function POST(req: NextRequest) {
   const deny = checkAdminKey(req);
   if (deny) return deny;
-  const { fixture_id, player_name, card_type, minute, reason } = await req.json();
+  const { fixture_id, player_name, card_type, minute, reason, team_id } = await req.json();
   const { data, error } = await supabaseAdmin
     .from("cards")
-    .insert({ fixture_id, player_name, card_type, minute: minute || null, reason: reason || null })
+    .insert({ fixture_id, player_name, card_type, minute: minute || null, reason: reason || null, team_id: team_id || FALLBACK_TEAM_ID })
     .select()
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
