@@ -189,7 +189,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
             <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d" }}>Community</div>
             <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 28, marginTop: 18 }}>{club.community}</div>
             <p style={{ margin: "16px 0 0", fontSize: 15, lineHeight: 1.7, color: "#66707d" }}>
-              Part of Canberra&#39;s {club.community} football community, competing in the Samsara Premier League since Season {club.founded ? (parseInt(club.founded) < 2025 ? "1" : "3") : "3"}.
+              Part of Canberra&#39;s {club.community} football community, competing in the Samsara Premier League.
             </p>
           </div>
         </div>

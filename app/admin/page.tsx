@@ -151,7 +151,7 @@ export default function AdminPage() {
   async function createInvite() {
     if (!newClub.trim()) { setInvMsg("Club name required."); return; }
     setInvBusy(true); setInvMsg("");
-    const res = await api("/api/admin/invite", { method: "POST", body: JSON.stringify({ clubName: newClub.trim(), managerEmail: newEmail.trim() || "noemail@placeholder.com", season: activeSeason?.year ?? 3, community: newCommunity }) });
+    const res = await api("/api/admin/invite", { method: "POST", body: JSON.stringify({ clubName: newClub.trim(), managerEmail: newEmail.trim(), season: activeSeason?.year ?? 3, community: newCommunity }) });
     const data = await res.json();
     setInvBusy(false);
     if (!res.ok) { setInvMsg(data.error || "Failed."); return; }

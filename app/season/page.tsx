@@ -70,11 +70,15 @@ export default function SeasonPage() {
   useEffect(() => {
     async function load() {
       setLoading(true);
+      const seasonsRes = await fetch("/api/public/seasons");
+      const seasons = seasonsRes.ok ? await seasonsRes.json() : [];
+      const active = seasons.find((s: { is_active: boolean; id: string }) => s.is_active) ?? seasons[0];
+      const sid = active?.id ? `?season_id=${active.id}` : "";
       const [cr, fr, rr, tr, sr] = await Promise.all([
         fetch("/api/public/clubs"),
-        fetch("/api/public/fixtures"),
-        fetch("/api/public/results"),
-        fetch("/api/public/league-table"),
+        fetch(`/api/public/fixtures${sid}`),
+        fetch(`/api/public/results${sid}`),
+        fetch(`/api/public/league-table${sid}`),
         fetch("/api/public/top-scorers"),
       ]);
       if (cr.ok) setClubs(await cr.json());
