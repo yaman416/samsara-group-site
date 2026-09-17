@@ -19,6 +19,8 @@ export async function POST(req: NextRequest) {
   }, { onConflict: "fixture_id" });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // mark fixture as completed so league table view picks it up
+  await supabaseAdmin.from("fixtures").update({ status: "completed" }).eq("id", fixture_id);
   return NextResponse.json({ success: true });
 }
 
