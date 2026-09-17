@@ -19,21 +19,48 @@ export default function CookieConsent() {
 
   return (
     <div
-      className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 right-4 z-50 mx-auto max-w-xl rounded-xl border bg-white px-4 py-3 text-xs shadow-lg md:text-sm"
       role="dialog"
       aria-label="Cookie consent"
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        background: "#101820",
+        color: "#c3cad2",
+        fontSize: 12,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 16,
+        flexWrap: "wrap",
+        padding: "10px 20px",
+        paddingBottom: "max(10px, env(safe-area-inset-bottom))",
+        borderTop: "1px solid rgba(255,255,255,.08)",
+      }}
     >
-      <p className="text-slate-700">
-        This website uses cookies for performance, basic analytics, and Google
-        AdSense requirements. By continuing to use this site, you agree to our
-        privacy and cookie settings.
-      </p>
+      <span>
+        This site uses cookies for performance and analytics.{" "}
+        <a href="/privacy-policy" style={{ color: "#98a1ab", textDecoration: "underline" }}>Privacy policy</a>
+      </span>
       <button
         type="button"
         onClick={accept}
-        className="mt-3 min-h-9 rounded-lg bg-orange-600 px-5 py-2 text-xs font-semibold text-white hover:bg-orange-700"
+        style={{
+          background: "#e2372b",
+          color: "#fff",
+          border: "none",
+          borderRadius: 6,
+          padding: "5px 16px",
+          fontSize: 12,
+          fontWeight: 600,
+          cursor: "pointer",
+          whiteSpace: "nowrap",
+          flexShrink: 0,
+        }}
       >
-        Accept
+        Got it
       </button>
     </div>
   );

@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Samsara Group Canberra",
   description:
     "Community football, cultural events, and local updates from Samsara Group Canberra.",
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

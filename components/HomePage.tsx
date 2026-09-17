@@ -249,7 +249,7 @@ export default function HomePage() {
             <span style={{ fontSize: 15, color: "rgba(255,255,255,.82)" }}>Kick-off Saturday 14 November 2026</span>
           </div>
           <p style={{ maxWidth: "56ch", margin: "22px 0 0", fontSize: 18, lineHeight: 1.7, color: "rgba(255,255,255,.86)" }}>
-            Our annual football season, back for a third year. Twelve clubs from Canberra&apos;s Nepalese and Bhutanese communities. One shield.
+            Our annual football season, back for a third year. Canberra&apos;s Nepalese and Bhutanese communities. One shield.
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, justifyContent: "center", marginTop: 34 }}>
             <a href="#register" style={{ background: RED, color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 30px", borderRadius: 999, textDecoration: "none" }}>Register a club</a>
@@ -276,8 +276,8 @@ export default function HomePage() {
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 40, padding: "12px 20px", fontSize: 12, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const }}>
               <span>Season 3 kicks off 14 November 2026</span><span style={{ opacity: .5 }}>◆</span>
               <span>Nicholls Synthetic Field, Canberra</span><span style={{ opacity: .5 }}>◆</span>
-              <span>Twelve clubs confirmed</span><span style={{ opacity: .5 }}>◆</span>
               <span>Invitation-only club registration</span><span style={{ opacity: .5 }}>◆</span>
+              <span>Register your club now</span><span style={{ opacity: .5 }}>◆</span>
             </div>
           ))}
         </div>
