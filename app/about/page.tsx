@@ -21,7 +21,7 @@ export default function AboutPage() {
           </p>
           {/* Stat bar flush to bottom of hero */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", borderTop: "1px solid rgba(255,255,255,.12)", gap: "1px", background: "rgba(255,255,255,.08)" }}>
-            {[["3", "Seasons run"], ["12", "Clubs in Season 3"], ["100+", "Matches refereed"], ["2024", "Founded in Canberra"]].map(([num, label]) => (
+            {[["3", "Seasons run"], ["12", "Club capacity"], ["100+", "Matches refereed"], ["2024", "Founded in Canberra"]].map(([num, label]) => (
               <div key={label} style={{ padding: "28px 20px", background: DARK }}>
                 <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: "clamp(28px,3.5vw,48px)", fontWeight: 600, lineHeight: 1, letterSpacing: "-.02em", color: "#fff" }}>{num}</div>
                 <div style={{ fontSize: 13, color: "#98a1ab", marginTop: 8, letterSpacing: ".02em" }}>{label}</div>
