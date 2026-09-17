@@ -13,7 +13,7 @@ type Fixture = {
   id: string; week: number; venue: string | null; played_at: string | null; status: string;
   home_club: { id: string; name: string; short_code: string };
   away_club: { id: string; name: string; short_code: string };
-  results: { home_score: number; away_score: number }[] | null;
+  results: { home_score: number; away_score: number }[] | { home_score: number; away_score: number } | null;
 };
 type TableRow = {
   position: number; club_name: string; short_code: string; home_color: string;
@@ -901,7 +901,7 @@ function adminH() {
 }
 
 function MatchdayCard({ fixture, onSave, onDelete }: { fixture: Fixture; onSave: (id: string, h: number, a: number) => void; onDelete: (id: string) => void }) {
-  const result = fixture.results?.[0] ?? null;
+  const result = Array.isArray(fixture.results) ? (fixture.results[0] ?? null) : (fixture.results ?? null);
   const [hs, setHs] = useState(result ? String(result.home_score) : "");
   const [as_, setAs] = useState(result ? String(result.away_score) : "");
   const [busy, setBusy] = useState(false);
