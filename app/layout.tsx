@@ -15,20 +15,11 @@ export const metadata: Metadata = {
     title: "Samsara Group Canberra",
     description: "Community football, cultural events, and local updates from Samsara Group Canberra.",
     url: "https://samsaragroup.com.au",
-    images: [
-      {
-        url: "https://samsaragroup.com.au/gallery/FINAL%20SPL%202025-26/645045304_122201108054559639_700231387386612553_n.jpg",
-        width: 1080,
-        height: 1080,
-        alt: "Samsara Premier League",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Samsara Group Canberra",
     description: "Community football, cultural events, and local updates from Samsara Group Canberra.",
-    images: ["https://samsaragroup.com.au/gallery/FINAL%20SPL%202025-26/645045304_122201108054559639_700231387386612553_n.jpg"],
   },
 };
 
