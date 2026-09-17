@@ -12,7 +12,7 @@ type ClubRef = { id: string; name: string; short_code: string; home_color: strin
 type Result = { home_score: number; away_score: number };
 type GoalScorer = { id: string; minute: number | null; is_own_goal: boolean; is_penalty: boolean; club_id: string; players: { full_name: string; jersey_number: number } | null; clubs: { name: string } | null };
 type Card = { id: string; player_name: string; card_type: string; minute: number | null };
-type Fixture = { id: string; week: number; venue: string | null; played_at: string | null; status: string; home_club: ClubRef; away_club: ClubRef; results: Result[] | null };
+type Fixture = { id: string; week: number; venue: string | null; played_at: string | null; status: string; home_club: ClubRef; away_club: ClubRef; results: Result[] | Result | null };
 type MatchResult = Fixture & { goal_scorers: GoalScorer[]; cards: Card[] };
 type TableRow = { position: number; club_name: string; short_code: string; home_color: string; played: number; won: number; drawn: number; lost: number; goals_for: number; goals_against: number; goal_diff: number; points: number };
 type TopScorer = { player_id: string; full_name: string; jersey_number: number; club_name: string; club_short: string; goals: number; penalties: number };
@@ -31,7 +31,7 @@ function ClubBadge({ club, size = 32 }: { club: ClubRef | Club; size?: number })
 }
 
 function ScoreCard({ f }: { f: Fixture }) {
-  const r = f.results?.[0];
+  const r = Array.isArray(f.results) ? (f.results[0] ?? null) : (f.results ?? null);
   const d = f.played_at ? new Date(f.played_at) : null;
   const dateStr = d ? d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" }) : "TBC";
   const timeStr = d ? d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" }) : "";
@@ -295,7 +295,7 @@ export default function SeasonPage() {
                     <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase", color: "#66707d", marginBottom: 14 }}>Week {week}</div>
                     <div style={{ display: "grid", gap: 14 }}>
                       {wr.map(f => {
-                        const r = f.results?.[0];
+                        const r = Array.isArray(f.results) ? (f.results[0] ?? null) : (f.results ?? null);
                         return (
                           <div key={f.id} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 14, overflow: "hidden" }}>
                             <div style={{ padding: "18px 20px", display: "flex", alignItems: "center", gap: 12, justifyContent: "space-between" }}>
