@@ -66,7 +66,7 @@ export default function AdminPage() {
   const [emailMsg, setEmailMsg] = useState("");
 
   const [invites, setInvites] = useState<Invite[]>([]);
-  const [newClub, setNewClub] = useState("");
+  const [newClubId, setNewClubId] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newCommunity, setNewCommunity] = useState<"Nepalese" | "Bhutanese">("Nepalese");
   const [invBusy, setInvBusy] = useState(false);
@@ -149,15 +149,17 @@ export default function AdminPage() {
   }
 
   async function createInvite() {
-    if (!newClub.trim()) { setInvMsg("Club name required."); return; }
+    const selectedClub = clubs.find(c => c.id === newClubId);
+    if (!selectedClub) { setInvMsg("Select a club."); return; }
+    if (!newEmail.trim()) { setInvMsg("Manager email required."); return; }
     setInvBusy(true); setInvMsg("");
-    const res = await api("/api/admin/invite", { method: "POST", body: JSON.stringify({ clubName: newClub.trim(), managerEmail: newEmail.trim(), season: activeSeason?.year ?? 3, community: newCommunity }) });
+    const res = await api("/api/admin/invite", { method: "POST", body: JSON.stringify({ clubName: selectedClub.name, clubShortCode: selectedClub.short_code, managerEmail: newEmail.trim(), season: activeSeason?.year ?? 3, community: selectedClub.community }) });
     const data = await res.json();
     setInvBusy(false);
     if (!res.ok) { setInvMsg(data.error || "Failed."); return; }
     if (data.emailWarning) { setInvMsg(`Code: ${data.code} (email failed, copy manually)`); }
     else { setInvMsg(`Invite sent to ${data.managerEmail}`); }
-    setNewClub(""); setNewEmail(""); setNewCommunity("Nepalese"); loadInvites();
+    setNewClubId(""); setNewEmail(""); setNewCommunity("Nepalese"); loadInvites();
   }
 
   async function deleteInvite(code: string) {
@@ -358,35 +360,41 @@ export default function AdminPage() {
             )}
 
             <div className="card" style={{ padding: 28 }}>
-              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Generate invite code</div>
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Send team invite</div>
+              <p style={{ margin: "0 0 20px", fontSize: 13, color: "#66707d" }}>Select a club and enter the manager email. An invitation email is sent with a unique code and step-by-step registration guide.</p>
               <div className="admin-form-grid">
                 <div>
-                  <label style={label11}>Club name</label>
-                  <input value={newClub} onChange={e => setNewClub(e.target.value)} placeholder="Nepal United FC" style={inputSm} />
-                </div>
-                <div>
-                  <label style={label11}>Community</label>
-                  <select value={newCommunity} onChange={e => setNewCommunity(e.target.value as "Nepalese" | "Bhutanese")} style={inputSm}>
-                    <option value="Nepalese">Nepalese</option>
-                    <option value="Bhutanese">Bhutanese</option>
+                  <label style={label11}>Club</label>
+                  <select
+                    value={newClubId}
+                    onChange={e => {
+                      setNewClubId(e.target.value);
+                      const c = clubs.find(cl => cl.id === e.target.value);
+                      if (c) setNewCommunity(c.community as "Nepalese" | "Bhutanese");
+                    }}
+                    style={{ ...inputSm, background: "#fff" }}
+                  >
+                    <option value="">Select club...</option>
+                    {clubs.map(c => (
+                      <option key={c.id} value={c.id}>{c.name} ({c.community})</option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label style={label11}>Manager email (optional)</label>
-                  <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="manager@club.au" style={inputSm} />
+                  <label style={label11}>Manager email</label>
+                  <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="manager@example.com" style={inputSm} />
                 </div>
-                <Btn variant="dark" onClick={createInvite} disabled={invBusy}>{invBusy ? "Creating..." : "Generate"}</Btn>
+                <Btn variant="dark" onClick={createInvite} disabled={invBusy || !newClubId || !newEmail.trim()}>{invBusy ? "Sending..." : "Send invite"}</Btn>
               </div>
               {invMsg && (
-                <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 10, background: invMsg.includes("Code") ? "#eef7f0" : "#fdecea", color: invMsg.includes("Code") ? "#1f6b37" : "#a3211a", fontSize: 14, fontWeight: 500 }}>
+                <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 10, background: invMsg.includes("Code") ? "#fff9ec" : invMsg.includes("sent") ? "#eef7f0" : "#fdecea", color: invMsg.includes("Code") ? "#8a5a12" : invMsg.includes("sent") ? "#1f6b37" : "#a3211a", fontSize: 14, fontWeight: 500 }}>
                   {invMsg}
                   {invMsg.includes("Code") && (
-                    <button type="button" onClick={() => { navigator.clipboard.writeText(invMsg.replace("Code: ", "")); }}
-                      style={{ marginLeft: 12, background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#1f6b37", fontWeight: 600 }}>Copy</button>
+                    <button type="button" onClick={() => { const code = invMsg.match(/Code: ([^\s(]+)/)?.[1]; if (code) navigator.clipboard.writeText(code); }}
+                      style={{ marginLeft: 12, background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#8a5a12", fontWeight: 600 }}>Copy code</button>
                   )}
                 </div>
               )}
-              <p style={{ marginTop: 12, fontSize: 13, color: "#98a1ab" }}>Share the code manually with the club manager. They enter it on the registration page.</p>
             </div>
 
             <div className="card" style={{ overflow: "hidden" }}>

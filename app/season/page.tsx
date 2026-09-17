@@ -112,11 +112,17 @@ export default function SeasonPage() {
   const hasFixtures = fixtures.length > 0;
   const hasTable = table.length > 0;
 
+  const [weekFilter, setWeekFilter] = useState<number | null>(null);
+  const weeks = [...new Set(fixtures.map(f => f.week))].sort((a, b) => a - b);
+
   // group fixtures by week
   const fixturesByWeek: Record<number, Fixture[]> = {};
   for (const f of fixtures) { (fixturesByWeek[f.week] ??= []).push(f); }
   const resultsByWeek: Record<number, MatchResult[]> = {};
   for (const r of results) { (resultsByWeek[r.week] ??= []).push(r); }
+
+  const filteredFixtureWeeks = weekFilter ? { [weekFilter]: fixturesByWeek[weekFilter] ?? [] } : fixturesByWeek;
+  const filteredResultWeeks = weekFilter ? { [weekFilter]: resultsByWeek[weekFilter] ?? [] } : resultsByWeek;
 
   return (
     <SiteLayout activeNav="season">
@@ -276,7 +282,15 @@ export default function SeasonPage() {
           {tab === "Fixtures" && (
             hasFixtures ? (
               <div style={{ display: "grid", gap: 32 }}>
-                {Object.entries(fixturesByWeek).sort(([a], [b]) => Number(a) - Number(b)).map(([week, wf]) => (
+                {weeks.length > 1 && (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button type="button" onClick={() => setWeekFilter(null)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 13, fontWeight: 500, padding: "8px 16px", borderRadius: 999, cursor: "pointer", background: weekFilter === null ? "#101820" : "#fff", color: weekFilter === null ? "#fff" : "#66707d", border: "1px solid rgba(17,24,39,.18)" }}>All weeks</button>
+                    {weeks.map(w => (
+                      <button key={w} type="button" onClick={() => setWeekFilter(w)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 13, fontWeight: 500, padding: "8px 16px", borderRadius: 999, cursor: "pointer", background: weekFilter === w ? "#101820" : "#fff", color: weekFilter === w ? "#fff" : "#66707d", border: "1px solid rgba(17,24,39,.18)" }}>Wk {w}</button>
+                    ))}
+                  </div>
+                )}
+                {Object.entries(filteredFixtureWeeks).sort(([a], [b]) => Number(a) - Number(b)).filter(([, wf]) => wf?.length).map(([week, wf]) => (
                   <div key={week}>
                     <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase", color: "#66707d", marginBottom: 14 }}>Week {week}</div>
                     <div style={{ display: "grid", gap: 10 }}>
@@ -294,14 +308,22 @@ export default function SeasonPage() {
           {tab === "Results" && (
             hasResults ? (
               <div style={{ display: "grid", gap: 32 }}>
-                {Object.entries(resultsByWeek).sort(([a], [b]) => Number(b) - Number(a)).map(([week, wr]) => (
+                {weeks.length > 1 && (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button type="button" onClick={() => setWeekFilter(null)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 13, fontWeight: 500, padding: "8px 16px", borderRadius: 999, cursor: "pointer", background: weekFilter === null ? "#101820" : "#fff", color: weekFilter === null ? "#fff" : "#66707d", border: "1px solid rgba(17,24,39,.18)" }}>All weeks</button>
+                    {weeks.map(w => (
+                      <button key={w} type="button" onClick={() => setWeekFilter(w)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 13, fontWeight: 500, padding: "8px 16px", borderRadius: 999, cursor: "pointer", background: weekFilter === w ? "#101820" : "#fff", color: weekFilter === w ? "#fff" : "#66707d", border: "1px solid rgba(17,24,39,.18)" }}>Wk {w}</button>
+                    ))}
+                  </div>
+                )}
+                {Object.entries(filteredResultWeeks).sort(([a], [b]) => Number(b) - Number(a)).filter(([, wr]) => wr?.length).map(([week, wr]) => (
                   <div key={week}>
                     <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase", color: "#66707d", marginBottom: 14 }}>Week {week}</div>
                     <div style={{ display: "grid", gap: 14 }}>
                       {wr.map(f => {
                         const r = Array.isArray(f.results) ? (f.results[0] ?? null) : (f.results ?? null);
                         return (
-                          <div key={f.id} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 14, overflow: "hidden" }}>
+                          <Link key={f.id} href={`/season/${f.id}`} style={{ textDecoration: "none", color: "inherit", display: "block", background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 14, overflow: "hidden" }}>
                             <div style={{ padding: "18px 20px", display: "flex", alignItems: "center", gap: 12, justifyContent: "space-between" }}>
                               <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10 }}>
                                 <ClubBadge club={f.home_club} size={28} />
@@ -326,7 +348,7 @@ export default function SeasonPage() {
                                 ))}
                               </div>
                             )}
-                          </div>
+                          </Link>
                         );
                       })}
                     </div>
@@ -414,7 +436,7 @@ export default function SeasonPage() {
             clubs.length > 0 ? (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 16 }}>
                 {clubs.map(c => (
-                  <Link key={c.id} href={`/clubs/${c.id}`} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 16, padding: "30px 22px", display: "flex", alignItems: "center", gap: 18, color: "#101820", textDecoration: "none" }}>
+                  <Link key={c.id} href={`/clubs/${c.short_code.toLowerCase()}`} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 16, padding: "30px 22px", display: "flex", alignItems: "center", gap: 18, color: "#101820", textDecoration: "none" }}>
                     <ClubBadge club={c} size={52} />
                     <span style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                       <span style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.35 }}>{c.name}</span>

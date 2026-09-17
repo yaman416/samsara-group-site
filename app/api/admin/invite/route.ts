@@ -12,14 +12,15 @@ function generateCode(clubShort: string): string {
 export async function POST(req: NextRequest) {
   const deny = checkAdminKey(req);
   if (deny) return deny;
-  const { clubName, managerEmail, season = 3, community = "Nepalese" } = await req.json();
+  const { clubName, clubShortCode, managerEmail, season = 3, community = "Nepalese" } = await req.json();
   if (!clubName || !managerEmail) {
     return NextResponse.json({ error: "Club name and manager email required" }, { status: 400 });
   }
 
-  // derive short from first letters of club name words
-  const words = clubName.trim().split(/\s+/);
-  const short = words.map((w: string) => w[0]).join("").toUpperCase().slice(0, 4);
+  // prefer explicit short_code, fall back to initials from club name
+  const short = clubShortCode
+    ? clubShortCode.toUpperCase().slice(0, 4)
+    : clubName.trim().split(/\s+/).map((w: string) => w[0]).join("").toUpperCase().slice(0, 4);
   let code = generateCode(short);
 
   // ensure uniqueness
