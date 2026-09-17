@@ -8,20 +8,22 @@ export default function SubscribeForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setBusy(true);
     setMsg("");
-    const res = await fetch("/api/subscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    const data = await res.json();
-    setBusy(false);
-    if (res.ok) {
-      setMsg("Subscribed! You'll receive fixture updates and announcements.");
-      setEmail("");
-    } else {
-      setMsg(data.error ?? "Something went wrong.");
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) { setMsg("Subscribed!"); setEmail(""); }
+      else { setMsg(data.error ?? "Something went wrong. Please try again."); }
+    } catch {
+      setMsg("Unable to connect. Please try again.");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -29,6 +31,8 @@ export default function SubscribeForm() {
     <form onSubmit={submit} className="mt-4 flex flex-col gap-2">
       <input
         type="email"
+          aria-label="Email address"
+          autoComplete="email"
         value={email}
         onChange={e => setEmail(e.target.value)}
         placeholder="your@email.com"
@@ -43,7 +47,7 @@ export default function SubscribeForm() {
         {busy ? "Subscribing..." : "Subscribe"}
       </button>
       {msg && (
-        <p className={`text-xs leading-5 ${msg.startsWith("Subscribed") ? "text-green-700" : "text-red-600"}`}>
+        <p role="status" className={`text-xs leading-5 ${msg.startsWith("Subscribed") ? "text-green-700" : "text-red-600"}`}>
           {msg}
         </p>
       )}

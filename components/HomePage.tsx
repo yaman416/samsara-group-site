@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import LeagueTableSection from "@/components/LeagueTableSection";
 import FixturesResultsSection from "@/components/FixturesResultsSection";
@@ -45,6 +45,8 @@ export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerH, setHeaderH] = useState(109);
 
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem("spl_token"));
@@ -55,13 +57,17 @@ export default function HomePage() {
   const [subMsg, setSubMsg] = useState("");
   const [subBusy, setSubBusy] = useState(false);
 
-  async function handleSubscribe() {
-    if (!subEmail) return;
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault();
+    if (!subEmail.trim() || subBusy) return;
     setSubBusy(true); setSubMsg("");
-    const res = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: subEmail }) });
-    setSubBusy(false);
-    if (res.ok) { setSubMsg("Subscribed!"); setSubEmail(""); }
-    else { const d = await res.json(); setSubMsg(d.error ?? "Something went wrong."); }
+    try {
+      const res = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: subEmail.trim() }) });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) { setSubMsg("Subscribed!"); setSubEmail(""); }
+      else { setSubMsg(data.error ?? "Something went wrong. Please try again."); }
+    } catch { setSubMsg("Unable to connect. Please try again."); }
+    finally { setSubBusy(false); }
   }
 
   useEffect(() => {
@@ -73,6 +79,17 @@ export default function HomePage() {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
+
+  // The overlay menu sits under the sticky header, whose height changes with breakpoint.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const measure = () => setHeaderH(el.getBoundingClientRect().height);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     function tick() {
@@ -92,18 +109,18 @@ export default function HomePage() {
     <div style={{ background: BG, fontFamily: "'DM Sans',system-ui,sans-serif", color: DARK, overflowX: "hidden" }}>
 
       {/* ── HEADER (includes utility bar so both stay above nav overlay) ── */}
-      <header style={{ position: "sticky", top: 0, zIndex: 60, backdropFilter: "blur(14px)" }}>
+      <header ref={headerRef} style={{ position: "sticky", top: 0, zIndex: 60, backdropFilter: "blur(14px)" }}>
 
         {/* ── TOP UTILITY BAR ── */}
         <div style={{ background: DARK, color: DARK_MUTED, fontSize: 13 }}>
-          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "10px 28px", display: "flex", justifyContent: "flex-end", gap: 20, alignItems: "center" }}>
-            <a href="https://www.instagram.com/samsaragroup.cbr" aria-label="Instagram" style={{ color: DARK_MUTED, textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
+          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "10px 24px", display: "flex", justifyContent: "flex-end", gap: 28, alignItems: "center" }}>
+            <a href="https://www.instagram.com/samsaragroup.cbr" aria-label="Instagram" className="spl-utility-link" style={{ color: DARK_MUTED, textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
             </a>
-            <a href="https://www.facebook.com" aria-label="Facebook" style={{ color: DARK_MUTED, textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
+            <a href="https://www.facebook.com" aria-label="Facebook" className="spl-utility-link" style={{ color: DARK_MUTED, textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
             </a>
-            <a href="https://www.youtube.com/@SamsaraGroupCanberra" aria-label="YouTube" style={{ color: DARK_MUTED, textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
+            <a href="https://www.youtube.com/@SamsaraGroupCanberra" aria-label="YouTube" className="spl-utility-link" style={{ color: DARK_MUTED, textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
               <svg width="22" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
             </a>
           </div>
@@ -176,9 +193,9 @@ export default function HomePage() {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             )}
           </button>
-          <a href="/" style={{ display: "flex", alignItems: "center", gap: 8, color: DARK, textDecoration: "none" }}>
+          <a href="/" style={{ display: "flex", alignItems: "center", gap: 8, color: DARK, textDecoration: "none", minWidth: 0 }}>
             <img src="/other logos/logo-dark.png" alt="Samsara Group Canberra" style={{ height: 34, width: "auto" }} />
-            <span style={{ fontWeight: 600, fontSize: 13, letterSpacing: "-.01em", lineHeight: 1.2 }}>
+            <span className="spl-wordmark" style={{ fontWeight: 600, fontSize: 13, letterSpacing: "-.01em", lineHeight: 1.2 }}>
               Samsara Group<br /><span style={{ color: MUTED, fontWeight: 400 }}>Canberra</span>
             </span>
           </a>
@@ -199,8 +216,8 @@ export default function HomePage() {
 
       {/* Full-overlay nav menu (Arsenal style) — outside header to escape backdrop-filter stacking context */}
       {menuOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 58, background: "#fff", overflowY: "auto", paddingTop: 109 }}>
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+        <div style={{ position: "fixed", top: headerH, left: 0, right: 0, bottom: 0, zIndex: 58, background: "#fff", overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto", paddingBottom: "env(safe-area-inset-bottom)" }}>
             {[["Home", "/"], ["About", "/about"], ["Season 3", "/season"], ["Archive", "/archive"], ["Clubs", "/clubs"], ["Gallery", "/gallery"], ["Partners", "/partners"]].map(([label, href]) => (
               <a key={label} href={href} onClick={() => setMenuOpen(false)}
                 style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: DARK, fontSize: 18, fontWeight: 400, padding: "20px 24px", textDecoration: "none", borderBottom: "1px solid rgba(17,24,39,.08)" }}>
@@ -219,7 +236,7 @@ export default function HomePage() {
         ))}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(16,24,32,.72) 0%,rgba(16,24,32,.42) 45%,rgba(16,24,32,.86) 100%)" }} />
 
-        <div style={{ position: "relative", width: "100%", maxWidth: 900, padding: "120px 24px", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div className="spl-hero" style={{ position: "relative", width: "100%", maxWidth: 900, padding: "120px 24px", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 10, border: "1px solid rgba(255,255,255,.34)", borderRadius: 999, padding: "8px 18px", fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const }}>
             <span style={{ width: 7, height: 7, borderRadius: "50%", background: RED, animation: "spl-pulse 1.8s ease-in-out infinite", display: "inline-block" }} />
             SBA Property Group Presents
@@ -242,8 +259,11 @@ export default function HomePage() {
           {/* Slide dots */}
           <div style={{ marginTop: 38, display: "flex", gap: 8, alignItems: "center", justifyContent: "center" }}>
             {HERO_SHOTS.map((s, i) => (
+              // Padding keeps the touch target tappable while the bar itself stays 4px.
               <button key={s.src} type="button" onClick={() => setSlide(i)} aria-label={`Photo ${i + 1}`}
-                style={{ width: i === slide ? 30 : 14, height: 4, borderRadius: 999, border: 0, padding: 0, cursor: "pointer", background: i === slide ? RED : "rgba(255,255,255,.34)", transition: "width .4s ease, background .4s ease" }} />
+                style={{ display: "flex", alignItems: "center", height: 24, border: 0, padding: "10px 0", background: "none", cursor: "pointer" }}>
+                <span style={{ display: "block", width: i === slide ? 30 : 14, height: 4, borderRadius: 999, background: i === slide ? RED : "rgba(255,255,255,.34)", transition: "width .4s ease, background .4s ease" }} />
+              </button>
             ))}
           </div>
         </div>
@@ -264,7 +284,7 @@ export default function HomePage() {
       </div>
 
       {/* ── COUNTDOWN ── */}
-      <section style={{ background: "#fff", padding: "88px 0", borderTop: "1px solid rgba(17,24,39,.08)", borderBottom: "1px solid rgba(17,24,39,.08)" }}>
+      <section className="spl-section" style={{ background: "#fff", padding: "88px 0", borderTop: "1px solid rgba(17,24,39,.08)", borderBottom: "1px solid rgba(17,24,39,.08)" }}>
         <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
           <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>Countdown</div>
           <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(28px,3.4vw,42px)", lineHeight: 1.2, letterSpacing: "-.012em", margin: "16px 0 44px" }}>Season 3 starts in</h2>
@@ -281,7 +301,7 @@ export default function HomePage() {
       </section>
 
       {/* ── HONOURS BOARD ── */}
-      <section style={{ position: "relative", padding: "120px 0", overflow: "hidden" }}>
+      <section className="spl-section" style={{ position: "relative", padding: "120px 0", overflow: "hidden" }}>
         <img src={P.final7} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
         <div style={{ position: "absolute", inset: 0, background: "rgba(16,24,32,.76)" }} />
         <div style={{ position: "relative", maxWidth: 1340, margin: "0 auto", padding: "0 24px", color: "#fff", textAlign: "center" }}>
@@ -338,8 +358,8 @@ export default function HomePage() {
       </section>
 
       {/* ── REGISTER CTA ── */}
-      <section id="register" style={{ background: RED, color: "#fff", padding: "96px 0" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 44, alignItems: "center" }}>
+      <section id="register" className="spl-section" style={{ background: RED, color: "#fff", padding: "96px 0" }}>
+        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 44, alignItems: "center" }}>
           <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(30px,4.2vw,52px)", lineHeight: 1.16, letterSpacing: "-.014em", margin: 0 }}>Got an invitation code?</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 22, alignItems: "flex-start" }}>
             <p style={{ margin: 0, fontSize: 18, lineHeight: 1.7, maxWidth: "46ch", color: "rgba(255,255,255,.92)" }}>
@@ -351,8 +371,8 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER — dark ── */}
-      <footer style={{ background: DARK, color: DARK_MUTED, padding: "80px 0 36px" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 44 }}>
+      <footer className="spl-footer" style={{ background: DARK, color: DARK_MUTED, padding: "80px 0 36px" }}>
+        <div className="spl-footer-grid" style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px" }}>
           <div>
             <img src="/other logos/logo-light.png" alt="Samsara Group Canberra" style={{ height: 46, width: "auto", objectFit: "contain", marginBottom: 20 }} />
             <p style={{ margin: 0, fontSize: 15, lineHeight: 1.72, maxWidth: "32ch" }}>Fostering community, empowering growth. Canberra, Australia.</p>
@@ -371,11 +391,11 @@ export default function HomePage() {
           </div>
           <div>
             <div style={{ color: "#fff", fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, marginBottom: 18 }}>Season updates</div>
-            <div style={{ display: "flex", gap: 0, background: "#161f28", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, overflow: "hidden" }}>
-              <input type="email" value={subEmail} onChange={e => setSubEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSubscribe()} placeholder="Email address" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "13px 20px", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, outline: "none" }} />
-              <button type="button" onClick={handleSubscribe} disabled={subBusy} style={{ background: RED, color: "#fff", border: 0, borderRadius: 999, padding: "13px 24px", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, cursor: "pointer", flexShrink: 0, opacity: subBusy ? 0.7 : 1 }}>{subBusy ? "..." : "Subscribe"}</button>
-            </div>
-            {subMsg && <p style={{ margin: "8px 0 0", fontSize: 13, color: subMsg === "Subscribed!" ? "#6ee7a0" : "#f87171" }}>{subMsg}</p>}
+            <form onSubmit={handleSubscribe} style={{ display: "flex", gap: 0, background: "#161f28", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, overflow: "hidden" }}>
+              <input type="email" value={subEmail} onChange={e => setSubEmail(e.target.value)} required aria-label="Email address" autoComplete="email" placeholder="Email address" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "13px 20px", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 16, outline: "none" }} />
+              <button type="submit" disabled={subBusy} style={{ background: RED, color: "#fff", border: 0, borderRadius: 999, padding: "13px 24px", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, cursor: "pointer", flexShrink: 0, opacity: subBusy ? 0.7 : 1 }}>{subBusy ? "..." : "Subscribe"}</button>
+            </form>
+            {subMsg && <p role="status" style={{ margin: "8px 0 0", fontSize: 13, color: subMsg === "Subscribed!" ? "#6ee7a0" : "#f87171" }}>{subMsg}</p>}
           </div>
         </div>
         <div style={{ maxWidth: 1340, margin: "52px auto 0", padding: "26px 24px 0", borderTop: "1px solid rgba(255,255,255,.12)", fontSize: 14, display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap" as const }}>
@@ -428,6 +448,7 @@ export default function HomePage() {
         .spl-header-wide { display: flex !important; }
         .spl-header-mid { display: none !important; }
         .spl-header-mobile { display: none !important; }
+        .spl-utility-link { padding: 10px; margin: -10px; }
         @media (max-width: 1099px) {
           /* Medium: logo left, hamburger right, no nav */
           .spl-header-wide { display: none !important; }
@@ -439,6 +460,18 @@ export default function HomePage() {
           .spl-mobile-only { display: flex !important; }
           .spl-header-mid { display: none !important; }
           .spl-header-mobile { display: grid !important; }
+        }
+        /* Wordmark stops fitting beside the hamburger and account button. */
+        @media (max-width: 359px) {
+          .spl-wordmark { display: none; }
+        }
+        .spl-footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 44px; }
+        @media (max-width: 767px) {
+          .spl-hero { padding: 84px 20px 72px !important; }
+          .spl-section { padding-top: 56px !important; padding-bottom: 56px !important; }
+          .spl-footer { padding: 56px 0 28px !important; }
+          .spl-footer-grid { gap: 36px; }
+          .spl-footer-grid a { padding: 6px 0; }
         }
       `}</style>
     </div>

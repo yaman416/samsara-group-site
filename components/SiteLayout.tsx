@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
@@ -13,6 +13,8 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerH, setHeaderH] = useState(109);
 
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem("spl_token"));
@@ -22,6 +24,17 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
+
+  // The overlay menu sits under the sticky header, whose height changes with breakpoint.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const measure = () => setHeaderH(el.getBoundingClientRect().height);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const navLinks = [
     { href: "/", label: "Home", key: "home" },
@@ -34,7 +47,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
   ];
 
   return (
-    <div style={{ background: "#f4f4f1", fontFamily: "'DM Sans',system-ui,sans-serif", color: "#101820", overflowX: "hidden", minHeight: "100vh" }}>
+    <div style={{ background: "#f4f4f1", fontFamily: "'DM Sans',system-ui,sans-serif", color: "#101820", overflowX: "hidden", minHeight: "100vh", ["--spl-header-h" as string]: `${headerH}px` }}>
       <style>{`
         .site-nav-link { color: #4a545f; text-decoration: none; transition: color .2s; }
         .site-nav-link:hover { color: #101820; }
@@ -44,6 +57,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
         .spl-header-wide { display: flex !important; }
         .spl-header-mid { display: none !important; }
         .spl-header-mobile { display: none !important; }
+        .spl-utility-link { padding: 10px; margin: -10px; }
         @media (max-width: 1099px) {
           .spl-header-wide { display: none !important; }
           .spl-header-mid { display: grid !important; }
@@ -54,21 +68,31 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
           .spl-header-mid { display: none !important; }
           .spl-header-mobile { display: grid !important; }
         }
+        /* Wordmark stops fitting beside the hamburger and account button. */
+        @media (max-width: 359px) {
+          .spl-wordmark { display: none; }
+        }
+        .spl-footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 44px; }
+        @media (max-width: 767px) {
+          .spl-footer { padding: 56px 0 28px !important; }
+          .spl-footer-grid { gap: 36px; }
+          .spl-footer-grid a { padding: 6px 0; }
+        }
       `}</style>
 
       {/* Sticky header (includes utility bar so both stay above the nav overlay) */}
-      <header style={{ position: "sticky", top: 0, zIndex: 60, backdropFilter: "blur(14px)" }}>
+      <header ref={headerRef} style={{ position: "sticky", top: 0, zIndex: 60, backdropFilter: "blur(14px)" }}>
 
         {/* Utility bar */}
         <div style={{ background: "#101820", color: "#98a1ab", fontSize: 13 }}>
-          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "10px 28px", display: "flex", justifyContent: "flex-end", gap: 20, alignItems: "center" }}>
-            <a href="https://www.instagram.com/samsaragroup.cbr" aria-label="Instagram" style={{ color: "#98a1ab", textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
+          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "10px 24px", display: "flex", justifyContent: "flex-end", gap: 28, alignItems: "center" }}>
+            <a href="https://www.instagram.com/samsaragroup.cbr" aria-label="Instagram" className="spl-utility-link" style={{ color: "#98a1ab", textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
             </a>
-            <a href="https://www.facebook.com" aria-label="Facebook" style={{ color: "#98a1ab", textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
+            <a href="https://www.facebook.com" aria-label="Facebook" className="spl-utility-link" style={{ color: "#98a1ab", textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
             </a>
-            <a href="https://www.youtube.com/@SamsaraGroupCanberra" aria-label="YouTube" style={{ color: "#98a1ab", textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
+            <a href="https://www.youtube.com/@SamsaraGroupCanberra" aria-label="YouTube" className="spl-utility-link" style={{ color: "#98a1ab", textDecoration: "none", display: "flex", alignItems: "center", opacity: 0.8 }}>
               <svg width="22" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
             </a>
           </div>
@@ -106,7 +130,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
 
         {/* Medium (768-1099px): hamburger left | logo center | account right */}
         <div className="spl-header-mid" style={{ padding: "0 24px", height: 72, display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
-          <button onClick={() => { setMenuOpen(!menuOpen); setAccountOpen(false); }} aria-label={menuOpen ? "Close menu" : "Open menu"}
+          <button onClick={() => { setMenuOpen(!menuOpen); setAccountOpen(false); }} aria-expanded={menuOpen} aria-controls="site-mobile-menu" aria-label={menuOpen ? "Close menu" : "Open menu"}
             style={{ background: "none", border: "none", cursor: "pointer", padding: 8, justifySelf: "start", color: "#101820", display: "flex", alignItems: "center", justifyContent: "center" }}>
             {menuOpen ? (
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -134,7 +158,7 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
 
         {/* Mobile (<768px): hamburger left | logo center | account right */}
         <div className="spl-header-mobile" style={{ padding: "0 16px", height: 72, display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center" }}>
-          <button onClick={() => { setMenuOpen(!menuOpen); setAccountOpen(false); }} aria-label={menuOpen ? "Close menu" : "Open menu"}
+          <button onClick={() => { setMenuOpen(!menuOpen); setAccountOpen(false); }} aria-expanded={menuOpen} aria-controls="site-mobile-menu" aria-label={menuOpen ? "Close menu" : "Open menu"}
             style={{ background: "none", border: "none", cursor: "pointer", padding: 8, justifySelf: "start", color: "#101820", display: "flex", alignItems: "center", justifyContent: "center" }}>
             {menuOpen ? (
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -142,9 +166,9 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             )}
           </button>
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, color: "#101820", textDecoration: "none" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, color: "#101820", textDecoration: "none", minWidth: 0 }}>
             <Image src="/other logos/logo-dark.png" alt="Samsara Group Canberra" width={100} height={34} style={{ height: 34, width: "auto", display: "block" }} />
-            <span style={{ fontWeight: 600, fontSize: 13, letterSpacing: "-.01em", lineHeight: 1.2 }}>
+            <span className="spl-wordmark" style={{ fontWeight: 600, fontSize: 13, letterSpacing: "-.01em", lineHeight: 1.2 }}>
               Samsara Group<br /><span style={{ color: "#66707d", fontWeight: 400 }}>Canberra</span>
             </span>
           </Link>
@@ -165,8 +189,8 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
 
       {/* Full-overlay nav menu (Arsenal style) — outside header to escape backdrop-filter stacking context */}
       {menuOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 58, background: "#fff", overflowY: "auto", paddingTop: 109 }}>
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+        <nav id="site-mobile-menu" aria-label="Main navigation" style={{ position: "fixed", top: headerH, left: 0, right: 0, bottom: 0, zIndex: 58, background: "#fff", overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto", paddingBottom: "env(safe-area-inset-bottom)" }}>
             {navLinks.map(n => (
               <Link key={n.key} href={n.href} onClick={() => setMenuOpen(false)}
                 style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: "#101820", fontSize: 18, fontWeight: activeNav === n.key ? 600 : 400, padding: "20px 24px", textDecoration: "none", borderBottom: "1px solid rgba(17,24,39,.08)" }}>
@@ -175,14 +199,14 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
               </Link>
             ))}
           </div>
-        </div>
+        </nav>
       )}
 
       {children}
 
       {/* Footer */}
-      <footer style={{ background: "#101820", color: "#98a1ab", padding: "80px 0 36px" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 44 }}>
+      <footer className="spl-footer" style={{ background: "#101820", color: "#98a1ab", padding: "80px 0 36px" }}>
+        <div className="spl-footer-grid" style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px" }}>
           <div>
             <img src="/other logos/logo-light.png" alt="Samsara Group Canberra" style={{ height: 46, width: "auto", objectFit: "contain", marginBottom: 20 }} />
             <p style={{ margin: 0, fontSize: 15, lineHeight: 1.72, maxWidth: "32ch" }}>Fostering community, empowering growth. Canberra, Australia.</p>
@@ -254,41 +278,50 @@ function FooterSubscribe() {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function submit() {
-    if (!email) return;
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    if (busy) return;
     setBusy(true);
     setMsg("");
-    const res = await fetch("/api/subscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    setBusy(false);
-    if (res.ok) { setMsg("Subscribed!"); setEmail(""); }
-    else { const d = await res.json(); setMsg(d.error ?? "Something went wrong."); }
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) { setMsg("Subscribed!"); setEmail(""); }
+      else { setMsg(data.error ?? "Something went wrong. Please try again."); }
+    } catch {
+      setMsg("Unable to connect. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 0, background: "#161f28", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, overflow: "hidden" }}>
+      <form onSubmit={submit} style={{ display: "flex", gap: 0, background: "#161f28", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, overflow: "hidden" }}>
         <input
           type="email"
+          aria-label="Email address"
+          autoComplete="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && submit()}
+          required
           placeholder="Email address"
-          style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "13px 20px", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, outline: "none" }}
+          style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "13px 20px", color: "#fff", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 16, outline: "none" }}
         />
         <button
-          type="button"
-          onClick={submit}
+          type="submit"
           disabled={busy}
           style={{ background: "#e2372b", color: "#fff", border: 0, borderRadius: 999, padding: "13px 24px", fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, cursor: "pointer", flexShrink: 0, opacity: busy ? 0.7 : 1 }}
         >
           {busy ? "..." : "Subscribe"}
         </button>
-      </div>
-      {msg && <p style={{ margin: "8px 0 0", fontSize: 13, color: msg === "Subscribed!" ? "#6ee7a0" : "#f87171" }}>{msg}</p>}
+      </form>
+      {msg && <p role="status" style={{ margin: "8px 0 0", fontSize: 13, color: msg === "Subscribed!" ? "#6ee7a0" : "#f87171" }}>{msg}</p>}
     </div>
   );
 }

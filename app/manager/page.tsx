@@ -168,7 +168,7 @@ export default function ManagerPage() {
   }
 
   const label11 = { display: "block" as const, fontSize: 11, fontWeight: 500 as const, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#66707d", marginBottom: 8 };
-  const inputSm = { width: "100%", boxSizing: "border-box" as const, border: "1px solid rgba(17,24,39,.18)", borderRadius: 10, fontSize: 15, padding: "11px 14px", color: "#101820", fontFamily: "'DM Sans',system-ui,sans-serif" };
+  const inputSm = { width: "100%", boxSizing: "border-box" as const, border: "1px solid rgba(17,24,39,.18)", borderRadius: 10, fontSize: 16, padding: "11px 14px", color: "#101820", fontFamily: "'DM Sans',system-ui,sans-serif" };
 
   if (loading) return (
     <div style={{ background: "#f4f4f1", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',system-ui,sans-serif", color: "#66707d" }}>
@@ -440,7 +440,7 @@ export default function ManagerPage() {
 
         {/* KIT */}
         {screen === "kit" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 24 }}>
             {[
               { label: "Home kit", primary: homeColor, setP: setHomeColor, trim: homeTrim, setT: setHomeTrim },
               { label: "Away kit", primary: awayColor, setP: setAwayColor, trim: awayTrim, setT: setAwayTrim },
@@ -485,7 +485,7 @@ export default function ManagerPage() {
 
         {/* CLUB DETAILS */}
         {screen === "club" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 20, maxWidth: 900 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 20, maxWidth: 900 }}>
             {/* Club info */}
             <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 32 }}>
               <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#66707d", marginBottom: 20 }}>Club information</div>
@@ -601,7 +601,7 @@ function AccountTab({ club, onSignOut }: { club: { name: string } | null; onSign
   const [pwMsg, setPwMsg] = useState("");
   const [pwError, setPwError] = useState("");
 
-  const inputSm = { width: "100%", boxSizing: "border-box" as const, border: "1px solid rgba(17,24,39,.18)", borderRadius: 10, fontSize: 15, padding: "11px 14px", color: "#101820", fontFamily: "'DM Sans',system-ui,sans-serif" };
+  const inputSm = { width: "100%", boxSizing: "border-box" as const, border: "1px solid rgba(17,24,39,.18)", borderRadius: 10, fontSize: 16, padding: "11px 14px", color: "#101820", fontFamily: "'DM Sans',system-ui,sans-serif" };
   const label11 = { display: "block" as const, fontSize: 11, fontWeight: 500 as const, letterSpacing: ".1em", textTransform: "uppercase" as const, color: "#66707d", marginBottom: 8 };
 
   async function changePassword() {

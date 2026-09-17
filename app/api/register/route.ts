@@ -11,11 +11,30 @@ function parseDob(dob: string): string | null {
 }
 
 export async function POST(req: NextRequest) {
-  const { code, acct, club, community, kit, squad } = await req.json();
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid registration request." }, { status: 400 });
+  }
+  const { acct, club, kit, squad } = body;
+  const code = typeof body.code === "string" ? body.code.trim().toUpperCase().replace(/\s/g, "") : "";
+  if (!code || typeof acct?.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(acct.email.trim()) ||
+      typeof acct?.pass !== "string" || acct.pass.length < 8 ||
+      typeof club?.short !== "string" || typeof kit?.hp !== "string" || typeof kit?.ap !== "string" ||
+      !Array.isArray(squad) || squad.length > 100 || squad.some(p => !p ||
+        typeof p.name !== "string" || typeof p.number !== "string" ||
+        typeof p.pos !== "string" || typeof p.dob !== "string")) {
+    return NextResponse.json({ error: "Enter valid registration details and a password of at least 8 characters." }, { status: 400 });
+  }
+  const email = acct.email.trim().toLowerCase();
+  const { data: invite, error: inviteError } = await supabaseAdmin
+    .from("invites").select("*").eq("code", code).single();
+  if (inviteError || !invite || invite.used || invite.manager_email?.trim().toLowerCase() !== email) {
+    return NextResponse.json({ error: "Use an unused invitation and the email address it was sent to." }, { status: 403 });
+  }
 
   // 1. Create auth user
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-    email: acct.email,
+    email,
     password: acct.pass,
     email_confirm: true,
     user_metadata: { full_name: acct.name, phone: acct.phone },
@@ -25,24 +44,44 @@ export async function POST(req: NextRequest) {
   }
   const userId = authData.user.id;
 
+  // Claim once, including when two requests validate the same invite concurrently.
+  const { data: claimed, error: claimError } = await supabaseAdmin
+    .from("invites").update({ used: true, used_by: userId })
+    .eq("code", code).eq("used", false).select("code").maybeSingle();
+  if (claimError || !claimed) {
+    await supabaseAdmin.auth.admin.deleteUser(userId);
+    return NextResponse.json({ error: "Invitation could not be claimed. Please try again." }, { status: 409 });
+  }
+
+  async function rollback(clubId?: string) {
+    if (clubId) {
+      const { error } = await supabaseAdmin.from("clubs").delete().eq("id", clubId);
+      if (error) { console.error("Registration cleanup failed", error.code); return; }
+    }
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    if (error) { console.error("Registration account cleanup failed", error.code); return; }
+    await supabaseAdmin.from("invites").update({ used: false, used_by: null }).eq("code", code).eq("used_by", userId);
+  }
+
   // 2. Create club record
   const { data: clubData, error: clubError } = await supabaseAdmin
     .from("clubs")
     .insert({
-      name: club.name,
+      name: invite.club_name,
       short_code: club.short.toUpperCase(),
       home_ground: club.ground,
       founded: parseInt(club.founded) || null,
-      community,
+      community: invite.community ?? "Nepalese",
       home_color: kit.hp,
       away_color: kit.ap,
       manager_id: userId,
-      season: 3,
+      season: invite.season ?? 3,
     })
     .select("id")
     .single();
 
   if (clubError) {
+    await rollback();
     return NextResponse.json({ error: clubError.message }, { status: 400 });
   }
   const clubId = clubData.id;
@@ -56,14 +95,12 @@ export async function POST(req: NextRequest) {
       position: p.pos,
       date_of_birth: p.dob ? parseDob(p.dob) : null,
     }));
-    await supabaseAdmin.from("players").insert(playerRows);
+    const { error: playersError } = await supabaseAdmin.from("players").insert(playerRows);
+    if (playersError) {
+      await rollback(clubId);
+      return NextResponse.json({ error: "Could not save the squad. Please check the player details and try again." }, { status: 400 });
+    }
   }
-
-  // 4. Mark invite as used
-  await supabaseAdmin
-    .from("invites")
-    .update({ used: true, used_by: userId })
-    .eq("code", code);
 
   return NextResponse.json({ success: true, clubId });
 }

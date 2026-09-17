@@ -111,7 +111,7 @@ export default function RegisterPage() {
           <section style={{ background: "#101820", color: "#fff", overflow: "hidden", position: "relative" }}>
             <Image src="/gallery/FINAL%20SPL%202025-26/645590660_122201103038559639_895508620839760949_n.jpg" alt="" fill style={{ objectFit: "cover", objectPosition: "center 32%", opacity: .25 }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(16,24,32,.72) 0%,rgba(16,24,32,.96) 100%)" }} />
-            <div style={{ position: "relative", maxWidth: 1340, margin: "0 auto", padding: "72px 24px 80px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: 56, alignItems: "end" }}>
+            <div style={{ position: "relative", maxWidth: 1340, margin: "0 auto", padding: "72px 24px 80px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,340px),1fr))", gap: 56, alignItems: "end" }}>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#98a1ab" }}>Season 3 · 2026-27</div>
                 <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(34px,4.6vw,58px)", lineHeight: 1.06, letterSpacing: "-.02em", margin: "20px 0 0" }}>Register your club</h1>

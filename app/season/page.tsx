@@ -116,7 +116,39 @@ export default function SeasonPage() {
 
   return (
     <SiteLayout activeNav="season">
-      <style>{`@keyframes spl-pulse { 0%,100% { opacity:1; } 50% { opacity:.25; } }`}</style>
+      <style>{`
+        @keyframes spl-pulse { 0%,100% { opacity:1; } 50% { opacity:.25; } }
+        /* Single column below 720px, so the span-2 card cannot force an implicit
+           second column wider than the viewport. */
+        .season-overview { display: grid; grid-template-columns: minmax(0,1fr); gap: 24px; }
+        .season-overview > * { min-width: 0; }
+        @media (min-width: 720px) {
+          .season-overview { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+          .season-overview-wide { grid-column: span 2; }
+        }
+        @media (max-width: 767px) {
+          .season-card { padding: 26px 22px !important; }
+          .season-tabs { margin-left: -24px; margin-right: -24px; padding: 0 24px; }
+          /* Full width lets auto-fit pack the meta cells across instead of stacking. */
+          .season-meta { flex: 1 1 100%; gap: 20px !important; }
+        }
+        /* Phone: drop W, D, GF and GA so Pts stays on screen without scrolling. */
+        @media (max-width: 560px) {
+          .season-table { min-width: 0 !important; }
+          .season-table th:nth-child(4), .season-table td:nth-child(4),
+          .season-table th:nth-child(5), .season-table td:nth-child(5),
+          .season-table th:nth-child(7), .season-table td:nth-child(7),
+          .season-table th:nth-child(8), .season-table td:nth-child(8) { display: none; }
+          .season-table th, .season-table td { padding: 14px 6px !important; }
+          .season-stats th, .season-stats td { padding: 12px 8px !important; }
+          .season-stats th:nth-child(3), .season-stats td:nth-child(3) { display: none; }
+          /* Placeholder standings: same idea, but this table has no GF/GA columns. */
+          .season-table-empty { min-width: 0 !important; }
+          .season-table-empty th:nth-child(4), .season-table-empty td:nth-child(4),
+          .season-table-empty th:nth-child(5), .season-table-empty td:nth-child(5) { display: none; }
+          .season-table-empty th, .season-table-empty td { padding: 14px 6px !important; }
+        }
+      `}</style>
 
       {/* Hero */}
       <section style={{ position: "relative", background: "#101820", color: "#fff", overflow: "hidden" }}>
@@ -144,7 +176,7 @@ export default function SeasonPage() {
                 </span>
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(100px,1fr))", gap: 32, paddingBottom: 6 }}>
+            <div className="season-meta" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(100px,1fr))", gap: 32, paddingBottom: 6 }}>
               <div><div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Starts</div><div style={{ fontSize: 17, fontWeight: 500, marginTop: 6 }}>14 Nov 2026</div></div>
               <div><div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Venue</div><div style={{ fontSize: 17, fontWeight: 500, marginTop: 6 }}>Nicholls</div></div>
               <div><div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Clubs</div><div style={{ fontSize: 17, fontWeight: 500, marginTop: 6 }}>{loading ? "--" : clubs.length || 12}</div></div>
@@ -152,7 +184,7 @@ export default function SeasonPage() {
             </div>
           </div>
           {/* Tabs */}
-          <div style={{ marginTop: 40, display: "flex", gap: 4, overflowX: "auto", borderBottom: "1px solid rgba(255,255,255,.14)" }}>
+          <div className="season-tabs" style={{ marginTop: 40, display: "flex", gap: 4, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", borderBottom: "1px solid rgba(255,255,255,.14)" }}>
             {TABS.map(t => (
               <button key={t} type="button" onClick={() => setTab(t)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, whiteSpace: "nowrap", background: "none", border: 0, borderBottom: `2px solid ${tab === t ? "#e2372b" : "transparent"}`, color: tab === t ? "#ffffff" : "#98a1ab", padding: "16px 20px", cursor: "pointer" }}>{t}</button>
             ))}
@@ -165,8 +197,8 @@ export default function SeasonPage() {
 
           {/* OVERVIEW */}
           {tab === "Overview" && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 24 }}>
-              <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36, gridColumn: "span 2", minWidth: 0 }}>
+            <div className="season-overview">
+              <div className="season-card season-overview-wide" style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36, minWidth: 0 }}>
                 <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Current status</div>
                 <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,3vw,36px)", lineHeight: 1.2, letterSpacing: "-.012em", margin: "14px 0 0" }}>
                   {hasResults ? "Season underway" : "Squad registration is open"}
@@ -184,7 +216,7 @@ export default function SeasonPage() {
                 </div>
               </div>
 
-              <div style={{ background: "#101820", color: "#fff", borderRadius: 18, padding: 36 }}>
+              <div className="season-card" style={{ background: "#101820", color: "#fff", borderRadius: 18, padding: 36 }}>
                 <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Kick-off in</div>
                 <div style={{ display: "flex", gap: 22, marginTop: 26 }}>
                   {[["dd", "Days"], ["hh", "Hrs"], ["mm", "Min"]].map(([k, label]) => (
@@ -197,7 +229,7 @@ export default function SeasonPage() {
                 <div style={{ marginTop: "auto", paddingTop: 28, fontSize: 15, color: "#98a1ab", lineHeight: 1.6 }}>Saturday 14 November 2026<br />Nicholls Synthetic Field</div>
               </div>
 
-              <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36 }}>
+              <div className="season-card" style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36 }}>
                 <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d" }}>Format</div>
                 <div style={{ marginTop: 20, display: "grid", gap: 14, fontSize: 16, color: "#4a545f" }}>
                   {[["Teams", clubs.length ? String(clubs.length) : "12"], ["Format", "11-a-side"], ["Game days", "Saturdays 4-8 pm"], ["Structure", "11 weeks + finals"], ["Squad limit", "22 players"]].map(([k, v], i, arr) => (
@@ -208,7 +240,7 @@ export default function SeasonPage() {
                 </div>
               </div>
 
-              <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 26 }}>
+              <div className="season-card" style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 26 }}>
                 <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Title sponsor</div>
                 <Image src="/sponsor/sba.png" alt="SBA Property Group" width={220} height={60} style={{ maxWidth: 220, width: "100%", height: "auto", objectFit: "contain" }} />
                 <div style={{ fontSize: 15, color: "#66707d" }}>SBA Property Group presents the Samsara Premier League</div>
@@ -228,7 +260,7 @@ export default function SeasonPage() {
               {upcoming.length > 0 && (
                 <div style={{ gridColumn: "1 / -1" }}>
                   <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase", color: "#66707d", marginBottom: 16 }}>Upcoming fixtures</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 12 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,320px),1fr))", gap: 12 }}>
                     {upcoming.map(f => <ScoreCard key={f.id} f={f} />)}
                   </div>
                 </div>
@@ -307,7 +339,7 @@ export default function SeasonPage() {
             hasTable ? (
               <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, overflow: "hidden" }}>
                 <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
+                  <table className="season-table" style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
                     <thead>
                       <tr style={{ background: "rgba(17,24,39,.03)", borderBottom: "1px solid rgba(17,24,39,.10)" }}>
                         {["Pos", "Club", "P", "W", "D", "L", "GF", "GA", "GD", "Pts"].map((h, i) => (
@@ -343,7 +375,7 @@ export default function SeasonPage() {
                 {clubs.length > 0 && (
                   <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, overflow: "hidden" }}>
                     <div style={{ overflowX: "auto" }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
+                      <table className="season-table-empty" style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
                         <thead>
                           <tr style={{ background: "rgba(17,24,39,.03)", borderBottom: "1px solid rgba(17,24,39,.10)" }}>
                             {["Pos", "Club", "P", "W", "D", "L", "GD", "Pts"].map((h, i) => (
@@ -399,7 +431,7 @@ export default function SeasonPage() {
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase", color: "#66707d", marginBottom: 16 }}>Top scorers</div>
                   <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, overflow: "hidden" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <table className="season-stats" style={{ width: "100%", borderCollapse: "collapse" }}>
                       <thead>
                         <tr style={{ background: "rgba(17,24,39,.03)", borderBottom: "1px solid rgba(17,24,39,.10)" }}>
                           {["Rank", "Player", "Club", "Goals", "Pens"].map((h, i) => (

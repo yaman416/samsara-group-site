@@ -113,7 +113,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
 
       {/* Stats cards */}
       <section style={{ background: "#f4f4f1", padding: "64px 0 40px" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 24 }}>
+        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 24 }}>
           {/* Season 2 record */}
           <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 34 }}>
             <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d" }}>Season 2 record</div>
@@ -197,7 +197,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
 
       {/* Coming soon cards */}
       <section style={{ background: "#f4f4f1", padding: "24px 0 96px" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 24 }}>
+        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 24 }}>
           {[
             { mark: "01", title: "Fixtures to come", body: "This club's Season 3 fixtures appear here once the draw is published." },
             { mark: "0-0", title: "No results yet", body: "Scores, scorers and cards land here as the admin publishes each match." },

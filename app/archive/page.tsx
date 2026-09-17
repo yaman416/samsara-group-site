@@ -67,7 +67,25 @@ export default function ArchivePage() {
         .tbl tr:hover td { background: rgba(17,24,39,.025); }
         .honours-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(45%, 140px), 1fr)); gap: 12px; }
-        @media (max-width: 480px) { .tbl th:nth-child(5), .tbl td:nth-child(5), .tbl th:nth-child(6), .tbl td:nth-child(6), .tbl th:nth-child(12), .tbl td:nth-child(12) { display: none; } }
+        .archive-tabs { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .archive-tabs::-webkit-scrollbar { display: none; }
+        /* Phone: drop the crest, W, D, GF, GA and Form columns so the standings
+           fit the viewport instead of scrolling the Pts column out of sight. */
+        @media (max-width: 560px) {
+          .tbl th:nth-child(2), .tbl td:nth-child(2),
+          .tbl th:nth-child(5), .tbl td:nth-child(5),
+          .tbl th:nth-child(6), .tbl td:nth-child(6),
+          .tbl th:nth-child(8), .tbl td:nth-child(8),
+          .tbl th:nth-child(9), .tbl td:nth-child(9),
+          .tbl th:nth-child(12), .tbl td:nth-child(12) { display: none; }
+          .tbl th, .tbl td { padding: 12px 6px; }
+          /* Beats the inline min-width on the Club header. */
+          .tbl th:nth-child(3) { min-width: 0 !important; }
+        }
+        @media (max-width: 767px) {
+          .archive-tab { padding: 16px 14px !important; font-size: 13px !important; }
+          .archive-pad { padding: 26px 22px !important; }
+        }
       `}</style>
 
       {/* Hero */}
@@ -85,8 +103,8 @@ export default function ArchivePage() {
       </section>
 
       {/* Tab bar */}
-      <div style={{ background: "#fff", borderBottom: "1px solid rgba(17,24,39,.10)", position: "sticky", top: 76, zIndex: 40 }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "flex", gap: 0, overflowX: "auto" }}>
+      <div style={{ background: "#fff", borderBottom: "1px solid rgba(17,24,39,.10)", position: "sticky", top: "var(--spl-header-h, 76px)", zIndex: 40 }}>
+        <div className="archive-tabs" style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "flex", gap: 0, overflowX: "auto" }}>
           {tabs.map(([key, label]) => (
             <button
               key={key}
@@ -106,7 +124,7 @@ export default function ArchivePage() {
 
       {tab === "s2" && (
         <div style={{ background: "#f4f4f1", padding: "56px 0 96px" }}>
-          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gap: 48 }}>
+          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: 48 }}>
 
             {/* Honours */}
             <div className="honours-grid">
@@ -219,7 +237,7 @@ export default function ArchivePage() {
             </div>
 
             {/* Season records */}
-            <div style={{ background: "#101820", color: "#fff", borderRadius: 18, padding: "32px 36px" }}>
+            <div className="archive-pad" style={{ background: "#101820", color: "#fff", borderRadius: 18, padding: "32px 36px" }}>
               <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Season records</div>
               <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 24 }}>
                 {[
@@ -242,7 +260,7 @@ export default function ArchivePage() {
 
       {tab === "s1" && (
         <div style={{ background: "#f4f4f1", padding: "56px 0 96px" }}>
-          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gap: 48 }}>
+          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: 48 }}>
 
             {/* Season intro */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(300px,100%),1fr))", gap: "32px 64px", alignItems: "center" }}>
@@ -290,7 +308,7 @@ export default function ArchivePage() {
             </div>
 
             {/* Records banner */}
-            <div style={{ background: "#101820", color: "#fff", borderRadius: 18, padding: "32px 36px" }}>
+            <div className="archive-pad" style={{ background: "#101820", color: "#fff", borderRadius: 18, padding: "32px 36px" }}>
               <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab", marginBottom: 24 }}>Season records</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 24 }}>
                 {[
@@ -313,7 +331,7 @@ export default function ArchivePage() {
 
       {tab === "cup" && (
         <div style={{ background: "#f4f4f1", padding: "56px 0 96px" }}>
-          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gap: 48 }}>
+          <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: 48 }}>
 
             {/* Intro */}
             <div style={{ maxWidth: "64ch" }}>

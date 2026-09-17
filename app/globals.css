@@ -133,6 +133,21 @@
   a {
     @apply transition-colors;
   }
+
+  img,
+  video {
+    max-width: 100%;
+  }
+}
+
+/* iOS zooms the page when a focused field is under 16px, so no field may go
+   below it. Fields that are deliberately larger set their own size inline. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 @layer utilities {
