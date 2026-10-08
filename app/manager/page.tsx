@@ -4,7 +4,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 const COLORS = [
-  ["#b3122b", "Crimson"], ["#e2372b", "Red"], ["#1b2a4a", "Navy"],
+  ["#b3122b", "Crimson"], ["#cf2e24", "Red"], ["#1b2a4a", "Navy"],
   ["#14532d", "Forest"], ["#f0b429", "Gold"], ["#2f80ed", "Sky"],
   ["#101820", "Black"], ["#ffffff", "White"],
 ];
@@ -182,7 +182,7 @@ export default function ManagerPage() {
   if (error) return (
     <div style={{ background: "#f4f4f1", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',system-ui,sans-serif", color: "#c22b20", flexDirection: "column", gap: 16 }}>
       <div>{error}</div>
-      <a href="/register" style={{ color: "#e2372b" }}>Go to login</a>
+      <a href="/register" style={{ color: "#cf2e24" }}>Go to login</a>
     </div>
   );
 
@@ -191,7 +191,7 @@ export default function ManagerPage() {
       <style>{`
         .mgr-nav-btn { background: none; border: none; cursor: pointer; font-family: 'DM Sans',system-ui,sans-serif; font-size: 14px; font-weight: 500; padding: 14px 18px; color: #66707d; border-bottom: 2px solid transparent; white-space: nowrap; }
         .mgr-nav-btn:hover { color: #101820; }
-        .mgr-nav-active { color: #101820; border-bottom-color: #e2372b; }
+        .mgr-nav-active { color: #101820; border-bottom-color: #cf2e24; }
         .tbl th { font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: #66707d; padding: 10px 12px; text-align: left; }
         .tbl td { padding: 13px 12px; font-size: 15px; border-top: 1px solid rgba(17,24,39,.07); vertical-align: middle; }
         .swatch { width: 34px; height: 34px; border-radius: 8px; cursor: pointer; padding: 0; border: 2px solid transparent; }

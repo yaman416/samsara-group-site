@@ -2,7 +2,7 @@
 import Link from "next/link";
 import SiteLayout from "@/components/SiteLayout";
 
-const RED = "#e2372b";
+const RED = "#cf2e24";
 const DARK = "#101820";
 const MUTED = "#66707d";
 const BG = "#f4f4f1";
@@ -13,7 +13,7 @@ export default function AboutPage() {
       {/* Hero */}
       <section style={{ background: DARK, color: "#fff", padding: "72px 24px 0" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".16em", textTransform: "uppercase", color: RED, marginBottom: 20 }}>About Us</div>
+          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".16em", textTransform: "uppercase", color: "#f0564b", marginBottom: 20 }}>About Us</div>
           <h1 style={{ fontFamily: "Lora,Georgia,serif", fontSize: "clamp(36px,5.5vw,68px)", fontWeight: 600, lineHeight: 1.05, letterSpacing: "-.025em", margin: "0 0 24px", maxWidth: "20ch" }}>
             More than football. A community in motion.
           </h1>
@@ -141,7 +141,7 @@ export default function AboutPage() {
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(300px,100%),1fr))", gap: "48px 64px", alignItems: "stretch" }}>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: RED, marginBottom: 16 }}>Cultural Tournament</div>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "#f0564b", marginBottom: 16 }}>Cultural Tournament</div>
               <h2 style={{ fontFamily: "Lora,Georgia,serif", fontSize: "clamp(26px,3vw,38px)", fontWeight: 600, lineHeight: 1.15, letterSpacing: "-.02em", margin: "0 0 22px" }}>
                 Nepalese New Year Cup
               </h2>
@@ -205,13 +205,13 @@ export default function AboutPage() {
               <h2 style={{ fontFamily: "Lora,Georgia,serif", fontSize: "clamp(26px,3.5vw,44px)", fontWeight: 600, lineHeight: 1.12, letterSpacing: "-.02em", margin: "0 0 18px" }}>
                 Be part of what we are building
               </h2>
-              <p style={{ fontSize: 17, lineHeight: 1.8, color: "rgba(255,255,255,.88)", margin: 0 }}>
+              <p style={{ fontSize: 17, lineHeight: 1.8, color: "#fff", margin: 0 }}>
                 Whether you represent a club ready to compete, a volunteer ready to help run the league, or simply a supporter who wants to follow the action, there is a place for you here.
               </p>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "flex-start" }}>
               <Link href="/register" style={{ background: "#fff", color: RED, fontSize: 15, fontWeight: 700, padding: "16px 28px", borderRadius: 999, textDecoration: "none", whiteSpace: "nowrap" }}>Register your club</Link>
-              <Link href="/clubs" style={{ background: "rgba(255,255,255,.15)", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 28px", borderRadius: 999, textDecoration: "none", border: "1px solid rgba(255,255,255,.35)", whiteSpace: "nowrap" }}>View all clubs</Link>
+              <Link href="/clubs" style={{ background: "rgba(0,0,0,.18)", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 28px", borderRadius: 999, textDecoration: "none", border: "1px solid rgba(255,255,255,.35)", whiteSpace: "nowrap" }}>View all clubs</Link>
               <a href="mailto:samsaragroup.cbr@gmail.com" style={{ background: "transparent", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 28px", borderRadius: 999, textDecoration: "none", border: "1px solid rgba(255,255,255,.35)", whiteSpace: "nowrap" }}>Get in touch</a>
             </div>
           </div>

@@ -150,12 +150,12 @@ export default function GalleryPage() {
       {/* Hero */}
       <section style={{ background: "#101820", color: "#fff", padding: "64px 24px 52px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#e2372b" }}>Photography</div>
+          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#f0564b" }}>Photography</div>
           <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(34px,5vw,58px)", lineHeight: 1.1, letterSpacing: "-.02em", margin: "16px 0 0" }}>Gallery</h1>
           <p style={{ margin: "18px 0 0", fontSize: 18, lineHeight: 1.7, color: "#98a1ab", maxWidth: "52ch" }}>
             {SHOTS.length} photos from SPL finals days and the Nepalese New Year Cup.
           </p>
-          <p style={{ margin: "14px 0 0", fontSize: 14, color: "#66707d" }}>
+          <p style={{ margin: "14px 0 0", fontSize: 14, color: "#98a1ab" }}>
             Photography by Gyelpo Photography · Goal Lens Photography
           </p>
         </div>
@@ -179,7 +179,7 @@ export default function GalleryPage() {
             <div style={{ fontSize: 14, color: "#66707d", marginTop: 6 }}>We welcome photographers to cover SPL matches and events.</div>
           </div>
           <a href="mailto:samsaragroup.cbr@gmail.com?subject=Photographer Volunteer"
-            style={{ display: "inline-block", background: "#e2372b", color: "#fff", fontWeight: 600, fontSize: 14, padding: "14px 28px", borderRadius: 8, textDecoration: "none", whiteSpace: "nowrap" }}>
+            style={{ display: "inline-block", background: "#cf2e24", color: "#fff", fontWeight: 600, fontSize: 14, padding: "14px 28px", borderRadius: 8, textDecoration: "none", whiteSpace: "nowrap" }}>
             Contact Us
           </a>
         </div>

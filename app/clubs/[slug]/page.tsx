@@ -245,7 +245,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
             ) : (
               <div style={{ padding: "30px 34px", display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(56px,1fr))", gap: 10 }}>
                 {Array.from({ length: 22 }, (_, i) => (
-                  <span key={i} style={{ aspectRatio: "1/1", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 500, background: "transparent", color: "#98a1ab", border: "1px dashed rgba(17,24,39,.18)" }}>{i + 1}</span>
+                  <span key={i} style={{ aspectRatio: "1/1", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 500, background: "transparent", color: "#66707d", border: "1px dashed rgba(17,24,39,.18)" }}>{i + 1}</span>
                 ))}
               </div>
             )}

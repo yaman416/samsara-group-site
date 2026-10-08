@@ -22,13 +22,13 @@ export default function OGImage() {
         }}
       >
         {/* Red accent bar top */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 6, background: "#e2372b", display: "flex" }} />
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 6, background: "#cf2e24", display: "flex" }} />
 
         {/* Background shield shape hint */}
         <div style={{ position: "absolute", width: 420, height: 420, borderRadius: "50%", background: "rgba(226,55,43,0.04)", display: "flex" }} />
 
         {/* SPL badge text */}
-        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#e2372b", marginBottom: 24, display: "flex" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#cf2e24", marginBottom: 24, display: "flex" }}>
           Samsara Premier League
         </div>
 
@@ -58,7 +58,7 @@ export default function OGImage() {
         </div>
 
         {/* Red accent bar bottom */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 4, background: "#e2372b", display: "flex" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 4, background: "#cf2e24", display: "flex" }} />
       </div>
     ),
     { ...size }

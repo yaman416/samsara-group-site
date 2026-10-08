@@ -49,7 +49,7 @@ export default function ClubsPage() {
       {/* Hero */}
       <section style={{ background: "#101820", color: "#fff", padding: "64px 24px 56px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#e2372b" }}>Season 3 · 2026-27</div>
+          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#f0564b" }}>Season 3 · 2026-27</div>
           <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(34px,5vw,58px)", lineHeight: 1.1, letterSpacing: "-.02em", margin: "16px 0 0" }}>The clubs</h1>
           <p style={{ margin: "20px 0 0", fontSize: 18, lineHeight: 1.7, color: "#98a1ab" }}>
             Twelve clubs from the Nepalese and Bhutanese communities of Canberra, competing for the Season 3 title.
@@ -64,9 +64,9 @@ export default function ClubsPage() {
                   fontFamily: "'DM Sans',system-ui,sans-serif",
                   fontSize: 14, fontWeight: 500,
                   padding: "11px 20px", borderRadius: 999, cursor: "pointer",
-                  background: filter === f ? "#e2372b" : "transparent",
+                  background: filter === f ? "#cf2e24" : "transparent",
                   color: filter === f ? "#ffffff" : "#98a1ab",
-                  border: `1px solid ${filter === f ? "#e2372b" : "rgba(255,255,255,.24)"}`,
+                  border: `1px solid ${filter === f ? "#cf2e24" : "rgba(255,255,255,.24)"}`,
                   transition: "background .25s ease, color .25s ease",
                 }}
               >{f}</button>
@@ -98,7 +98,7 @@ export default function ClubsPage() {
                     )}
                     <span style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
                       <span style={{ fontSize: 17, fontWeight: 500, lineHeight: 1.35 }}>{c.name}</span>
-                      <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>{communityCountry(c.community)}</span>
+                      <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d" }}>{communityCountry(c.community)}</span>
                     </span>
                   </span>
                   <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderTop: "1px solid rgba(17,24,39,.08)", paddingTop: 18, fontSize: 14, color: "#66707d" }}>
@@ -106,7 +106,7 @@ export default function ClubsPage() {
                       <span style={{ width: 14, height: 14, borderRadius: 3, background: c.home_color || "#ccc", display: "inline-block", verticalAlign: "middle" }} />
                       <span style={{ width: 14, height: 14, borderRadius: 3, background: c.away_color || "#eee", border: "1px solid rgba(17,24,39,.12)", display: "inline-block", verticalAlign: "middle" }} />
                     </span>
-                    <span style={{ color: "#e2372b", fontWeight: 500 }}>View club</span>
+                    <span style={{ color: "#cf2e24", fontWeight: 500 }}>View club</span>
                   </span>
                 </Link>
               ))}

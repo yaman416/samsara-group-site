@@ -43,13 +43,13 @@ function ScoreCard({ f }: { f: Fixture }) {
   const done = f.status === "completed";
   return (
     <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 14, padding: "18px 20px" }}>
-      <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase", color: "#98a1ab", marginBottom: 14 }}>Week {f.week} · {dateStr} {timeStr}{f.venue ? ` · ${f.venue}` : ""}</div>
+      <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase", color: "#66707d", marginBottom: 14 }}>Week {f.week} · {dateStr} {timeStr}{f.venue ? ` · ${f.venue}` : ""}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "space-between" }}>
         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10 }}>
           <ClubBadge club={f.home_club} size={28} />
           <span style={{ fontWeight: 600, fontSize: 15 }}>{f.home_club.name}</span>
         </div>
-        <div style={{ fontFamily: "ui-monospace,monospace", fontSize: done ? 22 : 16, fontWeight: 700, color: done ? "#101820" : "#98a1ab", minWidth: 70, textAlign: "center", letterSpacing: ".04em" }}>
+        <div style={{ fontFamily: "ui-monospace,monospace", fontSize: done ? 22 : 16, fontWeight: 700, color: done ? "#101820" : "#66707d", minWidth: 70, textAlign: "center", letterSpacing: ".04em" }}>
           {done && r ? `${r.home_score} - ${r.away_score}` : "vs"}
         </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, justifyContent: "flex-end" }}>
@@ -64,7 +64,7 @@ function ScoreCard({ f }: { f: Fixture }) {
 const GROUNDS = ["Ground 1", "Ground 2"];
 // Each ground gets its own colour so the two pitches are easy to tell apart at a glance.
 const GROUND_STYLE: Record<string, { accent: string; tint: string }> = {
-  "Ground 1": { accent: "#e2372b", tint: "#fdecea" },
+  "Ground 1": { accent: "#cf2e24", tint: "#fdecea" },
   "Ground 2": { accent: "#1a56db", tint: "#e8effc" },
 };
 const OTHER_GROUND = { accent: "#66707d", tint: "#f1f2f4" };
@@ -123,7 +123,12 @@ function WeekSchedule({ week, fixtures, focusClub }: { week: string; fixtures: F
 }
 
 export default function SeasonPage() {
-  const [tab, setTab] = useState<Tab>("Overview");
+  const [tab, setTabState] = useState<Tab>("Overview");
+  // Keep the open tab in the URL hash so links like /season#fixtures open the right tab.
+  function setTab(t: Tab) {
+    setTabState(t);
+    try { history.replaceState(null, "", t === "Overview" ? location.pathname : `#${t.toLowerCase()}`); } catch {}
+  }
   const [cd, setCd] = useState({ dd: "--", hh: "--", mm: "--" });
 
   const [clubs, setClubs] = useState<Club[]>([]);
@@ -189,13 +194,25 @@ export default function SeasonPage() {
 
   // Fixtures tab: opens on the next matchweek still to be played, and can narrow to one club.
   const [fixWeek, setFixWeek] = useState<number | null | undefined>(undefined);
-  const [clubFilter, setClubFilter] = useState<string | null>(null);
+  const [clubFilter, setClubFilterState] = useState<string | null>(null);
+  function setClubFilter(id: string | null) {
+    setClubFilterState(id);
+    try { if (id) localStorage.setItem("spl-my-club", id); else localStorage.removeItem("spl-my-club"); } catch {}
+  }
+  useEffect(() => {
+    // Restore the tab from the URL and the visitor's remembered club after mount.
+    const fromHash = TABS.find(t => t.toLowerCase() === location.hash.slice(1).toLowerCase());
+    if (fromHash) setTabState(fromHash);
+    try { const saved = localStorage.getItem("spl-my-club"); if (saved) setClubFilterState(saved); } catch {}
+  }, []);
   const nextWeek = fixtures.find(f => f.status === "scheduled")?.week ?? null;
   const shownFixWeek = fixWeek === undefined ? nextWeek : fixWeek;
   const fixtureClubs = [...new Map(fixtures.flatMap(f => [f.home_club, f.away_club]).map(c => [c.id, c])).values()].sort((a, b) => a.name.localeCompare(b.name));
-  const visibleFixtures = clubFilter ? fixtures.filter(f => f.home_club.id === clubFilter || f.away_club.id === clubFilter) : fixtures;
+  // Ignore a remembered club that is not in this season's fixtures.
+  const myClub = clubFilter && fixtureClubs.some(c => c.id === clubFilter) ? clubFilter : null;
+  const visibleFixtures = myClub ? fixtures.filter(f => f.home_club.id === myClub || f.away_club.id === myClub) : fixtures;
   const filteredFixtureWeeks: Record<number, Fixture[]> = {};
-  for (const f of visibleFixtures) if (clubFilter || shownFixWeek == null || f.week === shownFixWeek) (filteredFixtureWeeks[f.week] ??= []).push(f);
+  for (const f of visibleFixtures) if (myClub || shownFixWeek == null || f.week === shownFixWeek) (filteredFixtureWeeks[f.week] ??= []).push(f);
   const filteredResultWeeks = weekFilter ? { [weekFilter]: resultsByWeek[weekFilter] ?? [] } : resultsByWeek;
 
   return (
@@ -253,7 +270,7 @@ export default function SeasonPage() {
               <Image src="/other logos/spl-logo-main.png" alt="SPL" width={64} height={64} style={{ width: 64, height: 64, objectFit: "contain", marginBottom: 16 }} />
               <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(34px,5vw,60px)", lineHeight: 1.08, letterSpacing: "-.02em", margin: 0 }}>Samsara Premier League</h1>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 18, flexWrap: "wrap" }}>
-                <span style={{ background: "#e2372b", color: "#fff", fontSize: 12, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", padding: "8px 15px", borderRadius: 6 }}>Season 03 · 2026-27</span>
+                <span style={{ background: "#cf2e24", color: "#fff", fontSize: 12, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", padding: "8px 15px", borderRadius: 6 }}>Season 03 · 2026-27</span>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 9, border: "1px solid rgba(255,255,255,.28)", borderRadius: 999, padding: "7px 15px", fontSize: 12, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase" }}>
                   <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#f5a623", animation: "spl-pulse 1.8s ease-in-out infinite" }} />
                   {hasResults ? "In progress" : "Pre-season"}
@@ -268,9 +285,9 @@ export default function SeasonPage() {
             </div>
           </div>
           {/* Tabs */}
-          <div className="season-tabs" style={{ marginTop: 40, display: "flex", gap: 4, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", borderBottom: "1px solid rgba(255,255,255,.14)" }}>
+          <div className="season-tabs" role="tablist" aria-label="Season sections" style={{ marginTop: 40, display: "flex", gap: 4, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", borderBottom: "1px solid rgba(255,255,255,.14)" }}>
             {TABS.map(t => (
-              <button key={t} type="button" onClick={() => setTab(t)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, whiteSpace: "nowrap", background: "none", border: 0, borderBottom: `2px solid ${tab === t ? "#e2372b" : "transparent"}`, color: tab === t ? "#ffffff" : "#98a1ab", padding: "16px 20px", cursor: "pointer" }}>{t}</button>
+              <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 15, fontWeight: 500, whiteSpace: "nowrap", background: "none", border: 0, borderBottom: `2px solid ${tab === t ? "#cf2e24" : "transparent"}`, color: tab === t ? "#ffffff" : "#98a1ab", padding: "16px 20px", cursor: "pointer" }}>{t}</button>
             ))}
           </div>
         </div>
@@ -283,7 +300,7 @@ export default function SeasonPage() {
           {tab === "Overview" && (
             <div className="season-overview">
               <div className="season-card season-overview-wide" style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36, minWidth: 0 }}>
-                <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Current status</div>
+                <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#cf2e24" }}>Current status</div>
                 <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,3vw,36px)", lineHeight: 1.2, letterSpacing: "-.012em", margin: "14px 0 0" }}>
                   {hasResults ? "Season underway" : "Squad registration is open"}
                 </h2>
@@ -325,7 +342,7 @@ export default function SeasonPage() {
               </div>
 
               <div className="season-card" style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 26 }}>
-                <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Title sponsor</div>
+                <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#cf2e24" }}>Title sponsor</div>
                 <Image src="/sponsor/sba.png" alt="SBA Property Group" width={220} height={60} style={{ maxWidth: 220, width: "100%", height: "auto", objectFit: "contain" }} />
                 <div style={{ fontSize: 15, color: "#66707d" }}>SBA Property Group presents the Samsara Premier League</div>
               </div>
@@ -359,7 +376,7 @@ export default function SeasonPage() {
                 <div style={{ display: "grid", gap: 14 }}>
                   <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                     <label htmlFor="club-filter" style={{ fontSize: 13, fontWeight: 600, color: "#66707d" }}>Find my club</label>
-                    <select id="club-filter" value={clubFilter ?? ""} onChange={e => setClubFilter(e.target.value || null)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 14, padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(17,24,39,.18)", background: "#fff", color: "#101820", minWidth: 220 }}>
+                    <select id="club-filter" value={myClub ?? ""} onChange={e => setClubFilter(e.target.value || null)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 14, padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(17,24,39,.18)", background: "#fff", color: "#101820", minWidth: 220 }}>
                       <option value="">All clubs</option>
                       {fixtureClubs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
@@ -367,7 +384,7 @@ export default function SeasonPage() {
                       {GROUNDS.map(g => <span key={g} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: GROUND_STYLE[g].accent }} />{g}</span>)}
                     </span>
                   </div>
-                  {!clubFilter && weeks.length > 1 && (
+                  {!myClub && weeks.length > 1 && (
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <button type="button" onClick={() => setFixWeek(null)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 13, fontWeight: 500, padding: "8px 16px", borderRadius: 999, cursor: "pointer", background: shownFixWeek === null ? "#101820" : "#fff", color: shownFixWeek === null ? "#fff" : "#66707d", border: "1px solid rgba(17,24,39,.18)" }}>All weeks</button>
                       {weeks.map(w => (
@@ -377,7 +394,7 @@ export default function SeasonPage() {
                   )}
                 </div>
                 {Object.entries(filteredFixtureWeeks).sort(([a], [b]) => Number(a) - Number(b)).filter(([, wf]) => wf?.length).map(([week, wf]) => (
-                  <WeekSchedule key={week} week={week} fixtures={wf} focusClub={clubFilter} />
+                  <WeekSchedule key={week} week={week} fixtures={wf} focusClub={myClub} />
                 ))}
               </div>
             ) : (
@@ -422,10 +439,10 @@ export default function SeasonPage() {
                                   <span key={g.id}>⚽ {g.players?.full_name}{g.minute ? ` ${g.minute}'` : ""}{g.is_penalty ? " (P)" : ""}</span>
                                 ))}
                                 {f.goal_scorers?.filter(g => g.is_own_goal).map(g => (
-                                  <span key={g.id} style={{ color: "#98a1ab" }}>OG: {g.players?.full_name}{g.minute ? ` ${g.minute}'` : ""}</span>
+                                  <span key={g.id} style={{ color: "#66707d" }}>OG: {g.players?.full_name}{g.minute ? ` ${g.minute}'` : ""}</span>
                                 ))}
                                 {f.cards?.map(c => (
-                                  <span key={c.id}><span style={{ display: "inline-block", width: 10, height: 13, borderRadius: 2, background: c.card_type === "red" ? "#e2372b" : "#f0b429", verticalAlign: "middle", marginRight: 4 }} />{c.player_name}{c.minute ? ` ${c.minute}'` : ""}</span>
+                                  <span key={c.id}><span style={{ display: "inline-block", width: 10, height: 13, borderRadius: 2, background: c.card_type === "red" ? "#cf2e24" : "#f0b429", verticalAlign: "middle", marginRight: 4 }} />{c.player_name}{c.minute ? ` ${c.minute}'` : ""}</span>
                                 ))}
                               </div>
                             )}
@@ -457,7 +474,7 @@ export default function SeasonPage() {
                     <tbody>
                       {table.map((row, i) => (
                         <tr key={row.short_code} style={{ borderBottom: "1px solid rgba(17,24,39,.06)" }}>
-                          <td style={{ padding: "14px 16px", color: "#98a1ab", fontVariantNumeric: "tabular-nums", width: 48 }}>{row.position}</td>
+                          <td style={{ padding: "14px 16px", color: "#66707d", fontVariantNumeric: "tabular-nums", width: 48 }}>{row.position}</td>
                           <td style={{ padding: "14px 16px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                               <div style={{ width: 20, height: 20, borderRadius: 4, background: row.home_color, flexShrink: 0, border: "1px solid rgba(17,24,39,.1)" }} />
@@ -493,14 +510,14 @@ export default function SeasonPage() {
                         <tbody>
                           {clubs.map((c, i) => (
                             <tr key={c.id} style={{ borderBottom: "1px solid rgba(17,24,39,.06)" }}>
-                              <td style={{ padding: "14px 16px", color: "#98a1ab" }}>{i + 1}</td>
+                              <td style={{ padding: "14px 16px", color: "#66707d" }}>{i + 1}</td>
                               <td style={{ padding: "14px 16px" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                   <div style={{ width: 20, height: 20, borderRadius: 4, background: c.home_color, flexShrink: 0, border: "1px solid rgba(17,24,39,.1)" }} />
                                   <span style={{ fontWeight: 500 }}>{c.name}</span>
                                 </div>
                               </td>
-                              {["0","0","0","0","0","0"].map((v, j) => <td key={j} style={{ padding: "14px 16px", textAlign: "center", color: "#98a1ab" }}>{v}</td>)}
+                              {["0","0","0","0","0","0"].map((v, j) => <td key={j} style={{ padding: "14px 16px", textAlign: "center", color: "#66707d" }}>{v}</td>)}
                             </tr>
                           ))}
                         </tbody>
@@ -521,7 +538,7 @@ export default function SeasonPage() {
                     <ClubBadge club={c} size={52} />
                     <span style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                       <span style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.35 }}>{c.name}</span>
-                      <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>{communityCountry(c.community)}</span>
+                      <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d" }}>{communityCountry(c.community)}</span>
                     </span>
                   </Link>
                 ))}
@@ -549,11 +566,11 @@ export default function SeasonPage() {
                       <tbody>
                         {topScorers.map((p, i) => (
                           <tr key={p.player_id} style={{ borderBottom: "1px solid rgba(17,24,39,.06)" }}>
-                            <td style={{ padding: "12px 16px", color: i < 3 ? "#e2372b" : "#98a1ab", fontWeight: i < 3 ? 700 : 400 }}>{i + 1}</td>
+                            <td style={{ padding: "12px 16px", color: i < 3 ? "#cf2e24" : "#66707d", fontWeight: i < 3 ? 700 : 400 }}>{i + 1}</td>
                             <td style={{ padding: "12px 16px", fontWeight: 600 }}>#{p.jersey_number} {p.full_name}</td>
                             <td style={{ padding: "12px 16px", color: "#66707d" }}>{p.club_name}</td>
                             <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, fontSize: 16 }}>{p.goals}</td>
-                            <td style={{ padding: "12px 16px", textAlign: "center", color: "#98a1ab" }}>{p.penalties || "-"}</td>
+                            <td style={{ padding: "12px 16px", textAlign: "center", color: "#66707d" }}>{p.penalties || "-"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -575,7 +592,7 @@ export default function SeasonPage() {
 function EmptyPane({ icon, title, desc, onBack }: { icon: string; title: string; desc: string; onBack: () => void }) {
   return (
     <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: "clamp(44px,7vw,88px) 32px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <span style={{ width: 56, height: 56, borderRadius: "50%", border: "1px dashed rgba(17,24,39,.22)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Lora,Georgia,serif", fontSize: 20, color: "#98a1ab" }}>{icon}</span>
+      <span style={{ width: 56, height: 56, borderRadius: "50%", border: "1px dashed rgba(17,24,39,.22)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Lora,Georgia,serif", fontSize: 20, color: "#66707d" }}>{icon}</span>
       <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(24px,3vw,34px)", lineHeight: 1.24, letterSpacing: "-.012em", margin: "24px 0 0" }}>{title}</h2>
       <p style={{ margin: "14px 0 0", fontSize: 17, lineHeight: 1.72, color: "#4a545f", maxWidth: "52ch" }}>{desc}</p>
       <button type="button" onClick={onBack} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "#101820", color: "#fff", border: 0, fontSize: 15, fontWeight: 500, padding: "14px 26px", borderRadius: 999, cursor: "pointer", marginTop: 30 }}>Season overview</button>
