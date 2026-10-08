@@ -99,11 +99,11 @@ export default function RegisterPage() {
   const inputStyle = { width: "100%", boxSizing: "border-box" as const, border: "1px solid rgba(17,24,39,.18)", borderRadius: 12, fontSize: 16, padding: "14px 16px", color: "#101820", fontFamily: "'DM Sans',system-ui,sans-serif" };
   const labelStyle = { display: "block" as const, fontSize: 13, fontWeight: 500 as const, color: "#4a545f", marginBottom: 8 };
   const btnPrimary = { fontFamily: "'DM Sans',system-ui,sans-serif", background: "#101820", color: "#fff", border: 0, fontSize: 15, fontWeight: 500 as const, padding: "15px 30px", borderRadius: 999, cursor: busy ? "wait" as const : "pointer" as const, opacity: busy ? 0.7 : 1 };
-  const btnRed = { ...btnPrimary, background: "#e2372b" };
+  const btnRed = { ...btnPrimary, background: "#cf2e24" };
 
   return (
     <SiteLayout>
-      <style>{`a{color:#e2372b;text-decoration:none;} a:hover{color:#c22b20;} input:focus{outline:2px solid #101820;outline-offset:1px;}`}</style>
+      <style>{`a{color:#cf2e24;text-decoration:none;} a:hover{color:#c22b20;} input:focus{outline:2px solid #101820;outline-offset:1px;}`}</style>
 
       {/* PUBLIC */}
       {view === "public" && (
@@ -142,7 +142,7 @@ export default function RegisterPage() {
         <section style={{ background: "#f4f4f1", padding: "72px 0 120px" }}>
           <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: "clamp(32px,4vw,48px)" }}>
-              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Step 1 of 2</div>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#cf2e24" }}>Step 1 of 2</div>
               <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,3vw,34px)", lineHeight: 1.2, letterSpacing: "-.015em", margin: "14px 0 0" }}>Enter your invitation code</h1>
               <p style={{ margin: "12px 0 0", fontSize: 16, lineHeight: 1.65, color: "#66707d" }}>Six characters, from the email sent to your club manager.</p>
               <div style={{ marginTop: 28 }}>
@@ -170,7 +170,7 @@ export default function RegisterPage() {
         <section style={{ background: "#f4f4f1", padding: "72px 0 120px" }}>
           <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: "clamp(32px,4vw,48px)" }}>
-              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Step 2 of 2</div>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#cf2e24" }}>Step 2 of 2</div>
               <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,3vw,34px)", lineHeight: 1.2, letterSpacing: "-.015em", margin: "14px 0 0" }}>Create your manager account</h1>
               {clubName && (
                 <div style={{ marginTop: 16, background: "#eef7f0", border: "1px solid #c7e3ce", borderRadius: 12, padding: "14px 18px", fontSize: 15, color: "#1f6b37" }}>
@@ -225,17 +225,17 @@ export default function RegisterPage() {
         <section style={{ background: "#f4f4f1", padding: "72px 0 120px" }}>
           <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: "clamp(32px,4vw,48px)" }}>
-              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Club login</div>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#cf2e24" }}>Club login</div>
               <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,3vw,34px)", lineHeight: 1.2, letterSpacing: "-.015em", margin: "14px 0 0" }}>Welcome back</h1>
               <p style={{ margin: "12px 0 0", fontSize: 16, lineHeight: 1.65, color: "#66707d" }}>Sign in to manage your club, squad and fixtures.</p>
               <div style={{ marginTop: 28, display: "grid", gap: 18 }}>
                 <div>
                   <label htmlFor="siEmail" style={labelStyle}>Email</label>
-                  <input id="siEmail" type="email" value={siEmail} onChange={e => { setSiEmail(e.target.value); setSiError(""); }} placeholder="manager@yourclub.com.au" style={inputStyle} autoFocus />
+                  <input id="siEmail" type="email" autoComplete="email" value={siEmail} onChange={e => { setSiEmail(e.target.value); setSiError(""); }} placeholder="manager@yourclub.com.au" style={inputStyle} autoFocus />
                 </div>
                 <div>
                   <label htmlFor="siPass" style={labelStyle}>Password</label>
-                  <input id="siPass" type="password" value={siPass} onChange={e => { setSiPass(e.target.value); setSiError(""); }}
+                  <input id="siPass" type="password" autoComplete="current-password" value={siPass} onChange={e => { setSiPass(e.target.value); setSiError(""); }}
                     onKeyDown={e => e.key === "Enter" && signIn()}
                     placeholder="••••••••" style={inputStyle} />
                 </div>
@@ -246,7 +246,7 @@ export default function RegisterPage() {
                 </div>
               </div>
               <div style={{ marginTop: 28, borderTop: "1px solid rgba(17,24,39,.08)", paddingTop: 24, fontSize: 15, color: "#66707d" }}>
-                First time here? <button type="button" onClick={() => setView("code")} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: "6px 0", color: "#e2372b", fontSize: 15, fontWeight: 500, cursor: "pointer" }}>Register with an invitation code</button>
+                First time here? <button type="button" onClick={() => setView("code")} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: "6px 0", color: "#cf2e24", fontSize: 15, fontWeight: 500, cursor: "pointer" }}>Register with an invitation code</button>
               </div>
             </div>
           </div>
@@ -258,7 +258,7 @@ export default function RegisterPage() {
         <section style={{ background: "#f4f4f1", padding: "72px 0 120px" }}>
           <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 24px" }}>
             <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: "clamp(32px,4vw,48px)" }}>
-              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Password reset</div>
+              <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#cf2e24" }}>Password reset</div>
               <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(24px,3vw,32px)", lineHeight: 1.2, letterSpacing: "-.015em", margin: "14px 0 0" }}>Forgot your password?</h1>
               <p style={{ margin: "12px 0 0", fontSize: 16, lineHeight: 1.65, color: "#66707d" }}>Enter your account email and we will send you a link to reset your password.</p>
               <div style={{ marginTop: 28, display: "grid", gap: 18 }}>

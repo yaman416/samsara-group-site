@@ -299,3 +299,9 @@
     transform: translateX(-50%);
   }
 }
+
+/* Consistent, visible keyboard focus across the site */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #cf2e24;
+  outline-offset: 2px;
+}

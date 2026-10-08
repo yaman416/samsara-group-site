@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
               </div>
             ) : (
               <>
-                <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Set new password</div>
+                <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#cf2e24" }}>Set new password</div>
                 <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(24px,3vw,32px)", lineHeight: 1.2, letterSpacing: "-.015em", margin: "14px 0 0" }}>Choose a new password</h1>
                 <p style={{ margin: "12px 0 0", fontSize: 16, lineHeight: 1.65, color: "#66707d" }}>Pick something secure. You will be signed in automatically after.</p>
                 <div style={{ marginTop: 28, display: "grid", gap: 18 }}>

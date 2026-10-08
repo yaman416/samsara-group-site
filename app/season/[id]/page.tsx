@@ -49,7 +49,7 @@ export default function MatchPage() {
   if (loading) return (
     <SiteLayout activeNav="season">
       <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f4f4f1" }}>
-        <div style={{ fontSize: 15, color: "#98a1ab", fontFamily: F }}>Loading...</div>
+        <div style={{ fontSize: 15, color: "#66707d", fontFamily: F }}>Loading...</div>
       </div>
     </SiteLayout>
   );
@@ -58,7 +58,7 @@ export default function MatchPage() {
     <SiteLayout activeNav="season">
       <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f4f4f1" }}>
         <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: 15, fontWeight: 400, color: "#98a1ab", fontFamily: F, margin: "0 0 16px" }}>Match not found.</h1>
+          <h1 style={{ fontSize: 15, fontWeight: 400, color: "#66707d", fontFamily: F, margin: "0 0 16px" }}>Match not found.</h1>
           <Link href="/season" style={{ fontFamily: F, fontSize: 14, color: "#101820" }}>Back to Season 3</Link>
         </div>
       </div>
@@ -179,7 +179,7 @@ export default function MatchPage() {
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
                       <span style={{ fontSize: 16 }} aria-label={ev.type === "og" ? "Own goal" : ev.type === "pen" ? "Penalty goal" : "Goal"}>⚽</span>
-                      {ev.minute && <span style={{ fontSize: 11, color: "#98a1ab", fontWeight: 500 }}>{ev.minute}&apos;</span>}
+                      {ev.minute && <span style={{ fontSize: 11, color: "#66707d", fontWeight: 500 }}>{ev.minute}&apos;</span>}
                     </div>
                     <div style={{ fontSize: 14, fontWeight: 500 }}>
                       {ev.side === "away" ? ev.label : ""}
@@ -198,9 +198,9 @@ export default function MatchPage() {
                   const red = c.card_type === "red" || c.card_type === "second_yellow";
                   return (
                     <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 14 }}>
-                      <span aria-label={red ? "Red card" : "Yellow card"} style={{ display: "inline-block", width: 12, height: 16, borderRadius: 3, background: red ? "#e2372b" : "#f0b429", flexShrink: 0 }} />
+                      <span aria-label={red ? "Red card" : "Yellow card"} style={{ display: "inline-block", width: 12, height: 16, borderRadius: 3, background: red ? "#cf2e24" : "#f0b429", flexShrink: 0 }} />
                       <span style={{ fontWeight: 500 }}>{c.player_name}</span>
-                      {c.minute != null && <span style={{ color: "#98a1ab" }}>{c.minute}&apos;</span>}
+                      {c.minute != null && <span style={{ color: "#66707d" }}>{c.minute}&apos;</span>}
                     </div>
                   );
                 })}
@@ -216,7 +216,7 @@ export default function MatchPage() {
                 <ClubBadge club={club} size={40} />
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 15 }}>{club.name}</div>
-                  <div style={{ fontSize: 12, color: "#98a1ab", marginTop: 3 }}>View club profile</div>
+                  <div style={{ fontSize: 12, color: "#66707d", marginTop: 3 }}>View club profile</div>
                 </div>
               </Link>
             ))}

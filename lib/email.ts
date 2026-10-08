@@ -32,7 +32,7 @@ export async function sendInviteEmail({ to, clubName, code, season }: { to: stri
 <html>
 <body style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;color:#101820;background:#fff;">
   <div style="margin-bottom:24px;">
-    <div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#e2372b;margin-bottom:8px;">Samsara Premier League</div>
+    <div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#cf2e24;margin-bottom:8px;">Samsara Premier League</div>
     <h1 style="font-size:26px;font-weight:700;margin:0 0 8px;">Season ${season} Invitation</h1>
     <p style="margin:0;color:#4a545f;font-size:15px;">You have been invited to register <strong>${clubName}</strong> for Season ${season}.</p>
   </div>

@@ -114,7 +114,7 @@ export default function ArchivePage() {
               style={{
                 fontSize: 14, fontWeight: 500, padding: "18px 20px",
                 color: tab === key ? "#101820" : "#66707d",
-                borderBottom: tab === key ? "2px solid #e2372b" : "2px solid transparent",
+                borderBottom: tab === key ? "2px solid #cf2e24" : "2px solid transparent",
                 whiteSpace: "nowrap",
               }}
             >{label}</button>
@@ -146,7 +146,7 @@ export default function ArchivePage() {
                 <div style={{ padding: "20px 24px 24px" }}>
                   <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Running Shield · #1</div>
                   <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 22, lineHeight: 1.2, marginTop: 8 }}>Thuenlam FC</div>
-                  <div style={{ fontSize: 13, color: "#66707d", marginTop: 6 }}>24 pts, league stage</div>
+                  <div style={{ fontSize: 13, color: "#98a1ab", marginTop: 6 }}>24 pts, league stage</div>
                 </div>
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function ArchivePage() {
                   <thead>
                     <tr style={{ background: "rgba(17,24,39,.03)" }}>
                       <th style={{ width: 36 }}>#</th>
-                      <th style={{ minWidth: 40 }}></th>
+                      <th style={{ minWidth: 40 }}><span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Award</span></th>
                       <th style={{ minWidth: 180 }}>Club</th>
                       <th>P</th><th>W</th><th>D</th><th>L</th>
                       <th>GF</th><th>GA</th><th>GD</th><th>Pts</th>
@@ -191,7 +191,7 @@ export default function ArchivePage() {
                         <td>
                           <span style={{ fontWeight: row.marker ? 600 : 400 }}>{row.name}</span>
                           {row.marker === "C" && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, letterSpacing: ".08em", background: "#f0b429", color: "#101820", borderRadius: 4, padding: "2px 6px" }}>C</span>}
-                          {row.marker === "R" && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, letterSpacing: ".08em", background: "#e2372b", color: "#fff", borderRadius: 4, padding: "2px 6px" }}>R</span>}
+                          {row.marker === "R" && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, letterSpacing: ".08em", background: "#cf2e24", color: "#fff", borderRadius: 4, padding: "2px 6px" }}>R</span>}
                         </td>
                         <td>{row.P}</td><td>{row.W}</td><td>{row.D}</td><td>{row.L}</td>
                         <td>{row.GF}</td><td>{row.GA}</td>
@@ -208,7 +208,7 @@ export default function ArchivePage() {
                     ))}
                   </tbody>
                 </table>
-                <div style={{ padding: "12px 16px", fontSize: 12, color: "#98a1ab", borderTop: "1px solid rgba(17,24,39,.07)", display: "flex", gap: 20, flexWrap: "wrap" }}>
+                <div style={{ padding: "12px 16px", fontSize: 12, color: "#66707d", borderTop: "1px solid rgba(17,24,39,.07)", display: "flex", gap: 20, flexWrap: "wrap" }}>
                   <span><strong style={{ color: "#101820" }}>C</strong> Champions</span>
                   <span><strong style={{ color: "#101820" }}>R</strong> Running Shield</span>
                 </div>
@@ -229,7 +229,7 @@ export default function ArchivePage() {
                       <span style={{ fontSize: 20, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{s.goals}</span>
                     </div>
                     <div style={{ height: 6, background: "rgba(17,24,39,.08)", borderRadius: 99 }}>
-                      <div style={{ width: `${(s.goals / maxGoals) * 100}%`, height: "100%", background: "#e2372b", borderRadius: 99 }} />
+                      <div style={{ width: `${(s.goals / maxGoals) * 100}%`, height: "100%", background: "#cf2e24", borderRadius: 99 }} />
                     </div>
                   </div>
                 ))}
@@ -247,7 +247,7 @@ export default function ArchivePage() {
                   ["Fewest goals conceded", "Khukuri Canberra FC (4 goals)"],
                 ].map(([label, value]) => (
                   <div key={label as string}>
-                    <div style={{ fontSize: 12, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase", color: "#66707d" }}>{label}</div>
+                    <div style={{ fontSize: 12, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase", color: "#98a1ab" }}>{label}</div>
                     <div style={{ fontSize: 15, lineHeight: 1.5, marginTop: 8, color: "#c3cad2" }}>{value}</div>
                   </div>
                 ))}
@@ -265,7 +265,7 @@ export default function ArchivePage() {
             {/* Season intro */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(300px,100%),1fr))", gap: "32px 64px", alignItems: "center" }}>
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "#e2372b", marginBottom: 14 }}>Season 1 · 2024-25</div>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "#cf2e24", marginBottom: 14 }}>Season 1 · 2024-25</div>
                 <h2 style={{ fontFamily: "Lora,Georgia,serif", fontSize: "clamp(26px,3vw,42px)", fontWeight: 600, lineHeight: 1.12, letterSpacing: "-.02em", margin: "0 0 20px" }}>Where it all began</h2>
                 <p style={{ fontSize: 16, lineHeight: 1.85, color: "#66707d", margin: 0 }}>
                   The inaugural season of the Samsara Premier League brought together eight clubs from Canberra&apos;s Nepalese and Bhutanese communities for seven match weeks of competition at Nicholls Synthetic Field. Nepal United FC claimed the first ever SPL title.
@@ -290,7 +290,7 @@ export default function ArchivePage() {
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg,transparent 50%,rgba(16,24,32,.95) 100%)" }} />
                 </div>
                 <div style={{ padding: "40px 36px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 20 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "#e2372b" }}>Season 1 Champions &#127942;</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "#cf2e24" }}>Season 1 Champions &#127942;</div>
                   <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: "clamp(28px,3vw,42px)", lineHeight: 1.1, fontWeight: 600 }}>Nepal United FC</div>
                   <p style={{ fontSize: 15, lineHeight: 1.7, color: "#98a1ab", margin: 0, maxWidth: "36ch" }}>
                     Nepal United FC lifted the inaugural SPL shield, becoming the first champions in the league&apos;s history.
@@ -335,7 +335,7 @@ export default function ArchivePage() {
 
             {/* Intro */}
             <div style={{ maxWidth: "64ch" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "#e2372b", marginBottom: 14 }}>Nepalese New Year Cup 2083</div>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "#cf2e24", marginBottom: 14 }}>Nepalese New Year Cup 2083</div>
               <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(26px,3vw,42px)", lineHeight: 1.12, letterSpacing: "-.02em", margin: "0 0 20px" }}>Celebrating 2083 Bikram Sambat</h2>
               <p style={{ fontSize: 16, lineHeight: 1.85, color: "#66707d", margin: 0 }}>
                 Sixteen clubs competed across two match days at Nicholls Synthetic Field to mark the Nepalese New Year. Canberra City FC lifted the trophy in a festival of football, culture, and community.
@@ -348,7 +348,7 @@ export default function ArchivePage() {
                 <div style={{ position: "relative", aspectRatio: "4/3" }}>
                   <Image src="/gallery/Nepalese New Year Cup/nnyc-champions.jpg" alt="Canberra City FC" fill style={{ objectFit: "cover", opacity: .8 }} />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,transparent 40%,rgba(16,24,32,.95) 100%)" }} />
-                  <div style={{ position: "absolute", top: 16, left: 16, background: "#e2372b", color: "#fff", fontSize: 10, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", padding: "5px 12px", borderRadius: 999 }}>Champions &#127942;</div>
+                  <div style={{ position: "absolute", top: 16, left: 16, background: "#cf2e24", color: "#fff", fontSize: 10, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", padding: "5px 12px", borderRadius: 999 }}>Champions &#127942;</div>
                 </div>
                 <div style={{ padding: "22px 26px 28px" }}>
                   <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 26, fontWeight: 600, lineHeight: 1.15 }}>Canberra City FC</div>

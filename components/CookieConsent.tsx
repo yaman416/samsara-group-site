@@ -48,7 +48,7 @@ export default function CookieConsent() {
         type="button"
         onClick={accept}
         style={{
-          background: "#e2372b",
+          background: "#cf2e24",
           color: "#fff",
           border: "none",
           borderRadius: 6,

@@ -35,7 +35,7 @@ const inputSm: React.CSSProperties = { width: "100%", boxSizing: "border-box", b
 function Btn({ variant = "dark", children, style, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "dark" | "ghost" | "red" | "green" }) {
   const variants: Record<string, React.CSSProperties> = {
     dark:  { background: "#101820", color: "#fff", border: 0 },
-    red:   { background: "#e2372b", color: "#fff", border: 0 },
+    red:   { background: "#cf2e24", color: "#fff", border: 0 },
     green: { background: "#1f6b37", color: "#fff", border: 0 },
     ghost: { background: "none",    color: "#101820", border: "1px solid rgba(17,24,39,.18)" },
   };
@@ -286,7 +286,7 @@ export default function AdminPage() {
   if (!authChecked) return <div style={{ background: "#f4f4f1", minHeight: "100vh" }} />;
 
   if (!authed) return (
-    <div style={{ background: "#f4f4f1", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F }}>
+    <main style={{ background: "#f4f4f1", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F }}>
       <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 40, width: "100%", maxWidth: 380 }}>
         <h1 style={{ fontFamily: "Lora,Georgia,serif", fontSize: 24, fontWeight: 500, margin: "0 0 8px" }}>SPL Admin</h1>
         <div style={{ fontSize: 14, color: "#66707d", marginBottom: 24 }}>Restricted access</div>
@@ -295,11 +295,11 @@ export default function AdminPage() {
         {pwError && <div style={{ fontSize: 14, color: "#a3211a", marginBottom: 16 }}>{pwError}</div>}
         <Btn variant="dark" onClick={login} style={{ width: "100%" }}>Continue</Btn>
       </div>
-    </div>
+    </main>
   );
 
   return (
-    <div style={{ background: "#f4f4f1", fontFamily: F, color: "#101820", minHeight: "100vh" }}>
+    <main style={{ background: "#f4f4f1", fontFamily: F, color: "#101820", minHeight: "100vh" }}>
       <style>{`
         .atbl th { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #66707d; padding: 10px 14px; text-align: left; white-space: nowrap; }
         .atbl td { padding: 13px 14px; font-size: 14px; border-top: 1px solid rgba(17,24,39,.07); vertical-align: middle; }
@@ -907,7 +907,7 @@ export default function AdminPage() {
         )}
 
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -1095,7 +1095,7 @@ function MatchdayCard({ fixture, onSave, onDelete }: { fixture: Fixture; onSave:
               <div style={{ marginBottom: 14, display: "flex", flexDirection: "column", gap: 8 }}>
                 {cards.map(c => (
                   <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
-                    <span style={{ display: "inline-block", width: 14, height: 18, borderRadius: 3, background: c.card_type === "red" ? "#e2372b" : "#f0b429", flexShrink: 0 }} />
+                    <span style={{ display: "inline-block", width: 14, height: 18, borderRadius: 3, background: c.card_type === "red" ? "#cf2e24" : "#f0b429", flexShrink: 0 }} />
                     <span style={{ fontWeight: 600, color: "#101820" }}>{c.player_name}</span>
                     {c.minute && <span style={{ color: "#98a1ab" }}>{c.minute}&apos;</span>}
                     {c.reason && <span style={{ color: "#66707d" }}>{c.reason}</span>}

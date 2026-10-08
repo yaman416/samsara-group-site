@@ -17,7 +17,7 @@ export default function PartnersPage() {
       {/* Hero */}
       <section style={{ background: "#101820", color: "#fff", padding: "64px 24px 56px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#e2372b" }}>Support</div>
+          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#f0564b" }}>Support</div>
           <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(34px,5vw,58px)", lineHeight: 1.1, letterSpacing: "-.02em", margin: "16px 0 0" }}>Partners</h1>
           <p style={{ margin: "20px 0 0", fontSize: 18, lineHeight: 1.7, color: "#98a1ab" }}>
             The businesses that keep the Samsara Premier League on the pitch, from the title sponsor to the community partners backing individual matchdays.
@@ -30,7 +30,7 @@ export default function PartnersPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 20, overflow: "hidden", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(320px,100%),1fr))" }}>
             <div style={{ padding: "clamp(36px,5vw,60px)", display: "flex", flexDirection: "column", justifyContent: "center", gap: 26 }}>
-              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#e2372b" }}>Title sponsor</span>
+              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#cf2e24" }}>Title sponsor</span>
               <Image src="/sponsor/sba.png" alt="SBA Property Group" width={280} height={80} style={{ maxWidth: 280, width: "100%", height: "auto", objectFit: "contain" }} />
               <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,3vw,36px)", lineHeight: 1.2, letterSpacing: "-.012em", margin: 0 }}>SBA Property Group</h2>
               <p style={{ margin: 0, fontSize: 17, lineHeight: 1.72, color: "#4a545f", maxWidth: "46ch" }}>
@@ -89,7 +89,7 @@ export default function PartnersPage() {
       {/* Partner CTA */}
       <section style={{ background: "#f4f4f1", padding: "64px 24px 88px" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ background: "#e2372b", color: "#fff", borderRadius: 20, padding: "clamp(36px,5vw,60px)", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(280px,100%),1fr))", gap: 36, alignItems: "center" }}>
+          <div style={{ background: "#cf2e24", color: "#fff", borderRadius: 20, padding: "clamp(36px,5vw,60px)", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(280px,100%),1fr))", gap: 36, alignItems: "center" }}>
             <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(28px,3.6vw,44px)", lineHeight: 1.16, letterSpacing: "-.014em", margin: 0 }}>
               Partner with the league
             </h2>
