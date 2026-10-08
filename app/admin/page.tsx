@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { LEAGUE_TZ, toLeagueInput, fromLeagueInput } from "@/lib/utils";
 
 const ADMIN_KEY = "spl_admin";
 
@@ -234,7 +235,7 @@ export default function AdminPage() {
   async function createFixture() {
     if (!nfWeek || !nfHome || !nfAway || !activeSeason) return;
     setFixBusy(true);
-    await api("/api/admin/fixtures", { method: "POST", body: JSON.stringify({ season_id: activeSeason.id, week: parseInt(nfWeek), home_club_id: nfHome, away_club_id: nfAway, venue: nfVenue || null, played_at: nfDate || null }) });
+    await api("/api/admin/fixtures", { method: "POST", body: JSON.stringify({ season_id: activeSeason.id, week: parseInt(nfWeek), home_club_id: nfHome, away_club_id: nfAway, venue: nfVenue || null, played_at: nfDate ? fromLeagueInput(nfDate) : null }) });
     setFixBusy(false); setNfOpen(false);
     setNfWeek(""); setNfHome(""); setNfAway(""); setNfVenue(""); setNfDate("");
     loadFixtures();
@@ -255,7 +256,7 @@ export default function AdminPage() {
       home_club_id: editFixture.home_club_id,
       away_club_id: editFixture.away_club_id,
       venue: editFixture.venue || null,
-      played_at: editFixture.played_at || null,
+      played_at: editFixture.played_at ? fromLeagueInput(editFixture.played_at) : null,
     }) });
     setEditFixBusy(false);
     setEditFixture(null);
@@ -344,18 +345,18 @@ export default function AdminPage() {
                 <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Squad registration deadline</div>
                 <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
                   <div style={{ flex: "1 1 220px", minWidth: 0 }}>
-                    <label style={label11}>Deadline date and time</label>
+                    <label style={label11}>Deadline date and time (Canberra)</label>
                     <input
                       type="datetime-local"
-                      value={deadlineInput || (activeSeason.squad_deadline ? activeSeason.squad_deadline.slice(0, 16) : "")}
+                      value={deadlineInput || toLeagueInput(activeSeason.squad_deadline)}
                       onChange={e => setDeadlineInput(e.target.value)}
                       style={inputSm}
                     />
                   </div>
                   <Btn variant="dark" onClick={async () => {
-                    const val = deadlineInput || (activeSeason.squad_deadline ? activeSeason.squad_deadline.slice(0, 16) : "");
+                    const val = deadlineInput || toLeagueInput(activeSeason.squad_deadline);
                     if (!val) return;
-                    const res = await api("/api/admin/seasons", { method: "PATCH", body: JSON.stringify({ id: activeSeason.id, squad_deadline: new Date(val).toISOString() }) });
+                    const res = await api("/api/admin/seasons", { method: "PATCH", body: JSON.stringify({ id: activeSeason.id, squad_deadline: fromLeagueInput(val) }) });
                     if (res.ok) {
                       setDeadlineMsg("Saved.");
                       loadSeasons();
@@ -426,7 +427,7 @@ export default function AdminPage() {
                             {inv.used ? "Used" : "Available"}
                           </span>
                         </td>
-                        <td style={{ color: "#66707d", fontSize: 13 }}>{new Date(inv.created_at).toLocaleDateString("en-AU")}</td>
+                        <td style={{ color: "#66707d", fontSize: 13 }}>{new Date(inv.created_at).toLocaleDateString("en-AU", { timeZone: LEAGUE_TZ })}</td>
                         <td>
                           <button type="button" onClick={() => deleteInvite(inv.code)} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Delete</button>
                         </td>
@@ -653,7 +654,7 @@ export default function AdminPage() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 600, fontSize: 15 }}>{club?.name ?? "Unknown club"}</div>
                       <div style={{ fontSize: 13, color: "#66707d", marginTop: 2 }}>{club?.manager?.email ?? "-"} · {club?.community}</div>
-                      <div style={{ fontSize: 12, color: "#98a1ab", marginTop: 2 }}>Submitted {new Date(reg.submitted_at).toLocaleDateString("en-AU")}</div>
+                      <div style={{ fontSize: 12, color: "#98a1ab", marginTop: 2 }}>Submitted {new Date(reg.submitted_at).toLocaleDateString("en-AU", { timeZone: LEAGUE_TZ })}</div>
                     </div>
                     <span style={{ background: sc.bg, color: sc.color, borderRadius: 8, padding: "5px 14px", fontSize: 13, fontWeight: 500, textTransform: "capitalize", whiteSpace: "nowrap" }}>
                       {reg.status.replace("_", " ")}
@@ -713,7 +714,7 @@ export default function AdminPage() {
                     </select>
                   </div>
                   <div><label style={label11}>Venue</label><input value={nfVenue} onChange={e => setNfVenue(e.target.value)} placeholder="Nicholls Oval" style={inputSm} /></div>
-                  <div><label style={label11}>Date and time</label><input type="datetime-local" value={nfDate} onChange={e => setNfDate(e.target.value)} style={inputSm} /></div>
+                  <div><label style={label11}>Date and time (Canberra)</label><input type="datetime-local" value={nfDate} onChange={e => setNfDate(e.target.value)} style={inputSm} /></div>
                 </div>
                 <div style={{ marginTop: 18, display: "flex", gap: 12 }}>
                   <Btn variant="ghost" onClick={() => setNfOpen(false)}>Cancel</Btn>
@@ -735,7 +736,7 @@ export default function AdminPage() {
                         <td style={{ fontWeight: 600 }}>{f.week}</td>
                         <td style={{ fontWeight: 500 }}>{f.home_club?.name}</td>
                         <td style={{ fontWeight: 500 }}>{f.away_club?.name}</td>
-                        <td style={{ color: "#66707d", fontSize: 13 }}>{f.played_at ? new Date(f.played_at).toLocaleString("en-AU", { dateStyle: "short", timeStyle: "short" }) : "-"}</td>
+                        <td style={{ color: "#66707d", fontSize: 13 }}>{f.played_at ? new Date(f.played_at).toLocaleString("en-AU", { dateStyle: "short", timeStyle: "short", timeZone: LEAGUE_TZ }) : "-"}</td>
                         <td style={{ color: "#66707d", fontSize: 13 }}>{f.venue || "-"}</td>
                         <td>
                           <span style={{ fontSize: 12, fontWeight: 500, padding: "3px 8px", borderRadius: 6, background: f.status === "completed" ? "#eef7f0" : "#f4f4f1", color: f.status === "completed" ? "#1f6b37" : "#66707d", textTransform: "capitalize" }}>
@@ -743,7 +744,7 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td style={{ display: "flex", gap: 10 }}>
-                          <button type="button" onClick={() => setEditFixture({ id: f.id, week: String(f.week), home_club_id: f.home_club?.id ?? "", away_club_id: f.away_club?.id ?? "", venue: f.venue ?? "", played_at: f.played_at ? f.played_at.slice(0, 16) : "" })} style={{ background: "none", border: "none", color: "#1a56db", fontSize: 13, cursor: "pointer", fontFamily: F }}>Edit</button>
+                          <button type="button" onClick={() => setEditFixture({ id: f.id, week: String(f.week), home_club_id: f.home_club?.id ?? "", away_club_id: f.away_club?.id ?? "", venue: f.venue ?? "", played_at: toLeagueInput(f.played_at) })} style={{ background: "none", border: "none", color: "#1a56db", fontSize: 13, cursor: "pointer", fontFamily: F }}>Edit</button>
                           <button type="button" onClick={() => deleteFixture(f.id)} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Delete</button>
                         </td>
                       </tr>
@@ -760,7 +761,7 @@ export default function AdminPage() {
                   <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Edit fixture</div>
                   <div className="admin-pair-grid">
                     <div><label style={label11}>Week</label><input type="number" value={editFixture.week} onChange={e => setEditFixture(x => x && ({ ...x, week: e.target.value }))} style={inputSm} /></div>
-                    <div><label style={label11}>Date and time</label><input type="datetime-local" value={editFixture.played_at} onChange={e => setEditFixture(x => x && ({ ...x, played_at: e.target.value }))} style={inputSm} /></div>
+                    <div><label style={label11}>Date and time (Canberra)</label><input type="datetime-local" value={editFixture.played_at} onChange={e => setEditFixture(x => x && ({ ...x, played_at: e.target.value }))} style={inputSm} /></div>
                     <div>
                       <label style={label11}>Home team</label>
                       <select value={editFixture.home_club_id} onChange={e => setEditFixture(x => x && ({ ...x, home_club_id: e.target.value }))} style={inputSm}>
@@ -862,7 +863,7 @@ export default function AdminPage() {
                       {subscribers.map(s => (
                         <tr key={s.id}>
                           <td>{s.email}</td>
-                          <td style={{ color: "#66707d", fontSize: 13 }}>{new Date(s.subscribed_at).toLocaleDateString("en-AU")}</td>
+                          <td style={{ color: "#66707d", fontSize: 13 }}>{new Date(s.subscribed_at).toLocaleDateString("en-AU", { timeZone: LEAGUE_TZ })}</td>
                           <td><button type="button" onClick={async () => { if (!confirm("Remove subscriber?")) return; await api("/api/admin/email", { method: "DELETE", body: JSON.stringify({ id: s.id }) }); loadSubscribers(); }} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Remove</button></td>
                         </tr>
                       ))}
@@ -1012,16 +1013,22 @@ function MatchdayCard({ fixture, onSave, onDelete }: { fixture: Fixture; onSave:
   return (
     <div style={{ background: "#fff", border: `1px solid ${hasResult ? "rgba(31,107,55,.3)" : "rgba(17,24,39,.10)"}`, borderRadius: 16, overflow: "hidden" }}>
       {/* Score row */}
-      <div style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: "#66707d", minWidth: 40 }}>Wk {fixture.week}</div>
-        <div style={{ flex: 1, minWidth: 120, textAlign: "right", fontWeight: 600, fontSize: 16 }}>{fixture.home_club?.name}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <input type="number" min={0} value={hs} onChange={e => setHs(e.target.value)} className="score-in" placeholder="0" />
-          <span style={{ fontWeight: 700, color: "#66707d", fontSize: 18 }}>-</span>
-          <input type="number" min={0} value={as_} onChange={e => setAs(e.target.value)} className="score-in" placeholder="0" />
+      <div style={{ padding: "18px 20px", display: "grid", gap: 14 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: "#66707d" }}>
+          Wk {fixture.week}
+          {fixture.played_at && <span style={{ fontWeight: 400 }}> · {new Date(fixture.played_at).toLocaleString("en-AU", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: LEAGUE_TZ })}</span>}
+          {fixture.venue && <span style={{ fontWeight: 400 }}> · {fixture.venue}</span>}
         </div>
-        <div style={{ flex: 1, minWidth: 120, fontWeight: 600, fontSize: 16 }}>{fixture.away_club?.name}</div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)", alignItems: "center", gap: 12 }}>
+          <div style={{ textAlign: "right", fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{fixture.home_club?.name}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input type="number" inputMode="numeric" min={0} value={hs} onChange={e => setHs(e.target.value)} className="score-in" placeholder="0" aria-label={`${fixture.home_club?.name ?? "Home"} goals`} />
+            <span style={{ fontWeight: 700, color: "#66707d", fontSize: 18 }}>-</span>
+            <input type="number" inputMode="numeric" min={0} value={as_} onChange={e => setAs(e.target.value)} className="score-in" placeholder="0" aria-label={`${fixture.away_club?.name ?? "Away"} goals`} />
+          </div>
+          <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{fixture.away_club?.name}</div>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
           {hasResult && <span style={{ fontSize: 12, fontWeight: 600, color: "#1f6b37", background: "#eef7f0", padding: "4px 10px", borderRadius: 6 }}>Saved</span>}
           <button type="button" onClick={save} disabled={busy || hs === "" || as_ === ""}
             style={{ background: "#101820", border: "none", color: "#fff", fontSize: 13, fontWeight: 600, padding: "8px 18px", borderRadius: 999, cursor: "pointer", fontFamily: F, opacity: (busy || hs === "" || as_ === "") ? 0.5 : 1 }}>
@@ -1030,7 +1037,6 @@ function MatchdayCard({ fixture, onSave, onDelete }: { fixture: Fixture; onSave:
           {hasResult && <button type="button" onClick={remove} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Remove</button>}
           {hasResult && <button type="button" onClick={toggleExpand} style={{ background: "none", border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, fontSize: 16, padding: "6px 12px", cursor: "pointer", fontFamily: F, color: "#101820" }}>{expanded ? "Close details" : "Goals & cards"}</button>}
         </div>
-        {fixture.played_at && <div style={{ fontSize: 12, color: "#98a1ab", width: "100%" }}>{new Date(fixture.played_at).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })}{fixture.venue ? ` · ${fixture.venue}` : ""}</div>}
       </div>
 
       {/* Expanded details */}

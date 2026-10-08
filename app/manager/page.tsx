@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { LEAGUE_TZ } from "@/lib/utils";
 
 const COLORS = [
   ["#b3122b", "Crimson"], ["#cf2e24", "Red"], ["#1b2a4a", "Navy"],
@@ -228,8 +229,8 @@ export default function ManagerPage() {
                 const isHome = next.home_club?.id === club?.id;
                 const opponent = isHome ? next.away_club?.name : next.home_club?.name;
                 const d = new Date(next.played_at!);
-                const dateStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" });
-                const timeStr = d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" });
+                const dateStr = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: LEAGUE_TZ });
+                const timeStr = d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: LEAGUE_TZ });
                 return (
                   <div style={{ background: "#f4f4f1", borderRadius: 12, padding: "10px 16px", fontSize: 13, color: "#4a545f", textAlign: "right" }}>
                     <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: ".1em", textTransform: "uppercase", color: "#98a1ab", marginBottom: 3 }}>Next match</div>
@@ -266,11 +267,11 @@ export default function ManagerPage() {
               if (!deadline) return null;
               return locked ? (
                 <div style={{ background: "#fdecea", border: "1px solid #f5c6c3", borderRadius: 14, padding: "14px 20px", fontSize: 14, color: "#a3211a", fontWeight: 500 }}>
-                  Squad registration closed on {deadline.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}. Contact the committee to make changes.
+                  Squad registration closed on {deadline.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric", timeZone: LEAGUE_TZ })}. Contact the committee to make changes.
                 </div>
               ) : (
                 <div style={{ background: "#fff6ec", border: "1px solid #f0d7b8", borderRadius: 14, padding: "14px 20px", fontSize: 14, color: "#8a5a12" }}>
-                  Squad registration closes {deadline.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" })}.
+                  Squad registration closes {deadline.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric", timeZone: LEAGUE_TZ })}.
                 </div>
               );
             })()}
@@ -422,7 +423,7 @@ export default function ManagerPage() {
                   </div>
                   {f.played_at && (
                     <div style={{ fontSize: 13, color: "#66707d" }}>
-                      {new Date(f.played_at).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })}
+                      {new Date(f.played_at).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short", timeZone: LEAGUE_TZ })}
                     </div>
                   )}
                   {completed && result && (
