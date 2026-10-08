@@ -322,6 +322,34 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── NEPALESE NEW YEAR CUP ── */}
+      <section className="spl-section" style={{ background: BG, padding: "104px 0" }}>
+        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,340px),1fr))", gap: "44px 64px", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>Cultural tournament · April</div>
+            <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(30px,4vw,50px)", lineHeight: 1.16, letterSpacing: "-.012em", margin: "16px 0 0" }}>Nepalese New Year Cup</h2>
+            <p style={{ margin: "20px 0 0", fontSize: 17, lineHeight: 1.75, color: MUTED, maxWidth: "52ch" }}>
+              Our annual celebration of Nepali New Year on the pitch. Sixteen community teams, two match days, and a day of food, music, and family on the sidelines at Nicholls.
+            </p>
+            <div style={{ marginTop: 30, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, maxWidth: 560 }}>
+              {[["2083 Champions", "Canberra City FC"], ["2083 Runner-up", "FC Yeedzin"], ["Next edition", "April 2027, dates to be announced"]].map(([l, v]) => (
+                <div key={l} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 14, padding: "18px 18px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, color: MUTED, marginBottom: 8 }}>{l}</div>
+                  <div style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.4 }}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, marginTop: 30 }}>
+              <a href="/about#new-year-cup" style={{ background: DARK, color: "#fff", fontSize: 15, fontWeight: 500, padding: "14px 26px", borderRadius: 999, textDecoration: "none" }}>About the Cup</a>
+              <a href="/gallery" style={{ border: "1px solid rgba(17,24,39,.22)", color: DARK, fontSize: 15, fontWeight: 500, padding: "14px 26px", borderRadius: 999, textDecoration: "none" }}>View 2083 photos</a>
+            </div>
+          </div>
+          <div style={{ position: "relative", aspectRatio: "4/3", borderRadius: 20, overflow: "hidden", background: DARK }}>
+            <Image src="/gallery/Nepalese New Year Cup/nnyc-champions.jpg" alt="Canberra City FC celebrate winning the Nepalese New Year Cup 2083" fill sizes="(max-width: 767px) 100vw, 50vw" style={{ objectFit: "cover" }} />
+          </div>
+        </div>
+      </section>
+
       {/* ── SPONSOR SLIDER ── */}
       <section style={{ background: "#fff", borderTop: "1px solid rgba(17,24,39,.08)", padding: "56px 0" }}>
         <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px 28px" }}>
@@ -400,6 +428,11 @@ export default function HomePage() {
         </div>
         <div style={{ maxWidth: 1340, margin: "52px auto 0", padding: "26px 24px 0", borderTop: "1px solid rgba(255,255,255,.12)", fontSize: 14, display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap" as const }}>
           <span>© 2026 Samsara Group Canberra</span>
+          <span style={{ display: "flex", gap: 20, flexWrap: "wrap" as const }}>
+            {[["Privacy", "/privacy-policy"], ["Terms", "/terms"], ["Disclaimer", "/disclaimer"]].map(([label, href]) => (
+              <a key={label} href={href} style={{ color: DARK_MUTED, textDecoration: "none" }}>{label}</a>
+            ))}
+          </span>
           <span>Samsara Premier League · Season 3</span>
         </div>
       </footer>
