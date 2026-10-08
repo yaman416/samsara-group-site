@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
 import { communityCountry } from "@/lib/utils";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-
-interface Player {
-  id: string;
-  full_name: string;
-  jersey_number: number;
-  position: string;
-  nationality: string;
-  is_active: boolean;
-}
 
 interface StandingRow {
   club_id: string;
@@ -28,9 +20,6 @@ interface StandingRow {
   position: number;
 }
 
-function initials(name: string) {
-  return name.replace(/ (FC|Football Club)$/i, "").split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
-}
 
 const POS_ORDER: Record<string, number> = { GK: 0, DF: 1, MF: 2, FW: 3 };
 const POS_LABEL: Record<string, string> = { GK: "Goalkeeper", DF: "Defender", MF: "Midfielder", FW: "Forward" };
@@ -124,7 +113,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
 
           <div style={{ display: "flex", alignItems: "flex-end", gap: 32, flexWrap: "wrap", marginTop: 30 }}>
             {club.logo_url ? (
-              <img src={club.logo_url} alt="" width={112} height={112} style={{ width: 112, height: 112, objectFit: "contain", flex: "none" }} />
+              <Image src={club.logo_url} alt="" width={112} height={112} priority style={{ width: 112, height: 112, objectFit: "contain", flex: "none" }} />
             ) : (
               <span style={{ width: 112, height: 112, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 18, fontSize: 22, fontWeight: 700, color: "#fff", background: club.home_color || "#101820", border: "2px solid rgba(255,255,255,.14)" }}>
                 {club.short_code}

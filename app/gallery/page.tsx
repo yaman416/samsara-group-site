@@ -44,10 +44,7 @@ const SHOTS = [
   { src: N + "nnyc-2083-06.png", alt: "Nepalese New Year Cup 2083 match day, photo 06" },
   { src: N + "nnyc-2083-07.png", alt: "Nepalese New Year Cup 2083 match day, photo 07" },
   { src: N + "nnyc-2083-08.png", alt: "Nepalese New Year Cup 2083 match day, photo 08" },
-  { src: N + "nnyc-2083-09.png", alt: "Nepalese New Year Cup 2083 match day, photo 09" },
-  { src: N + "nnyc-2083-10.png", alt: "Nepalese New Year Cup 2083 match day, photo 10" },
   { src: N + "nnyc-2083-11.png", alt: "Nepalese New Year Cup 2083 match day, photo 11" },
-  { src: N + "nnyc-2083-12.png", alt: "Nepalese New Year Cup 2083 match day, photo 12" },
   { src: N + "nnyc-2083-13.png", alt: "Nepalese New Year Cup 2083 match day, photo 13" },
   { src: N + "nnyc-2083-14.png", alt: "Nepalese New Year Cup 2083 match day, photo 14" },
   { src: N + "nnyc-2083-15.png", alt: "Nepalese New Year Cup 2083 match day, photo 15" },
@@ -65,32 +62,25 @@ const SHOTS = [
   { src: N + "nnyc-2083-27.png", alt: "Nepalese New Year Cup 2083 match day, photo 27" },
   { src: N + "nnyc-2083-28.png", alt: "Nepalese New Year Cup 2083 match day, photo 28" },
   { src: N + "nnyc-2083-29.png", alt: "Nepalese New Year Cup 2083 match day, photo 29" },
-  { src: N + "nnyc-2083-30.png", alt: "Nepalese New Year Cup 2083 match day, photo 30" },
   { src: N + "nnyc-2083-31.png", alt: "Nepalese New Year Cup 2083 match day, photo 31" },
   { src: N + "nnyc-2083-32.png", alt: "Nepalese New Year Cup 2083 match day, photo 32" },
   { src: N + "nnyc-2083-33.png", alt: "Nepalese New Year Cup 2083 match day, photo 33" },
   { src: N + "nnyc-2083-34.png", alt: "Nepalese New Year Cup 2083 match day, photo 34" },
   { src: N + "nnyc-2083-35.png", alt: "Nepalese New Year Cup 2083 match day, photo 35" },
   { src: N + "nnyc-2083-36.png", alt: "Nepalese New Year Cup 2083 match day, photo 36" },
-  { src: N + "nnyc-2083-37.png", alt: "Nepalese New Year Cup 2083 match day, photo 37" },
   { src: N + "nnyc-2083-38.png", alt: "Nepalese New Year Cup 2083 match day, photo 38" },
   { src: N + "nnyc-2083-39.png", alt: "Nepalese New Year Cup 2083 match day, photo 39" },
   { src: N + "nnyc-2083-40.png", alt: "Nepalese New Year Cup 2083 match day, photo 40" },
-  { src: N + "nnyc-2083-41.png", alt: "Nepalese New Year Cup 2083 match day, photo 41" },
   { src: N + "nnyc-2083-42.png", alt: "Nepalese New Year Cup 2083 match day, photo 42" },
   { src: N + "nnyc-2083-43.png", alt: "Nepalese New Year Cup 2083 match day, photo 43" },
-  { src: N + "nnyc-2083-44.png", alt: "Nepalese New Year Cup 2083 match day, photo 44" },
   { src: N + "nnyc-2083-45.png", alt: "Nepalese New Year Cup 2083 match day, photo 45" },
-  { src: N + "nnyc-2083-46.png", alt: "Nepalese New Year Cup 2083 match day, photo 46" },
   { src: N + "nnyc-2083-47.png", alt: "Nepalese New Year Cup 2083 match day, photo 47" },
   { src: N + "nnyc-2083-48.png", alt: "Nepalese New Year Cup 2083 match day, photo 48" },
   { src: N + "nnyc-2083-49.png", alt: "Nepalese New Year Cup 2083 match day, photo 49" },
   { src: N + "nnyc-2083-50.png", alt: "Nepalese New Year Cup 2083 match day, photo 50" },
   { src: N + "nnyc-2083-51.png", alt: "Nepalese New Year Cup 2083 match day, photo 51" },
-  { src: N + "nnyc-2083-52.png", alt: "Nepalese New Year Cup 2083 match day, photo 52" },
   { src: N + "nnyc-2083-53.png", alt: "Nepalese New Year Cup 2083 match day, photo 53" },
   { src: N + "nnyc-2083-54.png", alt: "Nepalese New Year Cup 2083 match day, photo 54" },
-  { src: N + "nnyc-2083-55.png", alt: "Nepalese New Year Cup 2083 match day, photo 55" },
 ];
 
 export default function GalleryPage() {
@@ -120,7 +110,7 @@ export default function GalleryPage() {
   return (
     <SiteLayout activeNav="gallery">
       <style>{`
-        .gal-item { cursor: zoom-in; overflow: hidden; border-radius: 10px; background: #d8d8d2; break-inside: avoid; margin-bottom: 10px; }
+        .gal-item { display: block; width: 100%; padding: 0; border: 0; font: inherit; cursor: zoom-in; overflow: hidden; border-radius: 10px; background: #d8d8d2; break-inside: avoid; margin-bottom: 10px; }
         .gal-item img { display: block; width: 100%; height: auto; transition: transform .4s ease; }
         .gal-item:hover img { transform: scale(1.04); }
         .lb-btn { background: rgba(255,255,255,.15); border: none; color: #fff; cursor: pointer; border-radius: 50%; width: 48px; height: 48px; font-size: 22px; display: flex; align-items: center; justify-content: center; transition: background .2s; }
@@ -129,21 +119,21 @@ export default function GalleryPage() {
 
       {/* Lightbox */}
       {lightbox !== null && (
-        <div onClick={close} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(8,12,16,.97)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <button type="button" className="lb-btn" onClick={e => { e.stopPropagation(); prev(); }} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>&#8249;</button>
+        <div role="dialog" aria-modal="true" aria-label="Photo viewer" onClick={close} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(8,12,16,.97)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button type="button" className="lb-btn" aria-label="Previous photo" onClick={e => { e.stopPropagation(); prev(); }} style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)" }}>&#8249;</button>
 
           <div onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "min(94vw,1200px)", maxHeight: "88vh", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
             <div style={{ position: "relative", width: "min(94vw,1200px)", height: "min(70vw,800px)" }}>
               <Image src={SHOTS[lightbox].src} alt={SHOTS[lightbox].alt} fill style={{ objectFit: "contain" }} priority />
             </div>
             <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-              <span style={{ color: "rgba(255,255,255,.6)", fontSize: 13 }}>{SHOTS[lightbox].alt}</span>
-              <span style={{ color: "rgba(255,255,255,.3)", fontSize: 12, flexShrink: 0 }}>{lightbox + 1} / {SHOTS.length}</span>
+              <span style={{ color: "rgba(255,255,255,.82)", fontSize: 13 }}>{SHOTS[lightbox].alt}</span>
+              <span style={{ color: "rgba(255,255,255,.6)", fontSize: 12, flexShrink: 0 }}>{lightbox + 1} / {SHOTS.length}</span>
             </div>
           </div>
 
-          <button type="button" className="lb-btn" onClick={e => { e.stopPropagation(); next(); }} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)" }}>&#8250;</button>
-          <button type="button" className="lb-btn" onClick={close} style={{ position: "absolute", top: 16, right: 16, width: 40, height: 40, fontSize: 18 }}>&#x2715;</button>
+          <button type="button" className="lb-btn" aria-label="Next photo" onClick={e => { e.stopPropagation(); next(); }} style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)" }}>&#8250;</button>
+          <button type="button" className="lb-btn" aria-label="Close photo viewer" autoFocus onClick={close} style={{ position: "absolute", top: 16, right: 16, width: 40, height: 40, fontSize: 18 }}>&#x2715;</button>
         </div>
       )}
 
@@ -165,9 +155,9 @@ export default function GalleryPage() {
       <div style={{ background: "#f4f4f1", padding: "48px 24px 48px" }}>
         <div style={{ maxWidth: 1340, margin: "0 auto", columns: "3 240px", gap: 10 }}>
           {SHOTS.map((s, i) => (
-            <div key={i} className="gal-item" onClick={() => setLightbox(i)}>
-              <Image src={s.src} alt={s.alt} width={600} height={400} style={{ width: "100%", height: "auto" }} />
-            </div>
+            <button key={s.src} type="button" className="gal-item" aria-label={`Open photo: ${s.alt}`} onClick={() => setLightbox(i)}>
+              <Image src={s.src} alt={s.alt} width={600} height={400} sizes="(max-width: 600px) 100vw, 440px" style={{ width: "100%", height: "auto" }} />
+            </button>
           ))}
         </div>
       </div>

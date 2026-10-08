@@ -59,7 +59,7 @@ export default function AdminPage() {
   const [pwError, setPwError] = useState("");
   const [screen, setScreen] = useState<Screen>("invites");
 
-  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [, setSeasons] = useState<Season[]>([]);
   const [activeSeason, setActiveSeason] = useState<Season | null>(null);
 
   const [deadlineInput, setDeadlineInput] = useState("");
@@ -75,7 +75,7 @@ export default function AdminPage() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [newClubId, setNewClubId] = useState("");
   const [newEmail, setNewEmail] = useState("");
-  const [newCommunity, setNewCommunity] = useState<"Nepalese" | "Bhutanese">("Nepalese");
+  const [, setNewCommunity] = useState<"Nepalese" | "Bhutanese">("Nepalese");
   const [invBusy, setInvBusy] = useState(false);
   const [invMsg, setInvMsg] = useState("");
 
@@ -1007,7 +1007,6 @@ function MatchdayCard({ fixture, onSave, onDelete }: { fixture: Fixture; onSave:
     loadDetails();
   }
 
-  const allPlayers = [...homePlayers.map(p => ({ ...p, clubId: fixture.home_club?.id, clubName: fixture.home_club?.name })), ...awayPlayers.map(p => ({ ...p, clubId: fixture.away_club?.id, clubName: fixture.away_club?.name }))];
   const selectedClubPlayers = ngClub === fixture.home_club?.id ? homePlayers : awayPlayers;
 
   return (

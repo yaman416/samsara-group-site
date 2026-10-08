@@ -234,7 +234,7 @@ export default function HomePage() {
       {/* ── HERO — dark centered ── */}
       <section id="top" style={{ position: "relative", minHeight: "min(86vh,820px)", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", overflow: "hidden", background: DARK }}>
         {HERO_SHOTS.map((s, i) => (
-          <img key={s.src} src={s.src} alt={s.alt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: s.pos, opacity: i === slide ? 0.55 : 0, transition: "opacity 1.4s ease" }} />
+          <Image key={s.src} src={s.src} alt={s.alt} fill sizes="100vw" priority={i === 0} style={{ objectFit: "cover", objectPosition: s.pos, opacity: i === slide ? 0.55 : 0, transition: "opacity 1.4s ease" }} />
         ))}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(16,24,32,.72) 0%,rgba(16,24,32,.42) 45%,rgba(16,24,32,.86) 100%)" }} />
 
@@ -304,7 +304,7 @@ export default function HomePage() {
 
       {/* ── HONOURS BOARD ── */}
       <section className="spl-section" style={{ position: "relative", padding: "120px 0", overflow: "hidden" }}>
-        <img src={P.final7} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        <Image src={P.final7} alt="" fill sizes="100vw" style={{ objectFit: "cover" }} />
         <div style={{ position: "absolute", inset: 0, background: "rgba(16,24,32,.76)" }} />
         <div style={{ position: "relative", maxWidth: 1340, margin: "0 auto", padding: "0 24px", color: "#fff", textAlign: "center" }}>
           <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: "#ff6a5e" }}>Season 2 · 2025-26</div>
@@ -315,7 +315,7 @@ export default function HomePage() {
               { crest: "/team logos/Thuenlam.png", label: "Running Shield", name: "Thuenlam FC" },
             ].map((card, i) => (
               <div key={i} style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 16, padding: "32px 26px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-                <img src={card.crest} alt="" style={{ width: 62, height: 62, objectFit: "contain" }} />
+                <Image src={card.crest} alt="" width={62} height={62} style={{ width: 62, height: 62, objectFit: "contain" }} />
                 <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, color: DARK_MUTED }}>{card.label}</div>
                 <div style={{ fontSize: 19, fontWeight: 500 }}>{card.name}</div>
               </div>

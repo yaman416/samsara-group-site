@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import SiteLayout from "@/components/SiteLayout";
 import { communityCountry } from "@/lib/utils";
 
@@ -15,9 +16,6 @@ interface Club {
   founded: string | null;
 }
 
-function initials(name: string) {
-  return name.replace(/ (FC|Football Club)$/i, "").split(" ").map(w => w[0]).join("").slice(0, 3).toUpperCase();
-}
 
 function clubSlug(c: Club) {
   return c.short_code.toLowerCase();
@@ -90,7 +88,7 @@ export default function ClubsPage() {
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: 18 }}>
                     {c.logo_url ? (
-                      <img src={c.logo_url} alt="" width={64} height={64} style={{ width: 64, height: 64, objectFit: "contain", flex: "none" }} />
+                      <Image src={c.logo_url} alt="" width={64} height={64} style={{ width: 64, height: 64, objectFit: "contain", flex: "none" }} />
                     ) : (
                       <span style={{ width: 64, height: 64, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 14, fontSize: 17, fontWeight: 600, color: "#fff", background: c.home_color || "#101820" }}>
                         {c.short_code}
