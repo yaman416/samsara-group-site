@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import SiteLayout from "@/components/SiteLayout";
+
+export const metadata: Metadata = {
+  title: "Contact · Samsara Group Canberra",
+  description: "Get in touch with Samsara Group Canberra about the Samsara Premier League, registration or community events.",
+};
 
 export default function ContactPage() {
   return (
@@ -23,7 +29,7 @@ export default function ContactPage() {
             <div key={item.label} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 34 }}>
               <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d" }}>{item.label}</div>
               {item.href ? (
-                <a href={item.href} style={{ display: "block", fontFamily: "Lora,Georgia,serif", fontSize: 22, marginTop: 14, color: "#e2372b", textDecoration: "none" }}>{item.value}</a>
+                <a href={item.href} style={{ display: "block", fontFamily: "Lora,Georgia,serif", fontSize: "clamp(18px,5vw,22px)", marginTop: 14, color: "#e2372b", textDecoration: "none", overflowWrap: "anywhere" }}>{item.value}</a>
               ) : (
                 <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 22, marginTop: 14 }}>{item.value}</div>
               )}

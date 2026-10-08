@@ -58,7 +58,7 @@ export default function MatchPage() {
     <SiteLayout activeNav="season">
       <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f4f4f1" }}>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 15, color: "#98a1ab", fontFamily: F, marginBottom: 16 }}>Match not found.</div>
+          <h1 style={{ fontSize: 15, fontWeight: 400, color: "#98a1ab", fontFamily: F, margin: "0 0 16px" }}>Match not found.</h1>
           <Link href="/season" style={{ fontFamily: F, fontSize: 14, color: "#101820" }}>Back to Season 3</Link>
         </div>
       </div>
@@ -68,8 +68,8 @@ export default function MatchPage() {
   const r = Array.isArray(fixture.results) ? (fixture.results[0] ?? null) : (fixture.results ?? null);
   const done = fixture.status === "completed";
   const d = fixture.played_at ? new Date(fixture.played_at) : null;
-  const dateStr = d ? d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "Date TBC";
-  const timeStr = d ? d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" }) : "";
+  const dateStr = d ? d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Australia/Sydney" }) : "Date TBC";
+  const timeStr = d ? d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: "Australia/Sydney" }) : "";
 
   const homeGoals = (fixture.goal_scorers ?? []).filter(g => g.club_id === fixture.home_club.id && !g.is_own_goal)
     .concat((fixture.goal_scorers ?? []).filter(g => g.club_id === fixture.away_club.id && g.is_own_goal));
@@ -79,15 +79,14 @@ export default function MatchPage() {
   const homeWon = r && r.home_score > r.away_score;
   const awayWon = r && r.away_score > r.home_score;
 
-  const allEvents: { minute: number | null; type: "goal" | "og" | "pen" | "yellow" | "red"; label: string; side: "home" | "away" }[] = [];
+  const allEvents: { minute: number | null; type: "goal" | "og" | "pen"; label: string; side: "home" | "away" }[] = [];
   for (const g of fixture.goal_scorers ?? []) {
     const isHome = g.club_id === fixture.home_club.id;
     const side = g.is_own_goal ? (isHome ? "away" : "home") : (isHome ? "home" : "away");
     allEvents.push({ minute: g.minute, type: g.is_own_goal ? "og" : g.is_penalty ? "pen" : "goal", label: g.players?.full_name ?? "Unknown", side });
   }
-  for (const c of fixture.cards ?? []) {
-    allEvents.push({ minute: c.minute, type: c.card_type === "red" || c.card_type === "second_yellow" ? "red" : "yellow", label: c.player_name, side: "home" });
-  }
+  // Cards are not linked to a club yet, so they get their own list instead of a side of the timeline.
+  const cards = [...(fixture.cards ?? [])].sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999));
   allEvents.sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999));
 
   return (
@@ -97,10 +96,14 @@ export default function MatchPage() {
         <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
           {/* Breadcrumb */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#98a1ab", marginBottom: 36 }}>
-            <Link href="/season" style={{ color: "#98a1ab" }}>Season 3</Link>
+            <Link href="/season" style={{ color: "#98a1ab", display: "inline-block", padding: "6px 0" }}>Season 3</Link>
             <span>/</span>
             <span>Week {fixture.week}</span>
           </div>
+
+          <h1 style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>
+            {fixture.home_club.name} vs {fixture.away_club.name}, Week {fixture.week}
+          </h1>
 
           {/* Score block */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 24 }}>
@@ -175,11 +178,7 @@ export default function MatchPage() {
                       {ev.side === "home" ? ev.label : ""}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                      {ev.type === "goal" || ev.type === "og" || ev.type === "pen" ? (
-                        <span style={{ fontSize: 16 }}>⚽</span>
-                      ) : (
-                        <span style={{ display: "inline-block", width: 12, height: 16, borderRadius: 3, background: ev.type === "red" ? "#e2372b" : "#f0b429" }} />
-                      )}
+                      <span style={{ fontSize: 16 }} aria-label={ev.type === "og" ? "Own goal" : ev.type === "pen" ? "Penalty goal" : "Goal"}>⚽</span>
                       {ev.minute && <span style={{ fontSize: 11, color: "#98a1ab", fontWeight: 500 }}>{ev.minute}&apos;</span>}
                     </div>
                     <div style={{ fontSize: 14, fontWeight: 500 }}>
@@ -191,8 +190,26 @@ export default function MatchPage() {
             </div>
           )}
 
+          {done && cards.length > 0 && (
+            <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 28 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d", marginBottom: 16 }}>Cards</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {cards.map(c => {
+                  const red = c.card_type === "red" || c.card_type === "second_yellow";
+                  return (
+                    <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 14 }}>
+                      <span aria-label={red ? "Red card" : "Yellow card"} style={{ display: "inline-block", width: 12, height: 16, borderRadius: 3, background: red ? "#e2372b" : "#f0b429", flexShrink: 0 }} />
+                      <span style={{ fontWeight: 500 }}>{c.player_name}</span>
+                      {c.minute != null && <span style={{ color: "#98a1ab" }}>{c.minute}&apos;</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Club links */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,240px),1fr))", gap: 16 }}>
             {[fixture.home_club, fixture.away_club].map(club => (
               <Link key={club.id} href={`/clubs/${club.short_code.toLowerCase()}`}
                 style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 14, padding: "20px 22px", display: "flex", alignItems: "center", gap: 14, color: "#101820", textDecoration: "none" }}>
@@ -206,7 +223,7 @@ export default function MatchPage() {
           </div>
 
           {/* Back */}
-          <Link href="/season" style={{ fontFamily: F, fontSize: 14, color: "#66707d", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <Link href="/season" style={{ fontFamily: F, fontSize: 14, color: "#66707d", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 0" }}>
             Back to Season 3
           </Link>
         </div>

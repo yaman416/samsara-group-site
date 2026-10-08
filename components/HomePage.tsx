@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import LeagueTableSection from "@/components/LeagueTableSection";
 import FixturesResultsSection from "@/components/FixturesResultsSection";
 import Modal from "@/components/Modal";
@@ -132,12 +133,12 @@ export default function HomePage() {
         {/* Account icon button — reused across layouts */}
         {/* Wide (≥1100px): logo left | nav center | account right — NO hamburger */}
         <div className="spl-header-wide" style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", height: 72, display: "flex", alignItems: "center", gap: 24 }}>
-          <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, color: DARK, textDecoration: "none", flexShrink: 0 }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, color: DARK, textDecoration: "none", flexShrink: 0 }}>
             <img src="/other logos/logo-dark.png" alt="Samsara Group Canberra" style={{ height: 38, width: "auto" }} />
             <span style={{ fontWeight: 600, fontSize: 15, letterSpacing: "-.012em", lineHeight: 1.2 }}>
               Samsara Group<br /><span style={{ color: MUTED, fontWeight: 400 }}>Canberra</span>
             </span>
-          </a>
+          </Link>
           <nav style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 14, fontWeight: 500, margin: "0 auto", letterSpacing: ".02em", textTransform: "uppercase" as const }}>
             {[["Home", "/"], ["About", "/about"], ["Season 3", "/season"], ["Archive", "/archive"], ["Clubs", "/clubs"], ["Gallery", "/gallery"], ["Partners", "/partners"]].map(([label, href]) => (
               <a key={label} href={href} style={{ color: href === "/" ? DARK : "#4a545f", textDecoration: "none", padding: "6px 12px", borderBottom: href === "/" ? `2px solid ${RED}` : "none", paddingBottom: href === "/" ? 4 : 6 }}>{label}</a>
@@ -165,12 +166,12 @@ export default function HomePage() {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             )}
           </button>
-          <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, color: DARK, textDecoration: "none" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, color: DARK, textDecoration: "none" }}>
             <img src="/other logos/logo-dark.png" alt="Samsara Group Canberra" style={{ height: 36, width: "auto" }} />
             <span style={{ fontWeight: 600, fontSize: 15, letterSpacing: "-.012em", lineHeight: 1.2 }}>
               Samsara Group<br /><span style={{ color: MUTED, fontWeight: 400 }}>Canberra</span>
             </span>
-          </a>
+          </Link>
           <div style={{ position: "relative", justifySelf: "end" }}>
             <button type="button" onClick={() => { setAccountOpen((v) => !v); setMenuOpen(false); }}
               style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: DARK, padding: "6px 4px" }}>
@@ -193,12 +194,12 @@ export default function HomePage() {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             )}
           </button>
-          <a href="/" style={{ display: "flex", alignItems: "center", gap: 8, color: DARK, textDecoration: "none", minWidth: 0 }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, color: DARK, textDecoration: "none", minWidth: 0 }}>
             <img src="/other logos/logo-dark.png" alt="Samsara Group Canberra" style={{ height: 34, width: "auto" }} />
             <span className="spl-wordmark" style={{ fontWeight: 600, fontSize: 13, letterSpacing: "-.01em", lineHeight: 1.2 }}>
               Samsara Group<br /><span style={{ color: MUTED, fontWeight: 400 }}>Canberra</span>
             </span>
-          </a>
+          </Link>
           <div style={{ position: "relative", justifySelf: "end" }}>
             <button type="button" onClick={() => { setAccountOpen((v) => !v); setMenuOpen(false); }}
               style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: DARK, padding: "6px 4px" }}>
@@ -241,7 +242,7 @@ export default function HomePage() {
             <span style={{ width: 7, height: 7, borderRadius: "50%", background: RED, animation: "spl-pulse 1.8s ease-in-out infinite", display: "inline-block" }} />
             SBA Property Group Presents
           </div>
-          <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(42px,6.4vw,86px)", lineHeight: 1.06, letterSpacing: "-.02em", margin: "26px 0 0", textWrap: "balance" as any }}>
+          <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(42px,6.4vw,86px)", lineHeight: 1.06, letterSpacing: "-.02em", margin: "26px 0 0", textWrap: "balance" }}>
             Samsara Premier League
           </h1>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 22, flexWrap: "wrap" as const, justifyContent: "center" }}>
@@ -322,12 +323,40 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── NEPALESE NEW YEAR CUP ── */}
+      <section className="spl-section" style={{ background: BG, padding: "104px 0" }}>
+        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,340px),1fr))", gap: "44px 64px", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>Cultural tournament · April</div>
+            <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(30px,4vw,50px)", lineHeight: 1.16, letterSpacing: "-.012em", margin: "16px 0 0" }}>Nepalese New Year Cup</h2>
+            <p style={{ margin: "20px 0 0", fontSize: 17, lineHeight: 1.75, color: MUTED, maxWidth: "52ch" }}>
+              Our annual celebration of Nepali New Year on the pitch. Sixteen community teams, two match days, and a day of food, music, and family on the sidelines at Nicholls.
+            </p>
+            <div style={{ marginTop: 30, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, maxWidth: 560 }}>
+              {[["2083 Champions", "Canberra City FC"], ["2083 Runner-up", "FC Yeedzin"], ["Next edition", "April 2027, dates to be announced"]].map(([l, v]) => (
+                <div key={l} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 14, padding: "18px 18px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, color: MUTED, marginBottom: 8 }}>{l}</div>
+                  <div style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.4 }}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, marginTop: 30 }}>
+              <a href="/about#new-year-cup" style={{ background: DARK, color: "#fff", fontSize: 15, fontWeight: 500, padding: "14px 26px", borderRadius: 999, textDecoration: "none" }}>About the Cup</a>
+              <a href="/gallery" style={{ border: "1px solid rgba(17,24,39,.22)", color: DARK, fontSize: 15, fontWeight: 500, padding: "14px 26px", borderRadius: 999, textDecoration: "none" }}>View 2083 photos</a>
+            </div>
+          </div>
+          <div style={{ position: "relative", aspectRatio: "4/3", borderRadius: 20, overflow: "hidden", background: DARK }}>
+            <Image src="/gallery/Nepalese New Year Cup/nnyc-champions.jpg" alt="Canberra City FC celebrate winning the Nepalese New Year Cup 2083" fill sizes="(max-width: 767px) 100vw, 50vw" style={{ objectFit: "cover" }} />
+          </div>
+        </div>
+      </section>
+
       {/* ── SPONSOR SLIDER ── */}
       <section style={{ background: "#fff", borderTop: "1px solid rgba(17,24,39,.08)", padding: "56px 0" }}>
         <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px 28px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" as const }}>
             <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: MUTED }}>Our partners</div>
-            <a href="/partners" style={{ fontSize: 13, fontWeight: 500, color: RED, textDecoration: "none", letterSpacing: ".04em" }}>View all partners</a>
+            <a href="/partners" style={{ fontSize: 13, fontWeight: 500, color: RED, textDecoration: "none", letterSpacing: ".04em", display: "inline-block", padding: "6px 0" }}>View all partners</a>
           </div>
         </div>
         <div style={{ overflow: "hidden" }}>
@@ -380,7 +409,7 @@ export default function HomePage() {
           <div style={{ display: "grid", gap: 12, fontSize: 15, alignContent: "start" }}>
             <div style={{ color: "#fff", fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, marginBottom: 6 }}>League</div>
             {[["About Us", "/about"], ["Clubs", "/clubs"], ["Gallery", "/gallery"], ["Season 3", "/season"]].map(([label, href]) => (
-              <a key={label} href={href} style={{ color: DARK_MUTED, textDecoration: "none" }}>{label}</a>
+              <a key={label} href={href} style={{ color: DARK_MUTED, textDecoration: "none", display: "inline-block", padding: "6px 0" }}>{label}</a>
             ))}
           </div>
           <div style={{ display: "grid", gap: 12, fontSize: 15, alignContent: "start" }}>
@@ -400,6 +429,11 @@ export default function HomePage() {
         </div>
         <div style={{ maxWidth: 1340, margin: "52px auto 0", padding: "26px 24px 0", borderTop: "1px solid rgba(255,255,255,.12)", fontSize: 14, display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap" as const }}>
           <span>© 2026 Samsara Group Canberra</span>
+          <span style={{ display: "flex", gap: 20, flexWrap: "wrap" as const }}>
+            {[["Privacy", "/privacy-policy"], ["Terms", "/terms"], ["Disclaimer", "/disclaimer"]].map(([label, href]) => (
+              <a key={label} href={href} style={{ color: DARK_MUTED, textDecoration: "none", display: "inline-block", padding: "6px 0" }}>{label}</a>
+            ))}
+          </span>
           <span>Samsara Premier League · Season 3</span>
         </div>
       </footer>

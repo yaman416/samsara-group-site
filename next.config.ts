@@ -33,7 +33,7 @@ const clubRedirects = [
   { source: "/clubs/everest",     destination: "/clubs/evr" },
   { source: "/clubs/phuensum",    destination: "/clubs/phu" },
   { source: "/clubs/yeedzin",     destination: "/clubs/ydz" },
-  { source: "/clubs/ace",         destination: "/clubs/ace" },
+  { source: "/clubs/aces",        destination: "/clubs/ace" },
   { source: "/clubs/bicchi",      destination: "/clubs/bic" },
   { source: "/clubs/friends",     destination: "/clubs/frd" },
   { source: "/clubs/brosandball", destination: "/clubs/bab" },

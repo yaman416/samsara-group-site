@@ -5,6 +5,7 @@ import Script from "next/script";
 import CookieConsent from "@/components/CookieConsent";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://samsaragroup.com.au"),
   title: "Samsara Group Canberra",
   description:
     "Community football, cultural events, and local updates from Samsara Group Canberra.",

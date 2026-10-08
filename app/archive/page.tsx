@@ -268,7 +268,7 @@ export default function ArchivePage() {
                 <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "#e2372b", marginBottom: 14 }}>Season 1 · 2024-25</div>
                 <h2 style={{ fontFamily: "Lora,Georgia,serif", fontSize: "clamp(26px,3vw,42px)", fontWeight: 600, lineHeight: 1.12, letterSpacing: "-.02em", margin: "0 0 20px" }}>Where it all began</h2>
                 <p style={{ fontSize: 16, lineHeight: 1.85, color: "#66707d", margin: 0 }}>
-                  The inaugural season of the Samsara Premier League brought together eight clubs from Canberra's Nepalese and Bhutanese communities for seven match weeks of competition at Nicholls Synthetic Field. Nepal United FC claimed the first ever SPL title.
+                  The inaugural season of the Samsara Premier League brought together eight clubs from Canberra&apos;s Nepalese and Bhutanese communities for seven match weeks of competition at Nicholls Synthetic Field. Nepal United FC claimed the first ever SPL title.
                 </p>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -293,7 +293,7 @@ export default function ArchivePage() {
                   <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "#e2372b" }}>Season 1 Champions &#127942;</div>
                   <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: "clamp(28px,3vw,42px)", lineHeight: 1.1, fontWeight: 600 }}>Nepal United FC</div>
                   <p style={{ fontSize: 15, lineHeight: 1.7, color: "#98a1ab", margin: 0, maxWidth: "36ch" }}>
-                    Nepal United FC lifted the inaugural SPL shield, becoming the first champions in the league's history.
+                    Nepal United FC lifted the inaugural SPL shield, becoming the first champions in the league&apos;s history.
                   </p>
                   <div style={{ display: "flex", gap: 24, flexWrap: "wrap" as const }}>
                     {[["Season", "2024-25"], ["Competition", "Round robin"]].map(([l, v]) => (

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 const COLORS = [
@@ -67,13 +68,15 @@ export default function ManagerPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
+      // Signed-out visitors go straight to sign in instead of firing four 401 requests.
+      if (!(await getToken())) { window.location.replace("/register?signin=1"); return; }
       const [clubRes, squadRes, fixRes, regRes] = await Promise.all([
         apiFetch("/api/manager/club"),
         apiFetch("/api/manager/squad"),
         apiFetch("/api/manager/fixtures"),
         apiFetch("/api/manager/registration"),
       ]);
-      if (clubRes.status === 401) { window.location.href = "/register"; return; }
+      if (clubRes.status === 401) { window.location.replace("/register?signin=1"); return; }
       if (clubRes.ok) {
         const c = await clubRes.json();
         setClub(c);
@@ -203,7 +206,7 @@ export default function ManagerPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "10px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontWeight: 500, color: "#fff" }}>{club?.name || "My Club"}</span>
           <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-            <a href="/" style={{ color: "#98a1ab", textDecoration: "none" }}>Public site</a>
+            <Link href="/" style={{ color: "#98a1ab", textDecoration: "none" }}>Public site</Link>
             <button type="button" onClick={signOut} style={{ background: "none", border: "none", color: "#98a1ab", cursor: "pointer", fontSize: 13 }}>Sign out</button>
           </div>
         </div>

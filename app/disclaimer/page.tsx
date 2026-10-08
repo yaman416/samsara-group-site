@@ -1,13 +1,21 @@
-import GoBackButton from "@/components/GoBackButton";
+import type { Metadata } from "next";
+import SiteLayout from "@/components/SiteLayout";
 import { ORG } from "@/lib/splData";
+
+export const metadata: Metadata = {
+  title: "Disclaimer · Samsara Group Canberra",
+  description: "General information disclaimer for the Samsara Group Canberra website.",
+};
 
 export default function DisclaimerPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
+    <SiteLayout>
+    <div style={{ background: "#f4f4f1" }}>
+    <div className="mx-auto max-w-4xl px-4 py-10 sm:py-16">
       <div className="shell-card px-6 py-8 sm:px-8">
-        <h1 className="text-center text-3xl font-extrabold text-slate-900">Disclaimer</h1>
+        <h1 className="text-center text-slate-900" style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(30px,4vw,42px)", lineHeight: 1.15, letterSpacing: "-.02em", margin: 0 }}>Disclaimer</h1>
         <p className="mt-3 text-center text-sm text-slate-600">
-          Last updated: {new Date().toLocaleDateString("en-AU")}
+          Last updated: 15 August 2026
         </p>
 
         <div className="mt-8 space-y-6 text-sm leading-7 text-slate-700">
@@ -51,7 +59,8 @@ export default function DisclaimerPage() {
           </p>
         </div>
       </div>
-      <GoBackButton />
     </div>
+    </div>
+    </SiteLayout>
   );
 }

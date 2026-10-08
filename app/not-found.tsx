@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import SiteLayout from "@/components/SiteLayout";
+
+export const metadata: Metadata = {
+  title: "Page not found · Samsara Group Canberra",
+};
 
 export default function NotFound() {
   return (
