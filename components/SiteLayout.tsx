@@ -230,6 +230,11 @@ export default function SiteLayout({ children, activeNav }: SiteLayoutProps) {
         </div>
         <div style={{ maxWidth: 1340, margin: "52px auto 0", padding: "26px 24px 0", borderTop: "1px solid rgba(255,255,255,.12)", fontSize: 14, display: "flex", justifyContent: "space-between", gap: 20, flexWrap: "wrap" as const }}>
           <span>© 2026 Samsara Group Canberra</span>
+          <span style={{ display: "flex", gap: 20, flexWrap: "wrap" as const }}>
+            {[["Privacy", "/privacy-policy"], ["Terms", "/terms"], ["Disclaimer", "/disclaimer"]].map(([label, href]) => (
+              <Link key={label} href={href} style={{ color: "#98a1ab", textDecoration: "none" }}>{label}</Link>
+            ))}
+          </span>
           <span>Samsara Premier League · Season 3</span>
         </div>
       </footer>

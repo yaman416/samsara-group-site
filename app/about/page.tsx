@@ -136,7 +136,7 @@ export default function AboutPage() {
       </section>
 
       {/* Nepalese New Year Cup */}
-      <section style={{ background: DARK, color: "#fff", padding: "72px 24px" }}>
+      <section id="new-year-cup" style={{ scrollMarginTop: 120,  background: DARK, color: "#fff", padding: "72px 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(300px,100%),1fr))", gap: "48px 64px", alignItems: "stretch" }}>
             <div>
