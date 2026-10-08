@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
   const { data: season } = await supabaseAdmin
     .from("seasons")
     .select("squad_deadline")
-    .eq("year", club.season)
-    .single();
+    .eq("id", club.season_id)
+    .maybeSingle();
 
   return NextResponse.json({ ...club, squad_deadline: season?.squad_deadline ?? null });
 }

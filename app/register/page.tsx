@@ -123,7 +123,7 @@ export default function RegisterPage() {
                 </div>
               </div>
               <div style={{ display: "grid", gap: 1, background: "rgba(255,255,255,.14)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 18, overflow: "hidden" }}>
-                {[["Registration closes", "17 October 2026"], ["Squad", "Max 22 players"], ["Kick-off", "Sat 14 November 2026"]].map(([label, val]) => (
+                {[["Registration closes", "12 November 2026"], ["Squad", "Max 22 players"], ["Kick-off", "Sat 14 November 2026"]].map(([label, val]) => (
                   <div key={label} style={{ background: "rgba(11,17,22,.5)", padding: "26px 28px" }}>
                     <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>{label}</div>
                     <div style={{ fontSize: 22, fontWeight: 500, marginTop: 8, letterSpacing: "-.01em" }}>{val}</div>
