@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { LEAGUE_TZ } from "@/lib/utils";
+import { LEAGUE_TZ, communityCountry } from "@/lib/utils";
 
 const COLORS = [
   ["#b3122b", "Crimson"], ["#cf2e24", "Red"], ["#1b2a4a", "Navy"],
@@ -195,6 +195,7 @@ export default function ManagerPage() {
         .mgr-nav-active { color: #101820; border-bottom-color: #cf2e24; }
         .tbl th { font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: #66707d; padding: 10px 12px; text-align: left; }
         .tbl td { padding: 13px 12px; font-size: 15px; border-top: 1px solid rgba(17,24,39,.07); vertical-align: middle; }
+        @media (max-width: 640px) { .tbl .col-dob { display: none; } .tbl th, .tbl td { padding-left: 8px; padding-right: 8px; } .row-actions { flex-direction: column; align-items: stretch; gap: 6px !important; } }
         .swatch { width: 34px; height: 34px; border-radius: 8px; cursor: pointer; padding: 0; border: 2px solid transparent; }
         .swatch:hover { transform: scale(1.1); }
       `}</style>
@@ -282,15 +283,15 @@ export default function ManagerPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 16 }}>
                   <div>
                     <label style={label11}>Full name</label>
-                    <input value={newPlayer.full_name} onChange={e => setNewPlayer(p => ({ ...p, full_name: e.target.value }))} placeholder="Player name" style={inputSm} />
+                    <input aria-label="Full name" value={newPlayer.full_name} onChange={e => setNewPlayer(p => ({ ...p, full_name: e.target.value }))} placeholder="Player name" style={inputSm} />
                   </div>
                   <div>
                     <label style={label11}>Jersey no.</label>
-                    <input type="number" min={1} max={99} value={newPlayer.jersey_number} onChange={e => setNewPlayer(p => ({ ...p, jersey_number: e.target.value }))} placeholder="1-99" style={inputSm} />
+                    <input aria-label="Jersey no." type="number" min={1} max={99} value={newPlayer.jersey_number} onChange={e => setNewPlayer(p => ({ ...p, jersey_number: e.target.value }))} placeholder="1-99" style={inputSm} />
                   </div>
                   <div>
                     <label style={label11}>Position</label>
-                    <select value={newPlayer.position} onChange={e => setNewPlayer(p => ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
+                    <select aria-label="Position" value={newPlayer.position} onChange={e => setNewPlayer(p => ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
                       <option value="GK">Goalkeeper</option>
                       <option value="DF">Defender</option>
                       <option value="MF">Midfielder</option>
@@ -299,7 +300,7 @@ export default function ManagerPage() {
                   </div>
                   <div>
                     <label style={label11}>Date of birth</label>
-                    <input type="date" value={newPlayer.date_of_birth} onChange={e => setNewPlayer(p => ({ ...p, date_of_birth: e.target.value }))} style={inputSm} />
+                    <input aria-label="Date of birth" type="date" value={newPlayer.date_of_birth} onChange={e => setNewPlayer(p => ({ ...p, date_of_birth: e.target.value }))} style={inputSm} />
                   </div>
                 </div>
                 {addError && <div style={{ marginTop: 12, fontSize: 14, color: "#c22b20" }}>{addError}</div>}
@@ -322,7 +323,7 @@ export default function ManagerPage() {
                 <table className="tbl" style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead style={{ background: "rgba(17,24,39,.03)" }}>
                     <tr>
-                      <th>No.</th><th>Name</th><th>Position</th><th>Date of birth</th><th></th>
+                      <th>No.</th><th>Name</th><th>Position</th><th className="col-dob">Date of birth</th><th><span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>Actions</span></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -332,15 +333,15 @@ export default function ManagerPage() {
                           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 12, marginBottom: 12 }}>
                             <div>
                               <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#4a545f", marginBottom: 6, letterSpacing: ".06em", textTransform: "uppercase" }}>Full name</label>
-                              <input value={editPlayer.full_name} onChange={e => setEditPlayer(p => ({ ...p, full_name: e.target.value }))} style={inputSm} />
+                              <input aria-label="Full name" value={editPlayer.full_name} onChange={e => setEditPlayer(p => ({ ...p, full_name: e.target.value }))} style={inputSm} />
                             </div>
                             <div>
                               <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#4a545f", marginBottom: 6, letterSpacing: ".06em", textTransform: "uppercase" }}>Jersey no.</label>
-                              <input type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => ({ ...p, jersey_number: e.target.value }))} style={inputSm} />
+                              <input aria-label="Jersey no." type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => ({ ...p, jersey_number: e.target.value }))} style={inputSm} />
                             </div>
                             <div>
                               <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#4a545f", marginBottom: 6, letterSpacing: ".06em", textTransform: "uppercase" }}>Position</label>
-                              <select value={editPlayer.position} onChange={e => setEditPlayer(p => ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
+                              <select aria-label="Position" value={editPlayer.position} onChange={e => setEditPlayer(p => ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
                                 <option value="GK">Goalkeeper</option>
                                 <option value="DF">Defender</option>
                                 <option value="MF">Midfielder</option>
@@ -349,7 +350,7 @@ export default function ManagerPage() {
                             </div>
                             <div>
                               <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: "#4a545f", marginBottom: 6, letterSpacing: ".06em", textTransform: "uppercase" }}>Date of birth</label>
-                              <input type="date" value={editPlayer.date_of_birth} onChange={e => setEditPlayer(p => ({ ...p, date_of_birth: e.target.value }))} style={inputSm} />
+                              <input aria-label="Date of birth" type="date" value={editPlayer.date_of_birth} onChange={e => setEditPlayer(p => ({ ...p, date_of_birth: e.target.value }))} style={inputSm} />
                             </div>
                           </div>
                           {editError && <div style={{ fontSize: 13, color: "#c22b20", marginBottom: 10 }}>{editError}</div>}
@@ -370,9 +371,9 @@ export default function ManagerPage() {
                         <td>
                           <span style={{ background: "rgba(17,24,39,.07)", borderRadius: 6, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>{p.position}</span>
                         </td>
-                        <td style={{ color: "#66707d", fontSize: 14 }}>{p.date_of_birth || "-"}</td>
+                        <td className="col-dob" style={{ color: "#66707d", fontSize: 14, whiteSpace: "nowrap" }}>{p.date_of_birth ? new Date(p.date_of_birth + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" }) : "-"}</td>
                         <td style={{ textAlign: "right" }}>
-                          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                          <div className="row-actions" style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                             <button type="button" onClick={() => openEdit(p)}
                               style={{ background: "none", border: "1px solid rgba(17,24,39,.14)", borderRadius: 8, color: "#101820", fontSize: 13, padding: "6px 12px", cursor: "pointer", fontFamily: "'DM Sans',system-ui,sans-serif" }}>
                               Edit
@@ -497,7 +498,7 @@ export default function ManagerPage() {
                 {[
                   ["Club name", club?.name || "-"],
                   ["Short code", club?.short_code || "-"],
-                  ["Community", club?.community || "-"],
+                  ["Country", communityCountry(club?.community) || "-"],
                   ["Home ground", club?.home_ground || "Nicholls"],
                   ["Season", "Season 3 · 2026-27"],
                 ].map(([l, v]) => (
@@ -641,11 +642,11 @@ function AccountTab({ club, onSignOut }: { club: { name: string } | null; onSign
         <div style={{ display: "grid", gap: 16 }}>
           <div>
             <label style={label11}>New password</label>
-            <input type="password" value={newPw} onChange={e => { setNewPw(e.target.value); setPwError(""); setPwMsg(""); }} placeholder="At least 8 characters" style={inputSm} />
+            <input aria-label="New password" type="password" value={newPw} onChange={e => { setNewPw(e.target.value); setPwError(""); setPwMsg(""); }} placeholder="At least 8 characters" style={inputSm} />
           </div>
           <div>
             <label style={label11}>Confirm new password</label>
-            <input type="password" value={confirmPw} onChange={e => { setConfirmPw(e.target.value); setPwError(""); setPwMsg(""); }} placeholder="Repeat password" style={inputSm} />
+            <input aria-label="Confirm new password" type="password" value={confirmPw} onChange={e => { setConfirmPw(e.target.value); setPwError(""); setPwMsg(""); }} placeholder="Repeat password" style={inputSm} />
           </div>
         </div>
         {pwError && <div style={{ marginTop: 12, fontSize: 14, color: "#a3211a" }}>{pwError}</div>}

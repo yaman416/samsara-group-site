@@ -263,7 +263,7 @@ export default function RegisterPage() {
               <div style={{ marginTop: 28, display: "grid", gap: 18 }}>
                 <div>
                   <label style={labelStyle}>Email address</label>
-                  <input type="email" value={forgotEmail} onChange={e => { setForgotEmail(e.target.value); setForgotError(""); }} onKeyDown={e => e.key === "Enter" && sendReset()} placeholder="manager@yourclub.com.au" style={inputStyle} autoFocus />
+                  <input aria-label="Email address" type="email" value={forgotEmail} onChange={e => { setForgotEmail(e.target.value); setForgotError(""); }} onKeyDown={e => e.key === "Enter" && sendReset()} placeholder="manager@yourclub.com.au" style={inputStyle} autoFocus />
                 </div>
                 {forgotError && <div style={{ background: "#fdecea", border: "1px solid #f5c6c0", borderRadius: 12, padding: "13px 16px", fontSize: 14, color: "#a3211a" }}>{forgotError}</div>}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
