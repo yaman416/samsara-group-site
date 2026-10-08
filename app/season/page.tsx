@@ -472,7 +472,7 @@ export default function SeasonPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {table.map((row, i) => (
+                      {table.map(row => (
                         <tr key={row.short_code} style={{ borderBottom: "1px solid rgba(17,24,39,.06)" }}>
                           <td style={{ padding: "14px 16px", color: "#66707d", fontVariantNumeric: "tabular-nums", width: 48 }}>{row.position}</td>
                           <td style={{ padding: "14px 16px" }}>
