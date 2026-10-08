@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import SiteLayout from "@/components/SiteLayout";
+import { communityCountry } from "@/lib/utils";
 
 interface Club {
   id: string;
@@ -97,7 +98,7 @@ export default function ClubsPage() {
                     )}
                     <span style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
                       <span style={{ fontSize: 17, fontWeight: 500, lineHeight: 1.35 }}>{c.name}</span>
-                      <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>{c.community}</span>
+                      <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>{communityCountry(c.community)}</span>
                     </span>
                   </span>
                   <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderTop: "1px solid rgba(17,24,39,.08)", paddingTop: 18, fontSize: 14, color: "#66707d" }}>

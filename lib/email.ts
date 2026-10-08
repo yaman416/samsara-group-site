@@ -1,7 +1,8 @@
 import "server-only";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Created on first send so builds without RESEND_API_KEY (e.g. previews) still succeed.
+let resend: Resend | undefined;
 
 const FROM = process.env.EMAIL_FROM ?? "Samsara Premier League <noreply@samsarapl.com.au>";
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://samsaragroup.com.au";
@@ -16,6 +17,7 @@ export async function sendEmail({
   html: string;
 }) {
   const replyTo = process.env.EMAIL_REPLY_TO ?? undefined;
+  resend ??= new Resend(process.env.RESEND_API_KEY);
   return resend.emails.send({ from: FROM, to, subject, html, ...(replyTo ? { replyTo } : {}) });
 }
 

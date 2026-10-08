@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
+import { communityCountry } from "@/lib/utils";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 interface Player {
@@ -34,6 +35,8 @@ const POS_ORDER: Record<string, number> = { GK: 0, DF: 1, MF: 2, FW: 3 };
 const POS_LABEL: Record<string, string> = { GK: "Goalkeeper", DF: "Defender", MF: "Midfielder", FW: "Forward" };
 
 export async function generateStaticParams() {
+  // Preview builds without Supabase env vars render club pages on demand instead.
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return [];
   const { data } = await supabaseAdmin.from("clubs").select("short_code");
   return (data ?? []).map(c => ({ slug: c.short_code.toLowerCase() }));
 }
@@ -118,7 +121,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
             <div style={{ minWidth: 0 }}>
               <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(32px,4.6vw,56px)", lineHeight: 1.1, letterSpacing: "-.02em", margin: 0 }}>{club.name}</h1>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
-                <span style={{ border: "1px solid rgba(255,255,255,.26)", borderRadius: 999, padding: "7px 15px", fontSize: 12, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase" }}>{club.community}</span>
+                <span style={{ border: "1px solid rgba(255,255,255,.26)", borderRadius: 999, padding: "7px 15px", fontSize: 12, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase" }}>{communityCountry(club.community)}</span>
               </div>
             </div>
           </div>

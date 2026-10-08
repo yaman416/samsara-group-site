@@ -4,10 +4,14 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = "https://samsaragroup.com.au";
 
-  const { data: clubs } = await supabaseAdmin
-    .from("clubs")
-    .select("short_code, id")
-    .order("name");
+  // Without Supabase env vars (e.g. preview builds) the sitemap still lists the static pages.
+  let clubs: { short_code: string; id: string }[] | null = null;
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    ({ data: clubs } = await supabaseAdmin
+      .from("clubs")
+      .select("short_code, id")
+      .order("name"));
+  }
 
   const clubUrls = (clubs ?? []).map(c => ({
     url: `${base}/clubs/${c.short_code.toLowerCase()}`,
