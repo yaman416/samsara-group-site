@@ -34,6 +34,8 @@ const POS_ORDER: Record<string, number> = { GK: 0, DF: 1, MF: 2, FW: 3 };
 const POS_LABEL: Record<string, string> = { GK: "Goalkeeper", DF: "Defender", MF: "Midfielder", FW: "Forward" };
 
 export async function generateStaticParams() {
+  // Preview builds without Supabase env vars render club pages on demand instead.
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return [];
   const { data } = await supabaseAdmin.from("clubs").select("short_code");
   return (data ?? []).map(c => ({ slug: c.short_code.toLowerCase() }));
 }
