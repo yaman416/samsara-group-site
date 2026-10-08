@@ -727,7 +727,7 @@ export default function AdminPage() {
               <div style={{ overflowX: "auto" }}>
                 <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead style={{ background: "rgba(17,24,39,.03)" }}>
-                    <tr><th>Wk</th><th>Home</th><th>Away</th><th>Date</th><th>Venue</th><th>Status</th><th></th></tr>
+                    <tr><th>Wk</th><th>Team</th><th>Opponent</th><th>Date</th><th>Venue</th><th>Status</th><th></th></tr>
                   </thead>
                   <tbody>
                     {fixtures.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", color: "#98a1ab", padding: 32 }}>No fixtures yet.</td></tr>}

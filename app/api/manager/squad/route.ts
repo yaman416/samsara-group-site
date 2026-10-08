@@ -13,9 +13,9 @@ async function getClubId(req: NextRequest): Promise<string | null> {
 }
 
 async function checkDeadline(clubId: string): Promise<boolean> {
-  const { data: club } = await supabaseAdmin.from("clubs").select("season").eq("id", clubId).single();
-  if (!club?.season) return false;
-  const { data: season } = await supabaseAdmin.from("seasons").select("squad_deadline").eq("year", club.season).single();
+  const { data: club } = await supabaseAdmin.from("clubs").select("season_id").eq("id", clubId).single();
+  if (!club?.season_id) return false;
+  const { data: season } = await supabaseAdmin.from("seasons").select("squad_deadline").eq("id", club.season_id).single();
   if (!season?.squad_deadline) return false;
   return new Date() > new Date(season.squad_deadline);
 }

@@ -236,7 +236,7 @@ export default function ManagerPage() {
                   <div style={{ background: "#f4f4f1", borderRadius: 12, padding: "10px 16px", fontSize: 13, color: "#4a545f", textAlign: "right" }}>
                     <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: ".1em", textTransform: "uppercase", color: "#98a1ab", marginBottom: 3 }}>Next match</div>
                     <div style={{ fontWeight: 600, color: "#101820" }}>vs {opponent}</div>
-                    <div style={{ color: "#66707d", marginTop: 2 }}>{isHome ? "Home" : "Away"} · {dateStr} {timeStr}</div>
+                    <div style={{ color: "#66707d", marginTop: 2 }}>{dateStr} · {timeStr}</div>
                   </div>
                 );
               })()}
@@ -416,10 +416,9 @@ export default function ManagerPage() {
                 <div key={f.id} style={{ background: "#fff", border: `1px solid ${completed ? "rgba(31,107,55,.2)" : "rgba(17,24,39,.10)"}`, borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: "#66707d", minWidth: 44 }}>Wk {f.week}</div>
                   <div style={{ flex: 1, minWidth: 120 }}>
-                    <div style={{ fontWeight: 600, fontSize: 16 }}>{isHome ? "vs" : "@"} {opponent?.name}</div>
+                    <div style={{ fontWeight: 600, fontSize: 16 }}>vs {opponent?.name}</div>
                     <div style={{ fontSize: 13, color: "#98a1ab", marginTop: 3 }}>
-                      {isHome ? "Home" : "Away"}
-                      {f.venue ? ` · ${f.venue}` : ""}
+                      {f.venue || "Venue to be confirmed"}
                     </div>
                   </div>
                   {f.played_at && (
