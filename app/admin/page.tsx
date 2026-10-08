@@ -346,7 +346,7 @@ export default function AdminPage() {
                 <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
                   <div style={{ flex: "1 1 220px", minWidth: 0 }}>
                     <label style={label11}>Deadline date and time (Canberra)</label>
-                    <input
+                    <input aria-label="Deadline date and time (Canberra)"
                       type="datetime-local"
                       value={deadlineInput || toLeagueInput(activeSeason.squad_deadline)}
                       onChange={e => setDeadlineInput(e.target.value)}
@@ -377,7 +377,7 @@ export default function AdminPage() {
               <div className="admin-form-grid">
                 <div>
                   <label style={label11}>Club</label>
-                  <select
+                  <select aria-label="Club"
                     value={newClubId}
                     onChange={e => {
                       setNewClubId(e.target.value);
@@ -394,7 +394,7 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <label style={label11}>Manager email</label>
-                  <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="manager@example.com" style={inputSm} />
+                  <input aria-label="Manager email" type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="manager@example.com" style={inputSm} />
                 </div>
                 <Btn variant="dark" onClick={createInvite} disabled={invBusy || !newClubId || !newEmail.trim()}>{invBusy ? "Sending..." : "Send invite"}</Btn>
               </div>
@@ -489,11 +489,11 @@ export default function AdminPage() {
                 <Btn variant="ghost" style={{ fontSize: 13, padding: "6px 12px" }} onClick={() => setEditClub(null)}>Close</Btn>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16, marginBottom: 16 }}>
-                <div><label style={label11}>Club name</label><input value={editClub.name} onChange={e => setEditClub(c => c && ({ ...c, name: e.target.value }))} style={inputSm} /></div>
-                <div><label style={label11}>Short code</label><input value={editClub.short_code} onChange={e => setEditClub(c => c && ({ ...c, short_code: e.target.value.toUpperCase().slice(0,4) }))} style={inputSm} /></div>
-                <div><label style={label11}>Community</label><input value={editClub.community} onChange={e => setEditClub(c => c && ({ ...c, community: e.target.value }))} style={inputSm} /></div>
-                <div><label style={label11}>Home ground</label><input value={editClub.home_ground || ""} onChange={e => setEditClub(c => c && ({ ...c, home_ground: e.target.value }))} style={inputSm} /></div>
-                <div><label style={label11}>Founded</label><input type="number" value={editClub.founded || ""} onChange={e => setEditClub(c => c && ({ ...c, founded: parseInt(e.target.value) || null }))} style={inputSm} /></div>
+                <div><label style={label11}>Club name</label><input aria-label="Club name" value={editClub.name} onChange={e => setEditClub(c => c && ({ ...c, name: e.target.value }))} style={inputSm} /></div>
+                <div><label style={label11}>Short code</label><input aria-label="Short code" value={editClub.short_code} onChange={e => setEditClub(c => c && ({ ...c, short_code: e.target.value.toUpperCase().slice(0,4) }))} style={inputSm} /></div>
+                <div><label style={label11}>Community</label><input aria-label="Community" value={editClub.community} onChange={e => setEditClub(c => c && ({ ...c, community: e.target.value }))} style={inputSm} /></div>
+                <div><label style={label11}>Home ground</label><input aria-label="Home ground" value={editClub.home_ground || ""} onChange={e => setEditClub(c => c && ({ ...c, home_ground: e.target.value }))} style={inputSm} /></div>
+                <div><label style={label11}>Founded</label><input aria-label="Founded" type="number" value={editClub.founded || ""} onChange={e => setEditClub(c => c && ({ ...c, founded: parseInt(e.target.value) || null }))} style={inputSm} /></div>
                 <div>
                   <label style={label11}>Home colour</label>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -538,7 +538,7 @@ export default function AdminPage() {
               </div>
               <div style={{ marginBottom: 16 }}>
                 <label style={label11}>Manager (assigned user)</label>
-                <select
+                <select aria-label="Manager (assigned user)"
                   value={editClub.manager_id ?? ""}
                   onChange={e => setEditClub(c => c && ({ ...c, manager_id: e.target.value || null }))}
                   style={{ ...inputSm, background: "#fff" }}
@@ -574,14 +574,14 @@ export default function AdminPage() {
               {addPlayerOpen && (
                 <div style={{ background: "#f8f8f6", borderRadius: 12, padding: 20, marginBottom: 20 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginBottom: 12 }}>
-                    <div><label style={label11}>Name</label><input value={newPlayer.full_name} onChange={e => setNewPlayer(p => ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
-                    <div><label style={label11}>Jersey no.</label><input type="number" min={1} max={99} value={newPlayer.jersey_number} onChange={e => setNewPlayer(p => ({ ...p, jersey_number: e.target.value }))} style={inputSm} /></div>
+                    <div><label style={label11}>Name</label><input aria-label="Name" value={newPlayer.full_name} onChange={e => setNewPlayer(p => ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
+                    <div><label style={label11}>Jersey no.</label><input aria-label="Jersey no." type="number" min={1} max={99} value={newPlayer.jersey_number} onChange={e => setNewPlayer(p => ({ ...p, jersey_number: e.target.value }))} style={inputSm} /></div>
                     <div><label style={label11}>Position</label>
-                      <select value={newPlayer.position} onChange={e => setNewPlayer(p => ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
+                      <select aria-label="Position" value={newPlayer.position} onChange={e => setNewPlayer(p => ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
                         <option value="GK">Goalkeeper</option><option value="DF">Defender</option><option value="MF">Midfielder</option><option value="FW">Forward</option>
                       </select>
                     </div>
-                    <div><label style={label11}>Date of birth</label><input type="date" value={newPlayer.date_of_birth} onChange={e => setNewPlayer(p => ({ ...p, date_of_birth: e.target.value }))} style={inputSm} /></div>
+                    <div><label style={label11}>Date of birth</label><input aria-label="Date of birth" type="date" value={newPlayer.date_of_birth} onChange={e => setNewPlayer(p => ({ ...p, date_of_birth: e.target.value }))} style={inputSm} /></div>
                   </div>
                   <div style={{ display: "flex", gap: 10 }}>
                     <Btn variant="dark" onClick={addPlayer} disabled={playerBusy}>{playerBusy ? "Adding..." : "Add"}</Btn>
@@ -598,14 +598,14 @@ export default function AdminPage() {
                     <tr key={p.id} style={{ background: "#fafaf8" }}>
                       <td colSpan={5} style={{ padding: "14px 12px" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10, marginBottom: 10 }}>
-                          <div><label style={label11}>Name</label><input value={editPlayer.full_name} onChange={e => setEditPlayer(p => p && ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
-                          <div><label style={label11}>Jersey no.</label><input type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => p && ({ ...p, jersey_number: parseInt(e.target.value) }))} style={inputSm} /></div>
+                          <div><label style={label11}>Name</label><input aria-label="Name" value={editPlayer.full_name} onChange={e => setEditPlayer(p => p && ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
+                          <div><label style={label11}>Jersey no.</label><input aria-label="Jersey no." type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => p && ({ ...p, jersey_number: parseInt(e.target.value) }))} style={inputSm} /></div>
                           <div><label style={label11}>Position</label>
-                            <select value={editPlayer.position} onChange={e => setEditPlayer(p => p && ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
+                            <select aria-label="Position" value={editPlayer.position} onChange={e => setEditPlayer(p => p && ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
                               <option value="GK">Goalkeeper</option><option value="DF">Defender</option><option value="MF">Midfielder</option><option value="FW">Forward</option>
                             </select>
                           </div>
-                          <div><label style={label11}>DOB</label><input type="date" value={editPlayer.date_of_birth || ""} onChange={e => setEditPlayer(p => p && ({ ...p, date_of_birth: e.target.value || null }))} style={inputSm} /></div>
+                          <div><label style={label11}>DOB</label><input aria-label="DOB" type="date" value={editPlayer.date_of_birth || ""} onChange={e => setEditPlayer(p => p && ({ ...p, date_of_birth: e.target.value || null }))} style={inputSm} /></div>
                         </div>
                         <div style={{ display: "flex", gap: 10 }}>
                           <Btn variant="dark" onClick={savePlayer} disabled={playerBusy}>{playerBusy ? "Saving..." : "Save"}</Btn>
@@ -668,7 +668,7 @@ export default function AdminPage() {
                   <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
                     <div style={{ flex: 1, minWidth: 200 }}>
                       <label style={label11}>Note to manager (optional)</label>
-                      <input
+                      <input aria-label="Note to manager (optional)"
                         value={regNote[reg.id] ?? ""}
                         onChange={e => setRegNote(n => ({ ...n, [reg.id]: e.target.value }))}
                         placeholder="Reason or instructions..."
@@ -698,23 +698,23 @@ export default function AdminPage() {
               <div className="card" style={{ padding: 28 }}>
                 <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>New fixture</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 16 }}>
-                  <div><label style={label11}>Week</label><input type="number" value={nfWeek} onChange={e => setNfWeek(e.target.value)} style={inputSm} /></div>
+                  <div><label style={label11}>Week</label><input aria-label="Week" type="number" value={nfWeek} onChange={e => setNfWeek(e.target.value)} style={inputSm} /></div>
                   <div>
                     <label style={label11}>Home club</label>
-                    <select value={nfHome} onChange={e => setNfHome(e.target.value)} style={inputSm}>
+                    <select aria-label="Home club" value={nfHome} onChange={e => setNfHome(e.target.value)} style={inputSm}>
                       <option value="">Select...</option>
                       {clubs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label style={label11}>Away club</label>
-                    <select value={nfAway} onChange={e => setNfAway(e.target.value)} style={inputSm}>
+                    <select aria-label="Away club" value={nfAway} onChange={e => setNfAway(e.target.value)} style={inputSm}>
                       <option value="">Select...</option>
                       {clubs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
-                  <div><label style={label11}>Venue</label><input value={nfVenue} onChange={e => setNfVenue(e.target.value)} placeholder="Nicholls Oval" style={inputSm} /></div>
-                  <div><label style={label11}>Date and time (Canberra)</label><input type="datetime-local" value={nfDate} onChange={e => setNfDate(e.target.value)} style={inputSm} /></div>
+                  <div><label style={label11}>Venue</label><input aria-label="Venue" value={nfVenue} onChange={e => setNfVenue(e.target.value)} placeholder="Nicholls Oval" style={inputSm} /></div>
+                  <div><label style={label11}>Date and time (Canberra)</label><input aria-label="Date and time (Canberra)" type="datetime-local" value={nfDate} onChange={e => setNfDate(e.target.value)} style={inputSm} /></div>
                 </div>
                 <div style={{ marginTop: 18, display: "flex", gap: 12 }}>
                   <Btn variant="ghost" onClick={() => setNfOpen(false)}>Cancel</Btn>
@@ -760,21 +760,21 @@ export default function AdminPage() {
                 <div className="card" style={{ padding: 28, width: "100%", maxWidth: 560 }}>
                   <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Edit fixture</div>
                   <div className="admin-pair-grid">
-                    <div><label style={label11}>Week</label><input type="number" value={editFixture.week} onChange={e => setEditFixture(x => x && ({ ...x, week: e.target.value }))} style={inputSm} /></div>
-                    <div><label style={label11}>Date and time (Canberra)</label><input type="datetime-local" value={editFixture.played_at} onChange={e => setEditFixture(x => x && ({ ...x, played_at: e.target.value }))} style={inputSm} /></div>
+                    <div><label style={label11}>Week</label><input aria-label="Week" type="number" value={editFixture.week} onChange={e => setEditFixture(x => x && ({ ...x, week: e.target.value }))} style={inputSm} /></div>
+                    <div><label style={label11}>Date and time (Canberra)</label><input aria-label="Date and time (Canberra)" type="datetime-local" value={editFixture.played_at} onChange={e => setEditFixture(x => x && ({ ...x, played_at: e.target.value }))} style={inputSm} /></div>
                     <div>
                       <label style={label11}>Home team</label>
-                      <select value={editFixture.home_club_id} onChange={e => setEditFixture(x => x && ({ ...x, home_club_id: e.target.value }))} style={inputSm}>
+                      <select aria-label="Home team" value={editFixture.home_club_id} onChange={e => setEditFixture(x => x && ({ ...x, home_club_id: e.target.value }))} style={inputSm}>
                         {clubs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
                     </div>
                     <div>
                       <label style={label11}>Away team</label>
-                      <select value={editFixture.away_club_id} onChange={e => setEditFixture(x => x && ({ ...x, away_club_id: e.target.value }))} style={inputSm}>
+                      <select aria-label="Away team" value={editFixture.away_club_id} onChange={e => setEditFixture(x => x && ({ ...x, away_club_id: e.target.value }))} style={inputSm}>
                         {clubs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
                     </div>
-                    <div style={{ gridColumn: "1 / -1" }}><label style={label11}>Venue</label><input value={editFixture.venue} onChange={e => setEditFixture(x => x && ({ ...x, venue: e.target.value }))} placeholder="Nicholls Oval" style={inputSm} /></div>
+                    <div style={{ gridColumn: "1 / -1" }}><label style={label11}>Venue</label><input aria-label="Venue" value={editFixture.venue} onChange={e => setEditFixture(x => x && ({ ...x, venue: e.target.value }))} placeholder="Nicholls Oval" style={inputSm} /></div>
                   </div>
                   <div style={{ marginTop: 20, display: "flex", gap: 12 }}>
                     <Btn variant="ghost" onClick={() => setEditFixture(null)}>Cancel</Btn>
@@ -878,11 +878,11 @@ export default function AdminPage() {
               <div style={{ display: "grid", gap: 14 }}>
                 <div>
                   <label style={label11}>Subject</label>
-                  <input value={emailSubject} onChange={e => setEmailSubject(e.target.value)} placeholder="Season 3 update" style={inputSm} />
+                  <input aria-label="Subject" value={emailSubject} onChange={e => setEmailSubject(e.target.value)} placeholder="Season 3 update" style={inputSm} />
                 </div>
                 <div>
                   <label style={label11}>Message (HTML allowed)</label>
-                  <textarea
+                  <textarea aria-label="Message (HTML allowed)"
                     value={emailBody}
                     onChange={e => setEmailBody(e.target.value)}
                     placeholder="<p>Hello everyone...</p>"

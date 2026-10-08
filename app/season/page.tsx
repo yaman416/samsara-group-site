@@ -307,7 +307,7 @@ export default function SeasonPage() {
                 <p style={{ margin: "16px 0 0", fontSize: 17, lineHeight: 1.72, color: "#4a545f", maxWidth: "62ch" }}>
                   {hasResults
                     ? `${completedCount} match${completedCount === 1 ? "" : "es"} played so far. Results and standings update live.`
-                    : "All clubs have accepted their invitations. Managers are registering squads now; the fixture draw follows once every squad is approved."}
+                    : "All 12 clubs are confirmed and the full Season 3 fixture list is out. Managers are registering their squads ahead of kick-off on Saturday 14 November."}
                 </p>
                 <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap" }}>
                   <button type="button" onClick={() => setTab(hasResults ? "Table" : "Clubs")} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "#101820", color: "#fff", border: 0, fontSize: 15, fontWeight: 500, padding: "14px 26px", borderRadius: 999, cursor: "pointer" }}>
