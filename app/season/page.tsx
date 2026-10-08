@@ -62,27 +62,37 @@ function ScoreCard({ f }: { f: Fixture }) {
 }
 
 const GROUNDS = ["Ground 1", "Ground 2"];
+// Each ground gets its own colour so the two pitches are easy to tell apart at a glance.
+const GROUND_STYLE: Record<string, { accent: string; tint: string }> = {
+  "Ground 1": { accent: "#e2372b", tint: "#fdecea" },
+  "Ground 2": { accent: "#1a56db", tint: "#e8effc" },
+};
+const OTHER_GROUND = { accent: "#66707d", tint: "#f1f2f4" };
 
-function MatchRow({ f }: { f: Fixture }) {
+function MatchRow({ f, tone, focusClub }: { f: Fixture; tone: { accent: string; tint: string }; focusClub: string | null }) {
   const r = Array.isArray(f.results) ? (f.results[0] ?? null) : (f.results ?? null);
   const done = f.status === "completed" && r;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "64px 1fr", alignItems: "center", gap: 12, padding: "14px 0", borderTop: "1px solid rgba(17,24,39,.08)" }}>
-      <div style={{ fontFamily: "ui-monospace,monospace", fontSize: 14, fontWeight: 600, color: "#101820" }}>{f.played_at ? fmtTime(new Date(f.played_at)) : "TBC"}</div>
+    <div style={{ display: "grid", gridTemplateColumns: "78px 1fr", alignItems: "center", gap: 14, padding: "14px 0", borderTop: "1px solid rgba(17,24,39,.08)" }}>
+      <div style={{ justifySelf: "start", background: tone.tint, color: tone.accent, borderRadius: 8, padding: "6px 10px", fontSize: 14, fontWeight: 700, whiteSpace: "nowrap" }}>{f.played_at ? fmtTime(new Date(f.played_at)) : "TBC"}</div>
       <div style={{ display: "grid", gap: 8 }}>
-        {[[f.home_club, r?.home_score], [f.away_club, r?.away_score]].map(([club, score], i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <ClubBadge club={club as ClubRef} size={24} />
-            <span style={{ flex: 1, fontWeight: 600, fontSize: 15 }}>{(club as ClubRef).name}</span>
-            {done && <span style={{ fontFamily: "ui-monospace,monospace", fontSize: 16, fontWeight: 700 }}>{score as number}</span>}
-          </div>
-        ))}
+        {[[f.home_club, r?.home_score], [f.away_club, r?.away_score]].map(([club, score], i) => {
+          const c = club as ClubRef;
+          const isFocus = focusClub === c.id;
+          return (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <ClubBadge club={c} size={24} />
+              <span style={{ flex: 1, fontWeight: isFocus ? 700 : 600, fontSize: 15, color: isFocus ? tone.accent : "#101820" }}>{c.name}</span>
+              {done && <span style={{ fontFamily: "ui-monospace,monospace", fontSize: 16, fontWeight: 700 }}>{score as number}</span>}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function WeekSchedule({ week, fixtures }: { week: string; fixtures: Fixture[] }) {
+function WeekSchedule({ week, fixtures, focusClub }: { week: string; fixtures: Fixture[]; focusClub: string | null }) {
   const first = fixtures.find(f => f.played_at)?.played_at;
   const dateStr = first ? new Date(first).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", timeZone: TZ }) : "Date TBC";
   const byTime = (a: Fixture, b: Fixture) => (a.played_at ?? "").localeCompare(b.played_at ?? "");
@@ -96,12 +106,17 @@ function WeekSchedule({ week, fixtures }: { week: string; fixtures: Fixture[] })
         <span style={{ fontSize: 17, fontWeight: 600, color: "#101820" }}>{dateStr}</span>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 12 }}>
-        {columns.filter(c => c.list.length).map(c => (
-          <div key={c.name} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 14, padding: "16px 20px 4px" }}>
-            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".1em", textTransform: "uppercase", color: "#98a1ab", paddingBottom: 10 }}>{c.name}</div>
-            {c.list.map(f => <MatchRow key={f.id} f={f} />)}
-          </div>
-        ))}
+        {columns.filter(c => c.list.length).map(c => {
+          const tone = GROUND_STYLE[c.name] ?? OTHER_GROUND;
+          return (
+            <div key={c.name} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderTop: `4px solid ${tone.accent}`, borderRadius: 14, padding: "14px 20px 4px" }}>
+              <div style={{ paddingBottom: 12 }}>
+                <span style={{ display: "inline-block", background: tone.accent, color: "#fff", borderRadius: 999, padding: "5px 12px", fontSize: 12, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase" }}>{c.name}</span>
+              </div>
+              {c.list.map(f => <MatchRow key={f.id} f={f} tone={tone} focusClub={focusClub} />)}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -172,7 +187,15 @@ export default function SeasonPage() {
   const resultsByWeek: Record<number, MatchResult[]> = {};
   for (const r of results) { (resultsByWeek[r.week] ??= []).push(r); }
 
-  const filteredFixtureWeeks = weekFilter ? { [weekFilter]: fixturesByWeek[weekFilter] ?? [] } : fixturesByWeek;
+  // Fixtures tab: opens on the next matchweek still to be played, and can narrow to one club.
+  const [fixWeek, setFixWeek] = useState<number | null | undefined>(undefined);
+  const [clubFilter, setClubFilter] = useState<string | null>(null);
+  const nextWeek = fixtures.find(f => f.status === "scheduled")?.week ?? null;
+  const shownFixWeek = fixWeek === undefined ? nextWeek : fixWeek;
+  const fixtureClubs = [...new Map(fixtures.flatMap(f => [f.home_club, f.away_club]).map(c => [c.id, c])).values()].sort((a, b) => a.name.localeCompare(b.name));
+  const visibleFixtures = clubFilter ? fixtures.filter(f => f.home_club.id === clubFilter || f.away_club.id === clubFilter) : fixtures;
+  const filteredFixtureWeeks: Record<number, Fixture[]> = {};
+  for (const f of visibleFixtures) if (clubFilter || shownFixWeek == null || f.week === shownFixWeek) (filteredFixtureWeeks[f.week] ??= []).push(f);
   const filteredResultWeeks = weekFilter ? { [weekFilter]: resultsByWeek[weekFilter] ?? [] } : resultsByWeek;
 
   return (
@@ -333,16 +356,28 @@ export default function SeasonPage() {
           {tab === "Fixtures" && (
             hasFixtures ? (
               <div style={{ display: "grid", gap: 32 }}>
-                {weeks.length > 1 && (
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <button type="button" onClick={() => setWeekFilter(null)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 13, fontWeight: 500, padding: "8px 16px", borderRadius: 999, cursor: "pointer", background: weekFilter === null ? "#101820" : "#fff", color: weekFilter === null ? "#fff" : "#66707d", border: "1px solid rgba(17,24,39,.18)" }}>All weeks</button>
-                    {weeks.map(w => (
-                      <button key={w} type="button" onClick={() => setWeekFilter(w)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 13, fontWeight: 500, padding: "8px 16px", borderRadius: 999, cursor: "pointer", background: weekFilter === w ? "#101820" : "#fff", color: weekFilter === w ? "#fff" : "#66707d", border: "1px solid rgba(17,24,39,.18)" }}>Wk {w}</button>
-                    ))}
+                <div style={{ display: "grid", gap: 14 }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                    <label htmlFor="club-filter" style={{ fontSize: 13, fontWeight: 600, color: "#66707d" }}>Find my club</label>
+                    <select id="club-filter" value={clubFilter ?? ""} onChange={e => setClubFilter(e.target.value || null)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 14, padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(17,24,39,.18)", background: "#fff", color: "#101820", minWidth: 220 }}>
+                      <option value="">All clubs</option>
+                      {fixtureClubs.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                    <span style={{ display: "inline-flex", gap: 14, marginLeft: "auto", fontSize: 13, color: "#66707d" }}>
+                      {GROUNDS.map(g => <span key={g} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: GROUND_STYLE[g].accent }} />{g}</span>)}
+                    </span>
                   </div>
-                )}
+                  {!clubFilter && weeks.length > 1 && (
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <button type="button" onClick={() => setFixWeek(null)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 13, fontWeight: 500, padding: "8px 16px", borderRadius: 999, cursor: "pointer", background: shownFixWeek === null ? "#101820" : "#fff", color: shownFixWeek === null ? "#fff" : "#66707d", border: "1px solid rgba(17,24,39,.18)" }}>All weeks</button>
+                      {weeks.map(w => (
+                        <button key={w} type="button" onClick={() => setFixWeek(w)} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", fontSize: 13, fontWeight: 500, padding: "8px 16px", borderRadius: 999, cursor: "pointer", background: shownFixWeek === w ? "#101820" : "#fff", color: shownFixWeek === w ? "#fff" : "#66707d", border: "1px solid rgba(17,24,39,.18)" }}>Wk {w}{w === nextWeek ? " · Next" : ""}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 {Object.entries(filteredFixtureWeeks).sort(([a], [b]) => Number(a) - Number(b)).filter(([, wf]) => wf?.length).map(([week, wf]) => (
-                  <WeekSchedule key={week} week={week} fixtures={wf} />
+                  <WeekSchedule key={week} week={week} fixtures={wf} focusClub={clubFilter} />
                 ))}
               </div>
             ) : (
