@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SiteLayout from "@/components/SiteLayout";
+import { communityCountry } from "@/lib/utils";
 
 const TABS = ["Overview", "Fixtures", "Results", "Table", "Clubs", "Statistics"] as const;
 type Tab = typeof TABS[number];
@@ -30,11 +31,15 @@ function ClubBadge({ club, size = 32 }: { club: ClubRef | Club; size?: number })
   );
 }
 
+// Matches are played in Canberra; show times there whatever the viewer's timezone.
+const TZ = "Australia/Sydney";
+const fmtTime = (d: Date) => d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: TZ });
+
 function ScoreCard({ f }: { f: Fixture }) {
   const r = Array.isArray(f.results) ? (f.results[0] ?? null) : (f.results ?? null);
   const d = f.played_at ? new Date(f.played_at) : null;
-  const dateStr = d ? d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" }) : "TBC";
-  const timeStr = d ? d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" }) : "";
+  const dateStr = d ? d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: TZ }) : "TBC";
+  const timeStr = d ? fmtTime(d) : "";
   const done = f.status === "completed";
   return (
     <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 14, padding: "18px 20px" }}>
@@ -51,6 +56,52 @@ function ScoreCard({ f }: { f: Fixture }) {
           <span style={{ fontWeight: 600, fontSize: 15, textAlign: "right" }}>{f.away_club.name}</span>
           <ClubBadge club={f.away_club} size={28} />
         </div>
+      </div>
+    </div>
+  );
+}
+
+const GROUNDS = ["Ground 1", "Ground 2"];
+
+function MatchRow({ f }: { f: Fixture }) {
+  const r = Array.isArray(f.results) ? (f.results[0] ?? null) : (f.results ?? null);
+  const done = f.status === "completed" && r;
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "64px 1fr", alignItems: "center", gap: 12, padding: "14px 0", borderTop: "1px solid rgba(17,24,39,.08)" }}>
+      <div style={{ fontFamily: "ui-monospace,monospace", fontSize: 14, fontWeight: 600, color: "#101820" }}>{f.played_at ? fmtTime(new Date(f.played_at)) : "TBC"}</div>
+      <div style={{ display: "grid", gap: 8 }}>
+        {[[f.home_club, r?.home_score], [f.away_club, r?.away_score]].map(([club, score], i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <ClubBadge club={club as ClubRef} size={24} />
+            <span style={{ flex: 1, fontWeight: 600, fontSize: 15 }}>{(club as ClubRef).name}</span>
+            {done && <span style={{ fontFamily: "ui-monospace,monospace", fontSize: 16, fontWeight: 700 }}>{score as number}</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WeekSchedule({ week, fixtures }: { week: string; fixtures: Fixture[] }) {
+  const first = fixtures.find(f => f.played_at)?.played_at;
+  const dateStr = first ? new Date(first).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", timeZone: TZ }) : "Date TBC";
+  const byTime = (a: Fixture, b: Fixture) => (a.played_at ?? "").localeCompare(b.played_at ?? "");
+  const columns = GROUNDS.map(g => ({ name: g, list: fixtures.filter(f => f.venue === g).sort(byTime) }));
+  const other = fixtures.filter(f => !GROUNDS.includes(f.venue ?? "")).sort(byTime);
+  if (other.length) columns.push({ name: "Other venues", list: other });
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase", color: "#66707d" }}>Week {week}</span>
+        <span style={{ fontSize: 17, fontWeight: 600, color: "#101820" }}>{dateStr}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 12 }}>
+        {columns.filter(c => c.list.length).map(c => (
+          <div key={c.name} style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 14, padding: "16px 20px 4px" }}>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".1em", textTransform: "uppercase", color: "#98a1ab", paddingBottom: 10 }}>{c.name}</div>
+            {c.list.map(f => <MatchRow key={f.id} f={f} />)}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -291,12 +342,7 @@ export default function SeasonPage() {
                   </div>
                 )}
                 {Object.entries(filteredFixtureWeeks).sort(([a], [b]) => Number(a) - Number(b)).filter(([, wf]) => wf?.length).map(([week, wf]) => (
-                  <div key={week}>
-                    <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".08em", textTransform: "uppercase", color: "#66707d", marginBottom: 14 }}>Week {week}</div>
-                    <div style={{ display: "grid", gap: 10 }}>
-                      {wf.map(f => <ScoreCard key={f.id} f={f} />)}
-                    </div>
-                  </div>
+                  <WeekSchedule key={week} week={week} fixtures={wf} />
                 ))}
               </div>
             ) : (
@@ -440,7 +486,7 @@ export default function SeasonPage() {
                     <ClubBadge club={c} size={52} />
                     <span style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                       <span style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.35 }}>{c.name}</span>
-                      <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>{c.community}</span>
+                      <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>{communityCountry(c.community)}</span>
                     </span>
                   </Link>
                 ))}

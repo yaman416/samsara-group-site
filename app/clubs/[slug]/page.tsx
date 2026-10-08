@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
+import { communityCountry } from "@/lib/utils";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 interface Player {
@@ -118,7 +119,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
             <div style={{ minWidth: 0 }}>
               <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(32px,4.6vw,56px)", lineHeight: 1.1, letterSpacing: "-.02em", margin: 0 }}>{club.name}</h1>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
-                <span style={{ border: "1px solid rgba(255,255,255,.26)", borderRadius: 999, padding: "7px 15px", fontSize: 12, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase" }}>{club.community}</span>
+                <span style={{ border: "1px solid rgba(255,255,255,.26)", borderRadius: 999, padding: "7px 15px", fontSize: 12, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase" }}>{communityCountry(club.community)}</span>
               </div>
             </div>
           </div>
