@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
@@ -39,6 +40,17 @@ export async function generateStaticParams() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return [];
   const { data } = await supabaseAdmin.from("clubs").select("short_code");
   return (data ?? []).map(c => ({ slug: c.short_code.toLowerCase() }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const { data } = await supabaseAdmin.from("clubs").select("name, community").ilike("short_code", slug);
+  const club = data?.[0];
+  if (!club) return { title: "Club not found · Samsara Premier League" };
+  return {
+    title: `${club.name} · Samsara Premier League`,
+    description: `${club.name} squad, colours and Season 3 record in the Samsara Premier League, Canberra.`,
+  };
 }
 
 export default async function ClubPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -103,9 +115,9 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
       <section style={{ background: "#101820", color: "#fff", padding: "56px 0 0" }}>
         <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#98a1ab" }}>
-            <Link href="/season" style={{ color: "#98a1ab" }}>Season 3</Link>
+            <Link href="/season" style={{ color: "#98a1ab", display: "inline-block", padding: "6px 0" }}>Season 3</Link>
             <span>/</span>
-            <Link href="/clubs" style={{ color: "#98a1ab" }}>Clubs</Link>
+            <Link href="/clubs" style={{ color: "#98a1ab", display: "inline-block", padding: "6px 0" }}>Clubs</Link>
             <span>/</span>
             <span style={{ color: "#fff" }}>{club.short_code}</span>
           </div>
@@ -128,7 +140,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
 
           <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", borderTop: "1px solid rgba(255,255,255,.14)" }}>
             {[
-              ["Founded", club.founded || "Unknown"],
+              ...(club.founded ? [["Founded", String(club.founded)]] : []),
               ["Home ground", club.home_ground || "Nicholls"],
               ["Squad size", String(players?.length ?? 0)],
               ["Season 3", "Confirmed"],
@@ -189,8 +201,8 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
 
           {/* Community */}
           <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 34 }}>
-            <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d" }}>Community</div>
-            <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 28, marginTop: 18 }}>{club.community}</div>
+            <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d" }}>Country</div>
+            <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 28, marginTop: 18 }}>{communityCountry(club.community)}</div>
             <p style={{ margin: "16px 0 0", fontSize: 15, lineHeight: 1.7, color: "#66707d" }}>
               Part of Canberra&#39;s {club.community} football community, competing in the Samsara Premier League.
             </p>
@@ -244,7 +256,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
       {/* Back link */}
       <section style={{ background: "#f4f4f1", padding: "0 24px 96px" }}>
         <div style={{ maxWidth: 1340, margin: "0 auto" }}>
-          <Link href="/clubs" style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#66707d", fontSize: 14, textDecoration: "none" }}>
+          <Link href="/clubs" style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#66707d", fontSize: 14, textDecoration: "none", padding: "8px 0" }}>
             Back to all clubs
           </Link>
         </div>

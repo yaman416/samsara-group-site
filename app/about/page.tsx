@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import SiteLayout from "@/components/SiteLayout";
 
 const RED = "#e2372b";
@@ -107,14 +108,14 @@ export default function AboutPage() {
                 Samsara Premier League
               </h2>
               <p style={{ fontSize: 16, lineHeight: 1.85, color: MUTED, margin: "0 0 18px" }}>
-                The SPL is Canberra's premier community football competition for the Nepalese and Bhutanese diaspora. Now entering Season 3, it has grown from a grassroots idea into a structured, professionally run league with up to 12 clubs competing across a full round-robin season and finals.
+                The SPL is Canberra&apos;s premier community football competition for the Nepalese and Bhutanese diaspora. Now entering Season 3, it has grown from a grassroots idea into a structured, professionally run league with up to 12 clubs competing across a full round-robin season and finals.
               </p>
               <p style={{ fontSize: 16, lineHeight: 1.85, color: MUTED, margin: "0 0 32px" }}>
                 Each club registers a squad, pays a modest levy, and competes under SPL rules aligned with Football Australia standards. Matches are officiated by registered referees, results tracked publicly, and champions recognised with trophies and community celebration.
               </p>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <a href="/season" style={{ background: RED, color: "#fff", fontSize: 14, fontWeight: 600, padding: "13px 26px", borderRadius: 999, textDecoration: "none" }}>Season 3 Hub</a>
-                <a href="/clubs" style={{ background: "transparent", color: DARK, fontSize: 14, fontWeight: 500, padding: "13px 26px", borderRadius: 999, textDecoration: "none", border: "1px solid rgba(17,24,39,.18)" }}>View Clubs</a>
+                <Link href="/season" style={{ background: RED, color: "#fff", fontSize: 14, fontWeight: 600, padding: "13px 26px", borderRadius: 999, textDecoration: "none" }}>Season 3 Hub</Link>
+                <Link href="/clubs" style={{ background: "transparent", color: DARK, fontSize: 14, fontWeight: 500, padding: "13px 26px", borderRadius: 999, textDecoration: "none", border: "1px solid rgba(17,24,39,.18)" }}>View Clubs</Link>
               </div>
             </div>
             <div style={{ display: "grid", gap: 1, background: "rgba(17,24,39,.08)", border: "1px solid rgba(17,24,39,.08)", borderRadius: 18, overflow: "hidden" }}>
@@ -209,8 +210,8 @@ export default function AboutPage() {
               </p>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "flex-start" }}>
-              <a href="/register" style={{ background: "#fff", color: RED, fontSize: 15, fontWeight: 700, padding: "16px 28px", borderRadius: 999, textDecoration: "none", whiteSpace: "nowrap" }}>Register your club</a>
-              <a href="/clubs" style={{ background: "rgba(255,255,255,.15)", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 28px", borderRadius: 999, textDecoration: "none", border: "1px solid rgba(255,255,255,.35)", whiteSpace: "nowrap" }}>View all clubs</a>
+              <Link href="/register" style={{ background: "#fff", color: RED, fontSize: 15, fontWeight: 700, padding: "16px 28px", borderRadius: 999, textDecoration: "none", whiteSpace: "nowrap" }}>Register your club</Link>
+              <Link href="/clubs" style={{ background: "rgba(255,255,255,.15)", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 28px", borderRadius: 999, textDecoration: "none", border: "1px solid rgba(255,255,255,.35)", whiteSpace: "nowrap" }}>View all clubs</Link>
               <a href="mailto:samsaragroup.cbr@gmail.com" style={{ background: "transparent", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 28px", borderRadius: 999, textDecoration: "none", border: "1px solid rgba(255,255,255,.35)", whiteSpace: "nowrap" }}>Get in touch</a>
             </div>
           </div>
@@ -222,9 +223,9 @@ export default function AboutPage() {
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "20px 48px", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 28px", alignItems: "center" }}>
             <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".14em", textTransform: "uppercase", color: "#98a1ab", width: "100%" }}>Contact</div>
-            <a href="mailto:samsaragroup.cbr@gmail.com" style={{ color: "#fff", textDecoration: "none", fontSize: 15, fontWeight: 500 }}>samsaragroup.cbr@gmail.com</a>
-            <a href="tel:+61449981624" style={{ color: "#c3cad2", textDecoration: "none", fontSize: 15 }}>+61 449 981 624</a>
-            <a href="https://www.instagram.com/samsaragroup.cbr" style={{ color: "#c3cad2", textDecoration: "none", fontSize: 15 }}>@samsaragroup.cbr</a>
+            <a href="mailto:samsaragroup.cbr@gmail.com" style={{ color: "#fff", textDecoration: "none", fontSize: 15, fontWeight: 500, padding: "4px 0" }}>samsaragroup.cbr@gmail.com</a>
+            <a href="tel:+61449981624" style={{ color: "#c3cad2", textDecoration: "none", fontSize: 15, padding: "4px 0" }}>+61 449 981 624</a>
+            <a href="https://www.instagram.com/samsaragroup.cbr" style={{ color: "#c3cad2", textDecoration: "none", fontSize: 15, padding: "4px 0" }}>@samsaragroup.cbr</a>
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             <a href="https://www.instagram.com/samsaragroup.cbr" aria-label="Instagram" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 42, height: 42, borderRadius: "50%", background: "rgba(255,255,255,.1)", color: "#fff", textDecoration: "none" }}>

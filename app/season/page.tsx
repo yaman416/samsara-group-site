@@ -244,7 +244,7 @@ export default function SeasonPage() {
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(16,24,32,.7) 0%,rgba(16,24,32,.94) 100%)" }} />
         <div style={{ position: "relative", maxWidth: 1340, margin: "0 auto", padding: "64px 24px 0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#98a1ab" }}>
-            <Link href="/" style={{ color: "#98a1ab" }}>Competitions</Link>
+            <Link href="/" style={{ color: "#98a1ab", display: "inline-block", padding: "6px 0" }}>Home</Link>
             <span>/</span>
             <span style={{ color: "#fff" }}>Season 3</span>
           </div>

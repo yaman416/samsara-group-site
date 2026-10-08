@@ -47,7 +47,14 @@ function Btn({ variant = "dark", children, style, ...props }: React.ButtonHTMLAt
 }
 
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(() => typeof window !== "undefined" && !!localStorage.getItem(ADMIN_KEY));
+  // Read the stored key after mount so the server and first client render match.
+  const [authed, setAuthed] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAuthed(!!localStorage.getItem(ADMIN_KEY));
+    setAuthChecked(true);
+  }, []);
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState("");
   const [screen, setScreen] = useState<Screen>("invites");
@@ -129,6 +136,7 @@ export default function AdminPage() {
     if (r.ok) setTable(await r.json());
   }, [activeSeason]);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- these effects fetch data for the open screen */
   useEffect(() => { if (authed) { loadSeasons(); loadClubs(); loadAuthUsers(); } }, [authed, loadSeasons, loadClubs, loadAuthUsers]);
   useEffect(() => {
     if (!authed) return;
@@ -139,6 +147,7 @@ export default function AdminPage() {
     if (screen === "fixtures" || screen === "matchday") loadFixtures();
     if (screen === "table")    loadTable();
   }, [authed, screen, loadInvites, loadRegs, loadClubs, loadFixtures, loadTable, loadSubscribers]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   async function login() {
     if (!pw.trim()) return;
@@ -274,13 +283,15 @@ export default function AdminPage() {
     { key: "emails",   label: "Emails" },
   ];
 
+  if (!authChecked) return <div style={{ background: "#f4f4f1", minHeight: "100vh" }} />;
+
   if (!authed) return (
     <div style={{ background: "#f4f4f1", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F }}>
       <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 40, width: "100%", maxWidth: 380 }}>
-        <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 24, fontWeight: 500, marginBottom: 8 }}>SPL Admin</div>
+        <h1 style={{ fontFamily: "Lora,Georgia,serif", fontSize: 24, fontWeight: 500, margin: "0 0 8px" }}>SPL Admin</h1>
         <div style={{ fontSize: 14, color: "#66707d", marginBottom: 24 }}>Restricted access</div>
-        <label style={label11}>Admin key</label>
-        <input type="password" value={pw} onChange={e => { setPw(e.target.value); setPwError(""); }} onKeyDown={e => e.key === "Enter" && login()} placeholder="Enter admin key" style={{ ...inputSm, marginBottom: pwError ? 8 : 20 }} autoFocus />
+        <label htmlFor="admin-key" style={label11}>Admin key</label>
+        <input id="admin-key" type="password" value={pw} onChange={e => { setPw(e.target.value); setPwError(""); }} onKeyDown={e => e.key === "Enter" && login()} placeholder="Enter admin key" style={{ ...inputSm, marginBottom: pwError ? 8 : 20 }} autoFocus />
         {pwError && <div style={{ fontSize: 14, color: "#a3211a", marginBottom: 16 }}>{pwError}</div>}
         <Btn variant="dark" onClick={login} style={{ width: "100%" }}>Continue</Btn>
       </div>
@@ -309,7 +320,7 @@ export default function AdminPage() {
       {/* Topbar */}
       <div style={{ background: "#101820", padding: "0 24px", position: "sticky", top: 0, zIndex: 50 }}>
         <div className="admin-nav" style={{ maxWidth: 1340, margin: "0 auto", display: "flex", gap: 4, alignItems: "center", height: 52, overflowX: "auto" }}>
-          <span style={{ color: "#fff", fontWeight: 700, fontSize: 15, marginRight: 16, whiteSpace: "nowrap" }}>SPL Admin</span>
+          <h1 style={{ color: "#fff", fontWeight: 700, fontSize: 15, margin: "0 16px 0 0", whiteSpace: "nowrap" }}>SPL Admin</h1>
           {NAV.map(n => (
             <button key={n.key} type="button" onClick={() => setScreen(n.key)}
               style={{ background: screen === n.key ? "rgba(255,255,255,.14)" : "none", border: "none", color: screen === n.key ? "#fff" : "#98a1ab", fontSize: 13, fontWeight: 500, padding: "8px 14px", borderRadius: 8, cursor: "pointer", whiteSpace: "nowrap" }}>

@@ -241,12 +241,12 @@ export default function RegisterPage() {
                 </div>
                 {siError && <div style={{ background: "#fdecea", border: "1px solid #f5c6c0", borderRadius: 12, padding: "13px 16px", fontSize: 14, color: "#a3211a" }}>{siError}</div>}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                  <button type="button" onClick={() => { setForgotEmail(siEmail); setForgotError(""); setView("forgot"); }} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: 0, fontSize: 14, color: "#66707d", cursor: "pointer" }}>Forgot password?</button>
+                  <button type="button" onClick={() => { setForgotEmail(siEmail); setForgotError(""); setView("forgot"); }} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: "6px 0", fontSize: 14, color: "#66707d", cursor: "pointer" }}>Forgot password?</button>
                   <button type="button" onClick={signIn} disabled={busy} style={btnPrimary}>{busy ? "Signing in..." : "Sign in"}</button>
                 </div>
               </div>
               <div style={{ marginTop: 28, borderTop: "1px solid rgba(17,24,39,.08)", paddingTop: 24, fontSize: 15, color: "#66707d" }}>
-                First time here? <button type="button" onClick={() => setView("code")} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: 0, color: "#e2372b", fontSize: 15, fontWeight: 500, cursor: "pointer" }}>Register with an invitation code</button>
+                First time here? <button type="button" onClick={() => setView("code")} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: "6px 0", color: "#e2372b", fontSize: 15, fontWeight: 500, cursor: "pointer" }}>Register with an invitation code</button>
               </div>
             </div>
           </div>
@@ -268,7 +268,7 @@ export default function RegisterPage() {
                 </div>
                 {forgotError && <div style={{ background: "#fdecea", border: "1px solid #f5c6c0", borderRadius: 12, padding: "13px 16px", fontSize: 14, color: "#a3211a" }}>{forgotError}</div>}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
-                  <button type="button" onClick={() => setView("signin")} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: 0, fontSize: 14, color: "#66707d", cursor: "pointer" }}>Back to sign in</button>
+                  <button type="button" onClick={() => setView("signin")} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "none", border: 0, padding: "6px 0", fontSize: 14, color: "#66707d", cursor: "pointer" }}>Back to sign in</button>
                   <button type="button" onClick={sendReset} disabled={busy} style={btnPrimary}>{busy ? "Sending..." : "Send reset link"}</button>
                 </div>
               </div>

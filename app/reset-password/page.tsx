@@ -10,18 +10,21 @@ export default function ResetPasswordPage() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [ready, setReady] = useState(false);
+  const [expired, setExpired] = useState(false);
 
   useEffect(() => {
     // Supabase puts the token in the URL hash on redirect
     // Calling getSession picks it up automatically
     supabase.auth.getSession().then(({ data }) => {
       setReady(!!data.session);
-    });
+    }).catch(() => {});
 
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setReady(true);
     });
-    return () => listener.subscription.unsubscribe();
+    // No recovery session after a few seconds means the link is missing or expired.
+    const timer = setTimeout(() => setExpired(true), 4000);
+    return () => { clearTimeout(timer); listener.subscription.unsubscribe(); };
   }, []);
 
   async function updatePassword() {
@@ -51,8 +54,15 @@ export default function ResetPasswordPage() {
                 <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: 28, margin: "0 0 12px" }}>Password updated</h1>
                 <p style={{ fontSize: 16, color: "#66707d" }}>Redirecting you to your portal...</p>
               </div>
+            ) : !ready && expired ? (
+              <div style={{ textAlign: "center" }}>
+                <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: 28, margin: "0 0 12px" }}>This link has expired</h1>
+                <p style={{ fontSize: 16, lineHeight: 1.65, color: "#66707d", margin: "0 0 24px" }}>Password reset links only work once and for a limited time. Request a new one from the club portal sign in page.</p>
+                <a href="/register?signin=1" style={{ display: "inline-block", background: "#101820", color: "#fff", fontSize: 15, fontWeight: 500, padding: "14px 28px", borderRadius: 999, textDecoration: "none" }}>Back to sign in</a>
+              </div>
             ) : !ready ? (
               <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: 24, margin: "0 0 12px" }}>Reset your password</h1>
                 <p style={{ fontSize: 16, color: "#66707d" }}>Verifying reset link...</p>
               </div>
             ) : (
@@ -62,12 +72,12 @@ export default function ResetPasswordPage() {
                 <p style={{ margin: "12px 0 0", fontSize: 16, lineHeight: 1.65, color: "#66707d" }}>Pick something secure. You will be signed in automatically after.</p>
                 <div style={{ marginTop: 28, display: "grid", gap: 18 }}>
                   <div>
-                    <label style={labelStyle}>New password</label>
-                    <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} placeholder="At least 8 characters" style={inputStyle} autoFocus />
+                    <label htmlFor="new-password" style={labelStyle}>New password</label>
+                    <input id="new-password" autoComplete="new-password" type="password" value={password} onChange={e => { setPassword(e.target.value); setError(""); }} placeholder="At least 8 characters" style={inputStyle} autoFocus />
                   </div>
                   <div>
-                    <label style={labelStyle}>Confirm new password</label>
-                    <input type="password" value={password2} onChange={e => { setPassword2(e.target.value); setError(""); }} onKeyDown={e => e.key === "Enter" && updatePassword()} placeholder="Repeat password" style={inputStyle} />
+                    <label htmlFor="confirm-password" style={labelStyle}>Confirm new password</label>
+                    <input id="confirm-password" autoComplete="new-password" type="password" value={password2} onChange={e => { setPassword2(e.target.value); setError(""); }} onKeyDown={e => e.key === "Enter" && updatePassword()} placeholder="Repeat password" style={inputStyle} />
                   </div>
                   {error && <div style={{ background: "#fdecea", border: "1px solid #f5c6c0", borderRadius: 12, padding: "13px 16px", fontSize: 14, color: "#a3211a" }}>{error}</div>}
                   <div style={{ display: "flex", justifyContent: "flex-end" }}>
