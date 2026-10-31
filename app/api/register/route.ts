@@ -10,6 +10,15 @@ function parseDob(dob: string): string | null {
   return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
 }
 
+function initials(name: string): string {
+  return name.trim().split(/\s+/).map(w => w[0] ?? "").join("").replace(/[^A-Za-z]/g, "") || "CLUB";
+}
+
+// ilike treats % and _ as wildcards; club names must match literally.
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, c => `\\${c}`);
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") {
@@ -53,9 +62,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invitation could not be claimed. Please try again." }, { status: 409 });
   }
 
+  // The league pre-loads each season's clubs (with fixtures). Link the manager to that
+  // club when it exists, so registration doesn't create a duplicate club with no fixtures.
+  let linkedExisting = false;
+
   async function rollback(clubId?: string) {
     if (clubId) {
-      const { error } = await supabaseAdmin.from("clubs").delete().eq("id", clubId);
+      const { error } = linkedExisting
+        ? await supabaseAdmin.from("clubs").update({ manager_id: null }).eq("id", clubId).eq("manager_id", userId)
+        : await supabaseAdmin.from("clubs").delete().eq("id", clubId);
       if (error) { console.error("Registration cleanup failed", error.code); return; }
     }
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
@@ -63,28 +78,54 @@ export async function POST(req: NextRequest) {
     await supabaseAdmin.from("invites").update({ used: false, used_by: null }).eq("code", code).eq("used_by", userId);
   }
 
-  // 2. Create club record
-  const { data: clubData, error: clubError } = await supabaseAdmin
-    .from("clubs")
-    .insert({
-      name: invite.club_name,
-      short_code: club.short.toUpperCase(),
-      home_ground: club.ground,
-      founded: parseInt(club.founded) || null,
-      community: invite.community ?? "Nepalese",
-      home_color: kit.hp,
-      away_color: kit.ap,
-      manager_id: userId,
-      season: invite.season ?? 3,
-    })
-    .select("id")
-    .single();
-
-  if (clubError) {
+  // 2. Link to the existing club record, or create one
+  const { data: existingClub, error: lookupError } = await supabaseAdmin
+    .from("clubs").select("id, manager_id").ilike("name", escapeLike(invite.club_name)).maybeSingle();
+  if (lookupError) {
     await rollback();
-    return NextResponse.json({ error: clubError.message }, { status: 400 });
+    return NextResponse.json({ error: "Could not find your club. Please contact the league." }, { status: 400 });
   }
-  const clubId = clubData.id;
+
+  let clubId: string;
+  if (existingClub) {
+    if (existingClub.manager_id) {
+      await rollback();
+      return NextResponse.json({ error: "This club already has a manager account. Please sign in instead." }, { status: 409 });
+    }
+    const { data: linked, error: linkError } = await supabaseAdmin
+      .from("clubs").update({ manager_id: userId })
+      .eq("id", existingClub.id).is("manager_id", null)
+      .select("id").maybeSingle();
+    if (linkError || !linked) {
+      await rollback();
+      return NextResponse.json({ error: "This club already has a manager account. Please sign in instead." }, { status: 409 });
+    }
+    linkedExisting = true;
+    clubId = linked.id;
+  } else {
+    const short = (club.short.trim() || initials(invite.club_name)).toUpperCase().slice(0, 4);
+    const { data: clubData, error: clubError } = await supabaseAdmin
+      .from("clubs")
+      .insert({
+        name: invite.club_name,
+        short_code: short,
+        home_ground: club.ground,
+        founded: parseInt(club.founded) || null,
+        community: invite.community ?? "Nepalese",
+        home_color: kit.hp,
+        away_color: kit.ap,
+        manager_id: userId,
+        season: invite.season ?? 3,
+      })
+      .select("id")
+      .single();
+
+    if (clubError) {
+      await rollback();
+      return NextResponse.json({ error: clubError.message }, { status: 400 });
+    }
+    clubId = clubData.id;
+  }
 
   // 3. Insert players
   if (squad.length > 0) {

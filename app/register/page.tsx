@@ -115,7 +115,7 @@ export default function RegisterPage() {
                 <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase", color: "#98a1ab" }}>Season 3 · 2026-27</div>
                 <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(34px,4.6vw,58px)", lineHeight: 1.06, letterSpacing: "-.02em", margin: "20px 0 0" }}>Register your club</h1>
                 <p style={{ margin: "22px 0 0", fontSize: 18, lineHeight: 1.7, color: "#c3cad2", maxWidth: "52ch" }}>
-                  Entry to the Samsara Premier League is by invitation. Your manager will have received a six-character code by email.
+                  Entry to the Samsara Premier League is by invitation. Your club manager will have received an invitation code by email.
                 </p>
                 <div style={{ marginTop: 34, display: "flex", gap: 12, flexWrap: "wrap" }}>
                   <button type="button" onClick={() => setView("code")} style={btnRed}>Enter invitation code</button>
@@ -143,7 +143,7 @@ export default function RegisterPage() {
             <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: "clamp(32px,4vw,48px)" }}>
               <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#cf2e24" }}>Step 1 of 2</div>
               <h1 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(26px,3vw,34px)", lineHeight: 1.2, letterSpacing: "-.015em", margin: "14px 0 0" }}>Enter your invitation code</h1>
-              <p style={{ margin: "12px 0 0", fontSize: 16, lineHeight: 1.65, color: "#66707d" }}>Six characters, from the email sent to your club manager.</p>
+              <p style={{ margin: "12px 0 0", fontSize: 16, lineHeight: 1.65, color: "#66707d" }}>Paste the full code (starting SPL3-) from the email sent to your club manager.</p>
               <div style={{ marginTop: 28 }}>
                 <label htmlFor="codeInput" style={labelStyle}>Invitation code</label>
                 <input id="codeInput" type="text" value={code} onChange={e => { setCode(e.target.value); setCodeError(""); }}
