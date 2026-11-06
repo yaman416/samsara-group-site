@@ -5,7 +5,14 @@ import { LEAGUE_TZ, toLeagueInput, fromLeagueInput } from "@/lib/utils";
 const ADMIN_KEY = "spl_admin";
 
 type Screen = "invites" | "clubs" | "squads" | "fixtures" | "matchday" | "table" | "emails";
-type Reg = { id: string; status: string; submitted_at: string; reviewer_notes: string | null; clubs: { id: string; name: string; community: string; manager: { email: string } | null } | null };
+type Reg = {
+  club: { id: string; name: string; short_code: string; community: string; logo_url: string | null; home_color: string; away_color: string };
+  manager_email: string | null;
+  invite: { manager_email: string; used: boolean; used_at: string | null; created_at: string } | null;
+  player_count: number;
+  missing_dob: number;
+  registration: { id: string; status: string; submitted_at: string; reviewed_at: string | null; reviewer_notes: string | null } | null;
+};
 type Invite ={ id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
 type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_ground: string; founded: number | null; manager_id: string | null; logo_url?: string | null };
 type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null };
@@ -95,6 +102,7 @@ export default function AdminPage() {
   const [regs, setRegs] = useState<Reg[]>([]);
   const [regNote, setRegNote] = useState<Record<string, string>>({});
   const [regBusy, setRegBusy] = useState<string | null>(null);
+  const [regsError, setRegsError] = useState("");
 
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [weekFilter, setWeekFilter] = useState("");
@@ -122,7 +130,11 @@ export default function AdminPage() {
   }, []);
 
   const loadInvites  = useCallback(async () => { const r = await api("/api/admin/invite"); if (r.ok) setInvites(await r.json()); }, []);
-  const loadRegs         = useCallback(async () => { const r = await api("/api/admin/registrations"); if (r.ok) setRegs(await r.json()); }, []);
+  const loadRegs         = useCallback(async () => {
+    const r = await api("/api/admin/registrations");
+    if (r.ok) { setRegs(await r.json()); setRegsError(""); }
+    else { const d = await r.json().catch(() => ({})); setRegsError(d.error || `Error ${r.status}`); }
+  }, []);
   const loadSubscribers  = useCallback(async () => { const r = await api("/api/admin/email"); if (r.ok) setSubscribers(await r.json()); }, []);
   const loadClubs    = useCallback(async () => { const r = await api("/api/admin/clubs"); if (r.ok) setClubs(await r.json()); }, []);
   const loadAuthUsers = useCallback(async () => { const r = await api("/api/admin/users"); if (r.ok) setAuthUsers(await r.json()); }, []);
@@ -636,49 +648,89 @@ export default function AdminPage() {
         {/* SQUADS */}
         {screen === "squads" && (
           <div style={{ display: "grid", gap: 16 }}>
-            {regs.length === 0 && (
-              <div className="card" style={{ padding: 48, textAlign: "center", color: "#98a1ab" }}>No squad submissions yet.</div>
+            {regsError && (
+              <div className="card" style={{ padding: 20, color: "#a3211a" }}>Could not load registrations: {regsError}</div>
             )}
-            {regs.map(reg => {
-              const club = reg.clubs;
+            {!regsError && regs.length === 0 && (
+              <div className="card" style={{ padding: 48, textAlign: "center", color: "#98a1ab" }}>No clubs in the active season.</div>
+            )}
+            {regs.length > 0 && (() => {
+              const registered = regs.filter(r => r.manager_email).length;
+              const submitted = regs.filter(r => r.registration).length;
+              const approved = regs.filter(r => r.registration?.status === "approved").length;
+              const totalPlayers = regs.reduce((n, r) => n + r.player_count, 0);
+              return (
+                <div className="card" style={{ padding: 20, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 16 }}>
+                  {[["Clubs", regs.length], ["Registered", registered], ["Squads submitted", submitted], ["Approved", approved], ["Players", totalPlayers]].map(([k, v]) => (
+                    <div key={k as string}><div style={label11}>{k}</div><div style={{ fontSize: 24, fontWeight: 600 }}>{v}</div></div>
+                  ))}
+                </div>
+              );
+            })()}
+            {regs.map(row => {
+              const { club, registration: reg } = row;
               const statusColors: Record<string, { bg: string; color: string }> = {
                 pending:           { bg: "#eff6ff", color: "#1e40af" },
                 approved:          { bg: "#eef7f0", color: "#1f6b37" },
                 changes_requested: { bg: "#fff6ec", color: "#8a5a12" },
                 rejected:          { bg: "#fdecea", color: "#a3211a" },
               };
-              const sc = statusColors[reg.status] ?? { bg: "#f4f4f1", color: "#66707d" };
+              const stage = reg ? reg.status.replace("_", " ")
+                : row.manager_email ? (row.player_count > 0 ? "squad in progress" : "registered, no players")
+                : row.invite ? "invited, not registered"
+                : "not invited";
+              const sc = reg ? statusColors[reg.status] ?? { bg: "#f4f4f1", color: "#66707d" } : { bg: "#f4f4f1", color: "#66707d" };
               return (
-                <div key={reg.id} className="card" style={{ padding: 24 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
+                <div key={club.id} className="card" style={{ padding: 24 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: reg || row.manager_email ? 16 : 0 }}>
+                    {club.logo_url
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={club.logo_url} alt="" width={40} height={40} style={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }} />
+                      : <div style={{ width: 40, height: 40, borderRadius: 8, background: club.home_color, flexShrink: 0 }} />}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 15 }}>{club?.name ?? "Unknown club"}</div>
-                      <div style={{ fontSize: 13, color: "#66707d", marginTop: 2 }}>{club?.manager?.email ?? "-"} · {club?.community}</div>
-                      <div style={{ fontSize: 12, color: "#98a1ab", marginTop: 2 }}>Submitted {new Date(reg.submitted_at).toLocaleDateString("en-AU", { timeZone: LEAGUE_TZ })}</div>
+                      <div style={{ fontWeight: 600, fontSize: 15 }}>{club.name}</div>
+                      <div style={{ fontSize: 13, color: "#66707d", marginTop: 2 }}>
+                        {row.manager_email ?? (row.invite ? `Invite sent to ${row.invite.manager_email} on ${new Date(row.invite.created_at).toLocaleDateString("en-AU", { timeZone: LEAGUE_TZ })}` : "No invite sent")}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#98a1ab", marginTop: 2 }}>
+                        {row.player_count} player{row.player_count === 1 ? "" : "s"}
+                        {row.missing_dob > 0 && <span style={{ color: "#8a5a12" }}> · {row.missing_dob} missing date of birth</span>}
+                        {reg && <> · Submitted {new Date(reg.submitted_at).toLocaleDateString("en-AU", { timeZone: LEAGUE_TZ })}</>}
+                      </div>
                     </div>
                     <span style={{ background: sc.bg, color: sc.color, borderRadius: 8, padding: "5px 14px", fontSize: 13, fontWeight: 500, textTransform: "capitalize", whiteSpace: "nowrap" }}>
-                      {reg.status.replace("_", " ")}
+                      {stage}
                     </span>
+                    {row.player_count > 0 && (
+                      <Btn variant="ghost" style={{ fontSize: 13, padding: "8px 14px" }} onClick={() => loadClubPlayers(club.id)}>View squad</Btn>
+                    )}
                   </div>
-                  {reg.reviewer_notes && (
+                  {reg?.reviewer_notes && (
                     <div style={{ background: "#f8f8f6", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#4a545f", marginBottom: 14 }}>
                       <span style={{ fontWeight: 500 }}>Note: </span>{reg.reviewer_notes}
                     </div>
                   )}
-                  <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
-                    <div style={{ flex: 1, minWidth: 200 }}>
-                      <label style={label11}>Note to manager (optional)</label>
-                      <input aria-label="Note to manager (optional)"
-                        value={regNote[reg.id] ?? ""}
-                        onChange={e => setRegNote(n => ({ ...n, [reg.id]: e.target.value }))}
-                        placeholder="Reason or instructions..."
-                        style={inputSm}
-                      />
+                  {reg && (
+                    <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
+                      <div style={{ flex: 1, minWidth: 200 }}>
+                        <label style={label11}>Note to manager (optional)</label>
+                        <input aria-label="Note to manager (optional)"
+                          value={regNote[reg.id] ?? ""}
+                          onChange={e => setRegNote(n => ({ ...n, [reg.id]: e.target.value }))}
+                          placeholder="Reason or instructions..."
+                          style={inputSm}
+                        />
+                      </div>
+                      <Btn variant="green" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "approved", regNote[reg.id] ?? "")}>Approve</Btn>
+                      <Btn variant="ghost" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "changes_requested", regNote[reg.id] ?? "")}>Request changes</Btn>
+                      <Btn variant="red" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "rejected", regNote[reg.id] ?? "")}>Reject</Btn>
                     </div>
-                    <Btn variant="green" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "approved", regNote[reg.id] ?? "")}>Approve</Btn>
-                    <Btn variant="ghost" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "changes_requested", regNote[reg.id] ?? "")}>Request changes</Btn>
-                    <Btn variant="red" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "rejected", regNote[reg.id] ?? "")}>Reject</Btn>
-                  </div>
+                  )}
+                  {!reg && row.manager_email && (
+                    <div style={{ fontSize: 13, color: "#66707d" }}>
+                      The manager has not pressed Submit squad yet. Approval opens once they submit (at least 11 players).
+                    </div>
+                  )}
                 </div>
               );
             })}

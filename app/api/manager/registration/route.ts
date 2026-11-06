@@ -21,7 +21,9 @@ export async function GET(req: NextRequest) {
     .from("registrations")
     .select("status, submitted_at, reviewer_notes")
     .eq("club_id", club.id)
-    .single();
+    .order("submitted_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   return NextResponse.json(reg ?? { status: null });
 }
