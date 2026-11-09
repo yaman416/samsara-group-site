@@ -199,8 +199,8 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
 
   async function save() {
     setMsg(null);
-    const hs = parseInt(score.home, 10), as_ = parseInt(score.away, 10);
-    if (Number.isNaN(hs) || Number.isNaN(as_)) { setMsg({ ok: false, text: "Enter the final score for both teams." }); return; }
+    const hs = score.home.trim() === "" ? NaN : Number(score.home), as_ = score.away.trim() === "" ? NaN : Number(score.away);
+    if (!Number.isInteger(hs) || !Number.isInteger(as_) || hs < 0 || as_ < 0) { setMsg({ ok: false, text: "Enter the final score for both teams as whole numbers." }); return; }
     if (goals.some(g => !g.player_id) || cards.some(c => !c.player_id)) { setMsg({ ok: false, text: "Pick a player for every goal and card, or remove the empty rows." }); return; }
     const sheet: MatchSheet = {
       fixture_id: fixture.id, home_score: hs, away_score: as_,
