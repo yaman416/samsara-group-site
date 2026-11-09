@@ -195,7 +195,7 @@ export default function MatchPage() {
               <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d", marginBottom: 16 }}>Cards</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {cards.map(c => {
-                  const red = c.card_type === "red" || c.card_type === "second_yellow";
+                  const red = c.card_type === "red" || c.card_type === "yellow_red" || c.card_type === "second_yellow";
                   return (
                     <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 14 }}>
                       <span aria-label={red ? "Red card" : "Yellow card"} style={{ display: "inline-block", width: 12, height: 16, borderRadius: 3, background: red ? "#cf2e24" : "#f0b429", flexShrink: 0 }} />
