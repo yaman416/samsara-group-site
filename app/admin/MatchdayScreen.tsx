@@ -5,7 +5,7 @@ import { CARD_LABELS, CARD_TYPES, leagueDateKey, pickMatchday, tallyGoals, type 
 
 type Club = { id: string; name: string; short_code: string };
 type Fixture = {
-  id: string; week: number; venue: string | null; played_at: string | null; status: string;
+  id: string; season_id: string; week: number; venue: string | null; played_at: string | null; status: string;
   home_club: Club; away_club: Club;
   results: { home_score: number; away_score: number }[] | { home_score: number; away_score: number } | null;
 };
@@ -17,7 +17,7 @@ type TableRow = { position: number; club_name: string; short_code: string; home_
 type Side = "home" | "away";
 type GoalKind = "goal" | "pen" | "og";
 type GoalRow = { key: number; side: Side; kind: GoalKind; player_id: string; minute: string };
-type CardRow = { key: number; side: Side; card_type: CardType; player_id: string; minute: string };
+type CardRow = { key: number; side: Side; card_type: CardType; player_id: string; minute: string; reason?: string | null };
 
 const F = "'DM Sans',system-ui,sans-serif";
 const MUTED = "#66707d";
@@ -50,20 +50,19 @@ export default function MatchdayScreen() {
   const [picked, setPicked] = useState<string | null>(null);
   const [table, setTable] = useState<TableRow[]>([]);
 
-  const loadFixtures = useCallback(async () => {
-    const r = await api("/api/admin/fixtures");
-    if (r.ok) setFixtures(await r.json());
-    setLoaded(true);
-  }, []);
-  const loadTable = useCallback(async () => {
+  // Fixtures and table both come from the active season only.
+  const load = useCallback(async () => {
     const seasons = await api("/api/admin/seasons");
     const active = seasons.ok ? ((await seasons.json()) as { id: string; is_active: boolean }[]).find(s => s.is_active) : null;
-    const r = await api(active ? `/api/admin/league-table?season_id=${active.id}` : "/api/admin/league-table");
-    if (r.ok) setTable(await r.json());
+    const q = active ? `?season_id=${active.id}` : "";
+    const [fr, tr] = await Promise.all([api("/api/admin/fixtures"), api(`/api/admin/league-table${q}`)]);
+    if (fr.ok) setFixtures(((await fr.json()) as Fixture[]).filter(f => !active || f.season_id === active.id));
+    if (tr.ok) setTable(await tr.json());
+    setLoaded(true);
   }, []);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch data for this screen
-  useEffect(() => { loadFixtures(); loadTable(); }, [loadFixtures, loadTable]);
+  useEffect(() => { load(); }, [load]);
 
   const [todayKey] = useState(() => leagueDateKey(Date.now()));
   const days = useMemo(() => {
@@ -87,7 +86,7 @@ export default function MatchdayScreen() {
   const when = selected === todayKey ? "Today" : selected && selected > todayKey ? "Next matchday" : "Past matchday";
   const unscheduled = fixtures.filter(f => !f.played_at).length;
 
-  function onSaved() { loadFixtures(); loadTable(); }
+  function onSaved() { load(); }
 
   return (
     <div style={{ display: "grid", gap: 20 }}>
@@ -179,7 +178,7 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
     setCards(d.cards.map(c => ({
       key: nextKey(), side: sideOfPlayer(c.player_id), player_id: c.player_id ?? "",
       card_type: (CARD_TYPES as readonly string[]).includes(c.card_type) ? (c.card_type as CardType) : c.card_type === "second_yellow" ? "yellow_red" : "yellow",
-      minute: c.minute != null ? String(c.minute) : "",
+      minute: c.minute != null ? String(c.minute) : "", reason: c.reason,
     })));
   }
 
@@ -210,7 +209,7 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
         club_id: g.kind === "og" ? clubOf(other(g.side)).id : clubOf(g.side).id,
         minute: toMinute(g.minute), is_own_goal: g.kind === "og", is_penalty: g.kind === "pen",
       })),
-      cards: cards.map(c => ({ player_id: c.player_id, card_type: c.card_type, minute: toMinute(c.minute) })),
+      cards: cards.map(c => ({ player_id: c.player_id, card_type: c.card_type, minute: toMinute(c.minute), reason: c.reason ?? null })),
     };
     setBusy(true);
     const r = await api("/api/admin/match-sheet", { method: "POST", body: JSON.stringify(sheet) });

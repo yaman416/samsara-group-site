@@ -73,31 +73,44 @@ export async function POST(req: NextRequest) {
   const errors = validateMatchSheet(sheet, fixture.home_club_id, fixture.away_club_id, playerClub);
   if (errors.length) return NextResponse.json({ error: errors.join(" "), errors }, { status: 400 });
 
+  // Insert the new goals and cards first, then remove the old rows. If an insert
+  // fails, the previously saved sheet is left untouched; if a later step fails,
+  // saving again finishes the job because it removes every row it didn't insert.
+  const none = { data: [] as { id: string }[], error: null };
+  const newGoals = sheet.goals.length === 0 ? none : await supabaseAdmin.from("goal_scorers").insert(sheet.goals.map(g => ({
+    fixture_id: fixture.id, player_id: g.player_id, club_id: g.club_id,
+    minute: g.minute ?? null, is_own_goal: !!g.is_own_goal, is_penalty: !!g.is_penalty,
+  }))).select("id");
+  if (newGoals.error) return NextResponse.json({ error: `Nothing saved: goal scorers failed (${newGoals.error.message}).` }, { status: 500 });
+  const goalIds = (newGoals.data ?? []).map(r => r.id as string);
+
+  const newCards = sheet.cards.length === 0 ? none : await supabaseAdmin.from("cards").insert(sheet.cards.map(c => ({
+    fixture_id: fixture.id, player_id: c.player_id, player_name: playerName.get(c.player_id) ?? "Unknown",
+    team_id: FALLBACK_TEAM_ID, card_type: c.card_type, minute: c.minute ?? null, reason: c.reason?.trim() || null,
+  }))).select("id");
+  if (newCards.error) {
+    if (goalIds.length) await supabaseAdmin.from("goal_scorers").delete().in("id", goalIds);
+    return NextResponse.json({ error: `Nothing saved: cards failed (${newCards.error.message}).` }, { status: 500 });
+  }
+  const cardIds = (newCards.data ?? []).map(r => r.id as string);
+
   const { error: rErr } = await supabaseAdmin.from("results").upsert(
     { fixture_id: fixture.id, home_score: sheet.home_score, away_score: sheet.away_score, entered_at: new Date().toISOString() },
     { onConflict: "fixture_id" },
   );
-  if (rErr) return NextResponse.json({ error: rErr.message }, { status: 500 });
-
-  const { error: gDel } = await supabaseAdmin.from("goal_scorers").delete().eq("fixture_id", fixture.id);
-  if (gDel) return NextResponse.json({ error: gDel.message }, { status: 500 });
-  if (sheet.goals.length) {
-    const { error } = await supabaseAdmin.from("goal_scorers").insert(sheet.goals.map(g => ({
-      fixture_id: fixture.id, player_id: g.player_id, club_id: g.club_id,
-      minute: g.minute ?? null, is_own_goal: !!g.is_own_goal, is_penalty: !!g.is_penalty,
-    })));
-    if (error) return NextResponse.json({ error: `Score saved, but goal scorers failed: ${error.message}` }, { status: 500 });
+  if (rErr) {
+    if (goalIds.length) await supabaseAdmin.from("goal_scorers").delete().in("id", goalIds);
+    if (cardIds.length) await supabaseAdmin.from("cards").delete().in("id", cardIds);
+    return NextResponse.json({ error: `Nothing saved: ${rErr.message}` }, { status: 500 });
   }
 
-  const { error: cDel } = await supabaseAdmin.from("cards").delete().eq("fixture_id", fixture.id);
-  if (cDel) return NextResponse.json({ error: cDel.message }, { status: 500 });
-  if (sheet.cards.length) {
-    const { error } = await supabaseAdmin.from("cards").insert(sheet.cards.map(c => ({
-      fixture_id: fixture.id, player_id: c.player_id, player_name: playerName.get(c.player_id) ?? "Unknown",
-      team_id: FALLBACK_TEAM_ID, card_type: c.card_type, minute: c.minute ?? null, reason: c.reason?.trim() || null,
-    })));
-    if (error) return NextResponse.json({ error: `Score saved, but cards failed: ${error.message}` }, { status: 500 });
-  }
+  let oldGoals = supabaseAdmin.from("goal_scorers").delete().eq("fixture_id", fixture.id);
+  if (goalIds.length) oldGoals = oldGoals.not("id", "in", `(${goalIds.join(",")})`);
+  let oldCards = supabaseAdmin.from("cards").delete().eq("fixture_id", fixture.id);
+  if (cardIds.length) oldCards = oldCards.not("id", "in", `(${cardIds.join(",")})`);
+  const [gDel, cDel] = await Promise.all([oldGoals, oldCards]);
+  const delErr = gDel.error || cDel.error;
+  if (delErr) return NextResponse.json({ error: `Saved, but old entries could not be removed (${delErr.message}). Save again to tidy up.` }, { status: 500 });
 
   // completed fixtures are what the league table counts
   const { error: sErr } = await supabaseAdmin.from("fixtures").update({ status: "completed" }).eq("id", fixture.id);
