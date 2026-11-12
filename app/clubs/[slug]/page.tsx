@@ -6,6 +6,11 @@ import SiteLayout from "@/components/SiteLayout";
 import { communityCountry } from "@/lib/utils";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
+// Club pages are built ahead of time, so without this they keep showing the squad
+// as it was at the last deploy. Rebuild each page at most every 5 minutes so new
+// registrations and squad edits appear without a redeploy.
+export const revalidate = 300;
+
 interface StandingRow {
   club_id: string;
   club_name: string;
