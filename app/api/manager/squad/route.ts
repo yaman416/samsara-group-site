@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { revalidateClubPage } from "@/lib/approved-squads";
 
 async function getClubId(req: NextRequest): Promise<string | null> {
   const auth = req.headers.get("authorization");
@@ -26,6 +27,8 @@ async function resetRegistration(clubId: string) {
     .from("registrations")
     .update({ status: "pending", submitted_at: new Date().toISOString(), reviewer_notes: null })
     .eq("club_id", clubId);
+  // The squad is no longer approved, so take it off the public club page now.
+  await revalidateClubPage(clubId);
 }
 
 export async function GET(req: NextRequest) {
