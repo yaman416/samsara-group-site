@@ -5,6 +5,10 @@ import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
 import { communityCountry } from "@/lib/utils";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { isSquadApproved } from "@/lib/approved-squads";
+
+// Refresh club pages every minute so approved squads and club edits show without a redeploy.
+export const revalidate = 60;
 
 interface StandingRow {
   club_id: string;
@@ -54,13 +58,16 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
   const club = clubs?.[0];
   if (!club) notFound();
 
-  // Fetch players
-  const { data: players } = await supabaseAdmin
-    .from("players")
-    .select("id, full_name, jersey_number, position, nationality, is_active")
-    .eq("club_id", club.id)
-    .eq("is_active", true)
-    .order("jersey_number");
+  // Squad is public only once an admin approves it. Never select dates of birth here.
+  const squadApproved = await isSquadApproved(club.id);
+  const { data: players } = squadApproved
+    ? await supabaseAdmin
+        .from("players")
+        .select("id, full_name, jersey_number, position")
+        .eq("club_id", club.id)
+        .eq("is_active", true)
+        .order("jersey_number")
+    : { data: [] as { id: string; full_name: string; jersey_number: number; position: string }[] };
 
   // Fetch current season standings
   const seasonId = club.season_id;
@@ -131,7 +138,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
             {[
               ...(club.founded ? [["Founded", String(club.founded)]] : []),
               ["Home ground", club.home_ground || "Nicholls"],
-              ["Squad size", String(players?.length ?? 0)],
+              ["Squad size", squadApproved ? String(players?.length ?? 0) : "To be announced"],
               ["Season 3", "Confirmed"],
             ].map(([label, val]) => (
               <div key={label} style={{ padding: "22px 0" }}>
@@ -206,9 +213,9 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
             <div style={{ padding: "30px 34px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap", borderBottom: "1px solid rgba(17,24,39,.10)" }}>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#66707d" }}>Squad</div>
-                <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 26, lineHeight: 1.24, marginTop: 8 }}>{players?.length ?? 0} registered players</div>
+                <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 26, lineHeight: 1.24, marginTop: 8 }}>{squadApproved ? `${players?.length ?? 0} registered players` : "Squad to be announced"}</div>
               </div>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "#edf7ed", border: "1px solid #b2deb2", borderRadius: 999, padding: "9px 18px", fontSize: 13, fontWeight: 500, color: "#2d6a2d" }}>Season 3 registered</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "#edf7ed", border: "1px solid #b2deb2", borderRadius: 999, padding: "9px 18px", fontSize: 13, fontWeight: 500, color: "#2d6a2d" }}>{squadApproved ? "Squad approved" : "Season 3 confirmed"}</span>
             </div>
 
             {sortedPlayers.length > 0 ? (

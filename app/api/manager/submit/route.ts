@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { revalidateClubPage } from "@/lib/approved-squads";
 
 export async function POST(req: NextRequest) {
   const auth = req.headers.get("authorization");
@@ -48,5 +49,6 @@ export async function POST(req: NextRequest) {
         .insert({ club_id: club.id, submitted_by: userId, status: "pending", submitted_at: submittedAt });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await revalidateClubPage(club.id);
   return NextResponse.json({ success: true });
 }
