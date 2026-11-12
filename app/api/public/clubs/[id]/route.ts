@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { isSquadApproved } from "@/lib/approved-squads";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -12,11 +13,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   if (error || !club) return NextResponse.json({ error: "Club not found" }, { status: 404 });
 
-  const { data: players } = await supabaseAdmin
-    .from("players")
-    .select("id, full_name, jersey_number, position, date_of_birth")
-    .eq("club_id", id)
-    .order("jersey_number", { ascending: true });
+  const approved = await isSquadApproved(id);
+  // Public data only: never include date_of_birth or other personal details.
+  const { data: players } = approved
+    ? await supabaseAdmin
+        .from("players")
+        .select("id, full_name, jersey_number, position")
+        .eq("club_id", id)
+        .eq("is_active", true)
+        .order("jersey_number", { ascending: true })
+    : { data: [] };
 
-  return NextResponse.json({ ...club, players: players ?? [] });
+  return NextResponse.json({ ...club, squad_approved: approved, players: players ?? [] });
 }
