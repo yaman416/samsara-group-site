@@ -1,11 +1,19 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { LEAGUE_TZ, toLeagueInput, fromLeagueInput } from "@/lib/utils";
+import MatchdayScreen from "./MatchdayScreen";
 
 const ADMIN_KEY = "spl_admin";
 
 type Screen = "invites" | "clubs" | "squads" | "fixtures" | "matchday" | "table" | "emails";
-type Reg = { id: string; status: string; submitted_at: string; reviewer_notes: string | null; clubs: { id: string; name: string; community: string; manager: { email: string } | null } | null };
+type Reg = {
+  club: { id: string; name: string; short_code: string; community: string; logo_url: string | null; home_color: string; away_color: string };
+  manager_email: string | null;
+  invite: { manager_email: string; used: boolean; used_at: string | null; created_at: string } | null;
+  player_count: number;
+  missing_dob: number;
+  registration: { id: string; status: string; submitted_at: string; reviewed_at: string | null; reviewer_notes: string | null } | null;
+};
 type Invite ={ id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
 type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_ground: string; founded: number | null; manager_id: string | null; logo_url?: string | null };
 type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null };
@@ -95,6 +103,7 @@ export default function AdminPage() {
   const [regs, setRegs] = useState<Reg[]>([]);
   const [regNote, setRegNote] = useState<Record<string, string>>({});
   const [regBusy, setRegBusy] = useState<string | null>(null);
+  const [regsError, setRegsError] = useState("");
 
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [weekFilter, setWeekFilter] = useState("");
@@ -122,7 +131,11 @@ export default function AdminPage() {
   }, []);
 
   const loadInvites  = useCallback(async () => { const r = await api("/api/admin/invite"); if (r.ok) setInvites(await r.json()); }, []);
-  const loadRegs         = useCallback(async () => { const r = await api("/api/admin/registrations"); if (r.ok) setRegs(await r.json()); }, []);
+  const loadRegs         = useCallback(async () => {
+    const r = await api("/api/admin/registrations");
+    if (r.ok) { setRegs(await r.json()); setRegsError(""); }
+    else { const d = await r.json().catch(() => ({})); setRegsError(d.error || `Error ${r.status}`); }
+  }, []);
   const loadSubscribers  = useCallback(async () => { const r = await api("/api/admin/email"); if (r.ok) setSubscribers(await r.json()); }, []);
   const loadClubs    = useCallback(async () => { const r = await api("/api/admin/clubs"); if (r.ok) setClubs(await r.json()); }, []);
   const loadAuthUsers = useCallback(async () => { const r = await api("/api/admin/users"); if (r.ok) setAuthUsers(await r.json()); }, []);
@@ -145,7 +158,7 @@ export default function AdminPage() {
     if (screen === "clubs")    loadClubs();
     if (screen === "squads")   loadRegs();
     if (screen === "emails")   loadSubscribers();
-    if (screen === "fixtures" || screen === "matchday") loadFixtures();
+    if (screen === "fixtures") loadFixtures();
     if (screen === "table")    loadTable();
   }, [authed, screen, loadInvites, loadRegs, loadClubs, loadFixtures, loadTable, loadSubscribers]);
   /* eslint-enable react-hooks/set-state-in-effect */
@@ -260,17 +273,6 @@ export default function AdminPage() {
     }) });
     setEditFixBusy(false);
     setEditFixture(null);
-    loadFixtures();
-  }
-
-  async function saveResult(fixture_id: string, home_score: number, away_score: number) {
-    await api("/api/admin/results", { method: "POST", body: JSON.stringify({ fixture_id, home_score, away_score }) });
-    loadFixtures();
-    if (screen === "table") loadTable();
-  }
-
-  async function deleteResult(fixture_id: string) {
-    await api("/api/admin/results", { method: "DELETE", body: JSON.stringify({ fixture_id }) });
     loadFixtures();
   }
 
@@ -636,49 +638,89 @@ export default function AdminPage() {
         {/* SQUADS */}
         {screen === "squads" && (
           <div style={{ display: "grid", gap: 16 }}>
-            {regs.length === 0 && (
-              <div className="card" style={{ padding: 48, textAlign: "center", color: "#98a1ab" }}>No squad submissions yet.</div>
+            {regsError && (
+              <div className="card" style={{ padding: 20, color: "#a3211a" }}>Could not load registrations: {regsError}</div>
             )}
-            {regs.map(reg => {
-              const club = reg.clubs;
+            {!regsError && regs.length === 0 && (
+              <div className="card" style={{ padding: 48, textAlign: "center", color: "#98a1ab" }}>No clubs in the active season.</div>
+            )}
+            {regs.length > 0 && (() => {
+              const registered = regs.filter(r => r.manager_email).length;
+              const submitted = regs.filter(r => r.registration).length;
+              const approved = regs.filter(r => r.registration?.status === "approved").length;
+              const totalPlayers = regs.reduce((n, r) => n + r.player_count, 0);
+              return (
+                <div className="card" style={{ padding: 20, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 16 }}>
+                  {[["Clubs", regs.length], ["Registered", registered], ["Squads submitted", submitted], ["Approved", approved], ["Players", totalPlayers]].map(([k, v]) => (
+                    <div key={k as string}><div style={label11}>{k}</div><div style={{ fontSize: 24, fontWeight: 600 }}>{v}</div></div>
+                  ))}
+                </div>
+              );
+            })()}
+            {regs.map(row => {
+              const { club, registration: reg } = row;
               const statusColors: Record<string, { bg: string; color: string }> = {
                 pending:           { bg: "#eff6ff", color: "#1e40af" },
                 approved:          { bg: "#eef7f0", color: "#1f6b37" },
                 changes_requested: { bg: "#fff6ec", color: "#8a5a12" },
                 rejected:          { bg: "#fdecea", color: "#a3211a" },
               };
-              const sc = statusColors[reg.status] ?? { bg: "#f4f4f1", color: "#66707d" };
+              const stage = reg ? reg.status.replace("_", " ")
+                : row.manager_email ? (row.player_count > 0 ? "squad in progress" : "registered, no players")
+                : row.invite ? "invited, not registered"
+                : "not invited";
+              const sc = reg ? statusColors[reg.status] ?? { bg: "#f4f4f1", color: "#66707d" } : { bg: "#f4f4f1", color: "#66707d" };
               return (
-                <div key={reg.id} className="card" style={{ padding: 24 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
+                <div key={club.id} className="card" style={{ padding: 24 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", marginBottom: reg || row.manager_email ? 16 : 0 }}>
+                    {club.logo_url
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={club.logo_url} alt="" width={40} height={40} style={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }} />
+                      : <div style={{ width: 40, height: 40, borderRadius: 8, background: club.home_color, flexShrink: 0 }} />}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 15 }}>{club?.name ?? "Unknown club"}</div>
-                      <div style={{ fontSize: 13, color: "#66707d", marginTop: 2 }}>{club?.manager?.email ?? "-"} · {club?.community}</div>
-                      <div style={{ fontSize: 12, color: "#98a1ab", marginTop: 2 }}>Submitted {new Date(reg.submitted_at).toLocaleDateString("en-AU", { timeZone: LEAGUE_TZ })}</div>
+                      <div style={{ fontWeight: 600, fontSize: 15 }}>{club.name}</div>
+                      <div style={{ fontSize: 13, color: "#66707d", marginTop: 2 }}>
+                        {row.manager_email ?? (row.invite ? `Invite sent to ${row.invite.manager_email} on ${new Date(row.invite.created_at).toLocaleDateString("en-AU", { timeZone: LEAGUE_TZ })}` : "No invite sent")}
+                      </div>
+                      <div style={{ fontSize: 12, color: "#98a1ab", marginTop: 2 }}>
+                        {row.player_count} player{row.player_count === 1 ? "" : "s"}
+                        {row.missing_dob > 0 && <span style={{ color: "#8a5a12" }}> · {row.missing_dob} missing date of birth</span>}
+                        {reg && <> · Submitted {new Date(reg.submitted_at).toLocaleDateString("en-AU", { timeZone: LEAGUE_TZ })}</>}
+                      </div>
                     </div>
                     <span style={{ background: sc.bg, color: sc.color, borderRadius: 8, padding: "5px 14px", fontSize: 13, fontWeight: 500, textTransform: "capitalize", whiteSpace: "nowrap" }}>
-                      {reg.status.replace("_", " ")}
+                      {stage}
                     </span>
+                    {row.player_count > 0 && (
+                      <Btn variant="ghost" style={{ fontSize: 13, padding: "8px 14px" }} onClick={() => loadClubPlayers(club.id)}>View squad</Btn>
+                    )}
                   </div>
-                  {reg.reviewer_notes && (
+                  {reg?.reviewer_notes && (
                     <div style={{ background: "#f8f8f6", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#4a545f", marginBottom: 14 }}>
                       <span style={{ fontWeight: 500 }}>Note: </span>{reg.reviewer_notes}
                     </div>
                   )}
-                  <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
-                    <div style={{ flex: 1, minWidth: 200 }}>
-                      <label style={label11}>Note to manager (optional)</label>
-                      <input aria-label="Note to manager (optional)"
-                        value={regNote[reg.id] ?? ""}
-                        onChange={e => setRegNote(n => ({ ...n, [reg.id]: e.target.value }))}
-                        placeholder="Reason or instructions..."
-                        style={inputSm}
-                      />
+                  {reg && (
+                    <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
+                      <div style={{ flex: 1, minWidth: 200 }}>
+                        <label style={label11}>Note to manager (optional)</label>
+                        <input aria-label="Note to manager (optional)"
+                          value={regNote[reg.id] ?? ""}
+                          onChange={e => setRegNote(n => ({ ...n, [reg.id]: e.target.value }))}
+                          placeholder="Reason or instructions..."
+                          style={inputSm}
+                        />
+                      </div>
+                      <Btn variant="green" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "approved", regNote[reg.id] ?? "")}>Approve</Btn>
+                      <Btn variant="ghost" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "changes_requested", regNote[reg.id] ?? "")}>Request changes</Btn>
+                      <Btn variant="red" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "rejected", regNote[reg.id] ?? "")}>Reject</Btn>
                     </div>
-                    <Btn variant="green" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "approved", regNote[reg.id] ?? "")}>Approve</Btn>
-                    <Btn variant="ghost" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "changes_requested", regNote[reg.id] ?? "")}>Request changes</Btn>
-                    <Btn variant="red" disabled={regBusy === reg.id} onClick={() => updateReg(reg.id, "rejected", regNote[reg.id] ?? "")}>Reject</Btn>
-                  </div>
+                  )}
+                  {!reg && row.manager_email && (
+                    <div style={{ fontSize: 13, color: "#66707d" }}>
+                      The manager has not pressed Submit squad yet. Approval opens once they submit (at least 11 players).
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -787,23 +829,7 @@ export default function AdminPage() {
         )}
 
         {/* MATCHDAY */}
-        {screen === "matchday" && (
-          <div style={{ display: "grid", gap: 20 }}>
-            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-              <input type="number" value={weekFilter} onChange={e => setWeekFilter(e.target.value)} placeholder="Filter week..." style={{ ...inputSm, width: 140 }} />
-              <Btn variant="ghost" onClick={loadFixtures} style={{ padding: "10px 18px" }}>Filter</Btn>
-              <span style={{ fontSize: 14, color: "#66707d" }}>Enter scores below. Table updates instantly.</span>
-            </div>
-
-            {fixtures.length === 0 && (
-              <div className="card" style={{ padding: 48, textAlign: "center", color: "#98a1ab" }}>No fixtures. Add them in the Fixtures tab first.</div>
-            )}
-
-            {fixtures.map(f => (
-              <MatchdayCard key={f.id} fixture={f} onSave={saveResult} onDelete={deleteResult} />
-            ))}
-          </div>
-        )}
+        {screen === "matchday" && <MatchdayScreen />}
 
         {/* LEAGUE TABLE */}
         {screen === "table" && (
@@ -909,237 +935,5 @@ export default function AdminPage() {
 
       </div>
     </main>
-  );
-}
-
-type GoalScorer = { id: string; player_id: string | null; club_id: string; minute: number | null; is_own_goal: boolean; is_penalty: boolean; players: { full_name: string; jersey_number: number } | null; clubs: { name: string } | null };
-type Card = { id: string; player_name: string; card_type: string; minute: number | null; reason: string | null };
-type SquadPlayer = { id: string; full_name: string; jersey_number: number; position: string };
-
-function adminH() {
-  return { "Content-Type": "application/json", "x-admin-key": typeof window !== "undefined" ? (localStorage.getItem("spl_admin") || "") : "" };
-}
-
-function MatchdayCard({ fixture, onSave, onDelete }: { fixture: Fixture; onSave: (id: string, h: number, a: number) => void; onDelete: (id: string) => void }) {
-  const result = Array.isArray(fixture.results) ? (fixture.results[0] ?? null) : (fixture.results ?? null);
-  const [hs, setHs] = useState(result ? String(result.home_score) : "");
-  const [as_, setAs] = useState(result ? String(result.away_score) : "");
-  const [busy, setBusy] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-
-  const [goals, setGoals] = useState<GoalScorer[]>([]);
-  const [cards, setCards] = useState<Card[]>([]);
-  const [homePlayers, setHomePlayers] = useState<SquadPlayer[]>([]);
-  const [awayPlayers, setAwayPlayers] = useState<SquadPlayer[]>([]);
-
-  // new goal form
-  const [ngPlayer, setNgPlayer] = useState("");
-  const [ngClub, setNgClub] = useState(fixture.home_club?.id ?? "");
-  const [ngMin, setNgMin] = useState("");
-  const [ngOwn, setNgOwn] = useState(false);
-  const [ngPen, setNgPen] = useState(false);
-  const [goalBusy, setGoalBusy] = useState(false);
-
-  // new card form
-  const [ncName, setNcName] = useState("");
-  const [ncType, setNcType] = useState("yellow");
-  const [ncMin, setNcMin] = useState("");
-  const [ncReason, setNcReason] = useState("");
-  const [cardBusy, setCardBusy] = useState(false);
-
-  const hasResult = fixture.status === "completed";
-  const F = "'DM Sans',system-ui,sans-serif";
-  const iSm: React.CSSProperties = { border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, fontSize: 16, padding: "8px 10px", fontFamily: F, color: "#101820", background: "#fff" };
-
-  async function loadDetails() {
-    const [gRes, cRes, hpRes, apRes] = await Promise.all([
-      fetch(`/api/admin/goal-scorers?fixture_id=${fixture.id}`, { headers: adminH() }),
-      fetch(`/api/admin/cards?fixture_id=${fixture.id}`, { headers: adminH() }),
-      fetch(`/api/admin/players?club_id=${fixture.home_club?.id}`, { headers: adminH() }),
-      fetch(`/api/admin/players?club_id=${fixture.away_club?.id}`, { headers: adminH() }),
-    ]);
-    if (gRes.ok) setGoals(await gRes.json());
-    if (cRes.ok) setCards(await cRes.json());
-    if (hpRes.ok) setHomePlayers(await hpRes.json());
-    if (apRes.ok) setAwayPlayers(await apRes.json());
-  }
-
-  function toggleExpand() {
-    if (!expanded) loadDetails();
-    setExpanded(e => !e);
-  }
-
-  async function save() {
-    if (hs === "" || as_ === "") return;
-    setBusy(true);
-    await onSave(fixture.id, parseInt(hs), parseInt(as_));
-    setBusy(false);
-  }
-
-  async function remove() {
-    if (!confirm("Remove this result?")) return;
-    await onDelete(fixture.id);
-    setHs(""); setAs("");
-  }
-
-  async function addGoal() {
-    if (!ngPlayer || !ngClub) return;
-    setGoalBusy(true);
-    const res = await fetch("/api/admin/goal-scorers", { method: "POST", headers: adminH(), body: JSON.stringify({ fixture_id: fixture.id, player_id: ngPlayer, club_id: ngClub, minute: ngMin ? parseInt(ngMin) : null, is_own_goal: ngOwn, is_penalty: ngPen }) });
-    setGoalBusy(false);
-    if (res.ok) { setNgPlayer(""); setNgMin(""); setNgOwn(false); setNgPen(false); loadDetails(); }
-  }
-
-  async function removeGoal(id: string) {
-    await fetch("/api/admin/goal-scorers", { method: "DELETE", headers: adminH(), body: JSON.stringify({ id }) });
-    loadDetails();
-  }
-
-  async function addCard() {
-    if (!ncName.trim()) return;
-    setCardBusy(true);
-    const res = await fetch("/api/admin/cards", { method: "POST", headers: adminH(), body: JSON.stringify({ fixture_id: fixture.id, player_name: ncName.trim(), card_type: ncType, minute: ncMin ? parseInt(ncMin) : null, reason: ncReason.trim() || null }) });
-    setCardBusy(false);
-    if (res.ok) { setNcName(""); setNcMin(""); setNcReason(""); loadDetails(); }
-  }
-
-  async function removeCard(id: string) {
-    await fetch("/api/admin/cards", { method: "DELETE", headers: adminH(), body: JSON.stringify({ id }) });
-    loadDetails();
-  }
-
-  const selectedClubPlayers = ngClub === fixture.home_club?.id ? homePlayers : awayPlayers;
-
-  return (
-    <div style={{ background: "#fff", border: `1px solid ${hasResult ? "rgba(31,107,55,.3)" : "rgba(17,24,39,.10)"}`, borderRadius: 16, overflow: "hidden" }}>
-      {/* Score row */}
-      <div style={{ padding: "18px 20px", display: "grid", gap: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: "#66707d" }}>
-          Wk {fixture.week}
-          {fixture.played_at && <span style={{ fontWeight: 400 }}> · {new Date(fixture.played_at).toLocaleString("en-AU", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: LEAGUE_TZ })}</span>}
-          {fixture.venue && <span style={{ fontWeight: 400 }}> · {fixture.venue}</span>}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)", alignItems: "center", gap: 12 }}>
-          <div style={{ textAlign: "right", fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{fixture.home_club?.name}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <input type="number" inputMode="numeric" min={0} value={hs} onChange={e => setHs(e.target.value)} className="score-in" placeholder="0" aria-label={`${fixture.home_club?.name ?? "Home"} goals`} />
-            <span style={{ fontWeight: 700, color: "#66707d", fontSize: 18 }}>-</span>
-            <input type="number" inputMode="numeric" min={0} value={as_} onChange={e => setAs(e.target.value)} className="score-in" placeholder="0" aria-label={`${fixture.away_club?.name ?? "Away"} goals`} />
-          </div>
-          <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{fixture.away_club?.name}</div>
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-          {hasResult && <span style={{ fontSize: 12, fontWeight: 600, color: "#1f6b37", background: "#eef7f0", padding: "4px 10px", borderRadius: 6 }}>Saved</span>}
-          <button type="button" onClick={save} disabled={busy || hs === "" || as_ === ""}
-            style={{ background: "#101820", border: "none", color: "#fff", fontSize: 13, fontWeight: 600, padding: "8px 18px", borderRadius: 999, cursor: "pointer", fontFamily: F, opacity: (busy || hs === "" || as_ === "") ? 0.5 : 1 }}>
-            {busy ? "Saving..." : hasResult ? "Update" : "Save result"}
-          </button>
-          {hasResult && <button type="button" onClick={remove} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Remove</button>}
-          {hasResult && <button type="button" onClick={toggleExpand} style={{ background: "none", border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, fontSize: 16, padding: "6px 12px", cursor: "pointer", fontFamily: F, color: "#101820" }}>{expanded ? "Close details" : "Goals & cards"}</button>}
-        </div>
-      </div>
-
-      {/* Expanded details */}
-      {expanded && (
-        <div style={{ borderTop: "1px solid rgba(17,24,39,.08)", padding: "24px", display: "grid", gap: 28 }}>
-
-          {/* Goal scorers */}
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: "#66707d", marginBottom: 14 }}>Goal scorers</div>
-            {goals.length > 0 && (
-              <div style={{ marginBottom: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-                {goals.map(g => (
-                  <div key={g.id} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
-                    <span style={{ fontWeight: 600, color: "#101820" }}>{g.players?.jersey_number ? `#${g.players.jersey_number} ` : ""}{g.players?.full_name ?? "Unknown"}</span>
-                    <span style={{ color: "#66707d" }}>{g.clubs?.name}</span>
-                    {g.minute && <span style={{ color: "#98a1ab" }}>{g.minute}&apos;</span>}
-                    {g.is_own_goal && <span style={{ background: "#fdecea", color: "#a3211a", fontSize: 12, padding: "2px 7px", borderRadius: 5 }}>OG</span>}
-                    {g.is_penalty && <span style={{ background: "#eff6ff", color: "#1e40af", fontSize: 12, padding: "2px 7px", borderRadius: 5 }}>PEN</span>}
-                    <button type="button" onClick={() => removeGoal(g.id)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#a3211a", fontSize: 12, cursor: "pointer", fontFamily: F }}>Remove</button>
-                  </div>
-                ))}
-              </div>
-            )}
-            {/* Add goal form */}
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: "#66707d", marginBottom: 4 }}>Club</div>
-                <select value={ngClub} onChange={e => { setNgClub(e.target.value); setNgPlayer(""); }} style={{ ...iSm, minWidth: 130 }}>
-                  <option value={fixture.home_club?.id}>{fixture.home_club?.name}</option>
-                  <option value={fixture.away_club?.id}>{fixture.away_club?.name}</option>
-                </select>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: "#66707d", marginBottom: 4 }}>Player</div>
-                <select value={ngPlayer} onChange={e => setNgPlayer(e.target.value)} style={{ ...iSm, minWidth: 160 }}>
-                  <option value="">Select player</option>
-                  {selectedClubPlayers.map(p => <option key={p.id} value={p.id}>#{p.jersey_number} {p.full_name}</option>)}
-                </select>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: "#66707d", marginBottom: 4 }}>Minute</div>
-                <input type="number" min={1} max={120} value={ngMin} onChange={e => setNgMin(e.target.value)} placeholder="e.g. 45" style={{ ...iSm, width: 70 }} />
-              </div>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: "pointer", paddingBottom: 2 }}>
-                <input type="checkbox" checked={ngOwn} onChange={e => setNgOwn(e.target.checked)} /> Own goal
-              </label>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: "pointer", paddingBottom: 2 }}>
-                <input type="checkbox" checked={ngPen} onChange={e => setNgPen(e.target.checked)} /> Penalty
-              </label>
-              <button type="button" onClick={addGoal} disabled={goalBusy || !ngPlayer}
-                style={{ background: "#101820", border: "none", color: "#fff", fontSize: 13, fontWeight: 600, padding: "8px 16px", borderRadius: 999, cursor: "pointer", fontFamily: F, opacity: (!ngPlayer || goalBusy) ? 0.5 : 1 }}>
-                {goalBusy ? "Adding..." : "+ Add goal"}
-              </button>
-            </div>
-          </div>
-
-          {/* Cards */}
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: ".06em", textTransform: "uppercase", color: "#66707d", marginBottom: 14 }}>Cards</div>
-            {cards.length > 0 && (
-              <div style={{ marginBottom: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-                {cards.map(c => (
-                  <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
-                    <span style={{ display: "inline-block", width: 14, height: 18, borderRadius: 3, background: c.card_type === "red" ? "#cf2e24" : "#f0b429", flexShrink: 0 }} />
-                    <span style={{ fontWeight: 600, color: "#101820" }}>{c.player_name}</span>
-                    {c.minute && <span style={{ color: "#98a1ab" }}>{c.minute}&apos;</span>}
-                    {c.reason && <span style={{ color: "#66707d" }}>{c.reason}</span>}
-                    <button type="button" onClick={() => removeCard(c.id)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#a3211a", fontSize: 12, cursor: "pointer", fontFamily: F }}>Remove</button>
-                  </div>
-                ))}
-              </div>
-            )}
-            {/* Add card form */}
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: "#66707d", marginBottom: 4 }}>Player name</div>
-                <input value={ncName} onChange={e => setNcName(e.target.value)} placeholder="Player name" style={{ ...iSm, minWidth: 150 }} />
-              </div>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: "#66707d", marginBottom: 4 }}>Card</div>
-                <select value={ncType} onChange={e => setNcType(e.target.value)} style={iSm}>
-                  <option value="yellow">Yellow</option>
-                  <option value="red">Red</option>
-                  <option value="second_yellow">2nd Yellow</option>
-                </select>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: "#66707d", marginBottom: 4 }}>Minute</div>
-                <input type="number" min={1} max={120} value={ncMin} onChange={e => setNcMin(e.target.value)} placeholder="e.g. 67" style={{ ...iSm, width: 70 }} />
-              </div>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 500, color: "#66707d", marginBottom: 4 }}>Reason (optional)</div>
-                <input value={ncReason} onChange={e => setNcReason(e.target.value)} placeholder="e.g. Foul play" style={{ ...iSm, minWidth: 150 }} />
-              </div>
-              <button type="button" onClick={addCard} disabled={cardBusy || !ncName.trim()}
-                style={{ background: "#101820", border: "none", color: "#fff", fontSize: 13, fontWeight: 600, padding: "8px 16px", borderRadius: 999, cursor: "pointer", fontFamily: F, opacity: (!ncName.trim() || cardBusy) ? 0.5 : 1 }}>
-                {cardBusy ? "Adding..." : "+ Add card"}
-              </button>
-            </div>
-          </div>
-
-        </div>
-      )}
-    </div>
   );
 }

@@ -27,10 +27,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "At least 11 players required to submit." }, { status: 400 });
   }
 
-  // upsert registration
-  const { error } = await supabaseAdmin
+  // registrations.club_id has no unique constraint, so an upsert with
+  // onConflict fails. Update the club's existing row, or insert a new one.
+  const submittedAt = new Date().toISOString();
+  const { data: existing } = await supabaseAdmin
     .from("registrations")
-    .upsert({ club_id: club.id, status: "pending", submitted_at: new Date().toISOString() }, { onConflict: "club_id" });
+    .select("id")
+    .eq("club_id", club.id)
+    .order("submitted_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { error } = existing
+    ? await supabaseAdmin
+        .from("registrations")
+        .update({ status: "pending", submitted_at: submittedAt, reviewed_at: null })
+        .eq("id", existing.id)
+    : await supabaseAdmin
+        .from("registrations")
+        .insert({ club_id: club.id, submitted_by: userId, status: "pending", submitted_at: submittedAt });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
