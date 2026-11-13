@@ -15,17 +15,17 @@ type GoalScorer = { id: string; minute: number | null; is_own_goal: boolean; is_
 type Card = { id: string; player_name: string; card_type: string; minute: number | null };
 type Fixture = { id: string; week: number; venue: string | null; played_at: string | null; status: string; home_club: ClubRef; away_club: ClubRef; results: Result[] | Result | null };
 type MatchResult = Fixture & { goal_scorers: GoalScorer[]; cards: Card[] };
-type TableRow = { position: number; club_name: string; short_code: string; home_color: string; played: number; won: number; drawn: number; lost: number; goals_for: number; goals_against: number; goal_diff: number; points: number };
+type TableRow = { position: number; club_name: string; short_code: string; home_color: string; logo_url: string | null; played: number; won: number; drawn: number; lost: number; goals_for: number; goals_against: number; goal_diff: number; points: number };
 type TopScorer = { player_id: string; full_name: string; jersey_number: number; club_name: string; club_short: string; goals: number; penalties: number };
 
 function initials(name: string) {
   return name.replace(/ (FC|Football Club)$/i, "").split(" ").map((w: string) => w[0]).join("").slice(0, 3).toUpperCase();
 }
 
-function ClubBadge({ club, size = 32 }: { club: ClubRef | Club; size?: number }) {
+function ClubBadge({ club, size = 32 }: { club: Pick<ClubRef, "name" | "home_color" | "logo_url">; size?: number }) {
   if (club.logo_url) return <Image src={club.logo_url} alt="" width={size} height={size} style={{ width: size, height: size, objectFit: "contain", flexShrink: 0 }} />;
   return (
-    <span style={{ width: size, height: size, flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: size * 0.22, background: (club as ClubRef).home_color || "#101820", color: "#fff", fontSize: size * 0.32, fontWeight: 700 }}>
+    <span style={{ width: size, height: size, flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: size * 0.22, background: club.home_color || "#101820", color: "#fff", fontSize: size * 0.32, fontWeight: 700 }}>
       {initials(club.name)}
     </span>
   );
@@ -477,7 +477,7 @@ export default function SeasonPage() {
                           <td style={{ padding: "14px 16px", color: "#66707d", fontVariantNumeric: "tabular-nums", width: 48 }}>{row.position}</td>
                           <td style={{ padding: "14px 16px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                              <div style={{ width: 20, height: 20, borderRadius: 4, background: row.home_color, flexShrink: 0, border: "1px solid rgba(17,24,39,.1)" }} />
+                              <ClubBadge club={{ name: row.club_name, home_color: row.home_color, logo_url: row.logo_url }} size={30} />
                               <span style={{ fontWeight: 500 }}>{row.club_name}</span>
                             </div>
                           </td>
@@ -513,7 +513,7 @@ export default function SeasonPage() {
                               <td style={{ padding: "14px 16px", color: "#66707d" }}>{i + 1}</td>
                               <td style={{ padding: "14px 16px" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                  <div style={{ width: 20, height: 20, borderRadius: 4, background: c.home_color, flexShrink: 0, border: "1px solid rgba(17,24,39,.1)" }} />
+                                  <ClubBadge club={c} size={30} />
                                   <span style={{ fontWeight: 500 }}>{c.name}</span>
                                 </div>
                               </td>
