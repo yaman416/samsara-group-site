@@ -35,6 +35,7 @@ create table if not exists clubs (
   away_trim     text default '#101820',
   logo_url      text,
   season_id     uuid references seasons(id) on delete set null,
+  squad_deadline_override timestamptz,   -- per-club extension; overrides seasons.squad_deadline
   manager_id    uuid,                     -- references auth.users
   status        text not null default 'active' check (status in ('active','inactive')),
   created_at    timestamptz default now()
@@ -302,3 +303,6 @@ create policy "roles_self_read"      on user_roles for select using (user_id = a
 insert into seasons (name, year, is_active)
 values ('Season 3', 2026, true)
 on conflict do nothing;
+
+-- Existing databases: add the per-club squad deadline extension.
+alter table clubs add column if not exists squad_deadline_override timestamptz;
