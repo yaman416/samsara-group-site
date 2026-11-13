@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { LEAGUE_TZ, communityCountry } from "@/lib/utils";
+import { formatPlayerName } from "@/lib/playerName";
 
 const COLORS = [
   ["#b3122b", "Crimson"], ["#cf2e24", "Red"], ["#1b2a4a", "Navy"],
@@ -367,7 +368,7 @@ export default function ManagerPage() {
                             {p.jersey_number}
                           </span>
                         </td>
-                        <td style={{ fontWeight: 500 }}>{p.full_name}</td>
+                        <td style={{ fontWeight: 500 }}>{formatPlayerName(p.full_name)}</td>
                         <td>
                           <span style={{ background: "rgba(17,24,39,.07)", borderRadius: 6, padding: "4px 10px", fontSize: 13, fontWeight: 500 }}>{p.position}</span>
                         </td>

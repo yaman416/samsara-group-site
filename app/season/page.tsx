@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SiteLayout from "@/components/SiteLayout";
 import { communityCountry } from "@/lib/utils";
+import { formatPlayerName } from "@/lib/playerName";
 
 const TABS = ["Overview", "Fixtures", "Results", "Table", "Clubs", "Statistics"] as const;
 type Tab = typeof TABS[number];
@@ -436,10 +437,10 @@ export default function SeasonPage() {
                             {(f.goal_scorers?.length > 0 || f.cards?.length > 0) && (
                               <div style={{ borderTop: "1px solid rgba(17,24,39,.07)", padding: "12px 20px", display: "flex", gap: 24, flexWrap: "wrap", fontSize: 13, color: "#66707d" }}>
                                 {f.goal_scorers?.filter(g => !g.is_own_goal).map(g => (
-                                  <span key={g.id}>⚽ {g.players?.full_name}{g.minute ? ` ${g.minute}'` : ""}{g.is_penalty ? " (P)" : ""}</span>
+                                  <span key={g.id}>⚽ {formatPlayerName(g.players?.full_name)}{g.minute ? ` ${g.minute}'` : ""}{g.is_penalty ? " (P)" : ""}</span>
                                 ))}
                                 {f.goal_scorers?.filter(g => g.is_own_goal).map(g => (
-                                  <span key={g.id} style={{ color: "#66707d" }}>OG: {g.players?.full_name}{g.minute ? ` ${g.minute}'` : ""}</span>
+                                  <span key={g.id} style={{ color: "#66707d" }}>OG: {formatPlayerName(g.players?.full_name)}{g.minute ? ` ${g.minute}'` : ""}</span>
                                 ))}
                                 {f.cards?.map(c => (
                                   <span key={c.id}><span style={{ display: "inline-block", width: 10, height: 13, borderRadius: 2, background: c.card_type === "red" ? "#cf2e24" : "#f0b429", verticalAlign: "middle", marginRight: 4 }} />{c.player_name}{c.minute ? ` ${c.minute}'` : ""}</span>
@@ -567,7 +568,7 @@ export default function SeasonPage() {
                         {topScorers.map((p, i) => (
                           <tr key={p.player_id} style={{ borderBottom: "1px solid rgba(17,24,39,.06)" }}>
                             <td style={{ padding: "12px 16px", color: i < 3 ? "#cf2e24" : "#66707d", fontWeight: i < 3 ? 700 : 400 }}>{i + 1}</td>
-                            <td style={{ padding: "12px 16px", fontWeight: 600 }}>#{p.jersey_number} {p.full_name}</td>
+                            <td style={{ padding: "12px 16px", fontWeight: 600 }}>#{p.jersey_number} {formatPlayerName(p.full_name)}</td>
                             <td style={{ padding: "12px 16px", color: "#66707d" }}>{p.club_name}</td>
                             <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, fontSize: 16 }}>{p.goals}</td>
                             <td style={{ padding: "12px 16px", textAlign: "center", color: "#66707d" }}>{p.penalties || "-"}</td>

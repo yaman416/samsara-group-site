@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
 import { communityCountry } from "@/lib/utils";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { formatPlayerName } from "@/lib/playerName";
 
 // Club pages are built ahead of time, so without this they keep showing the squad
 // as it was at the last deploy. Rebuild each page at most every 5 minutes so new
@@ -228,7 +229,7 @@ export default async function ClubPage({ params }: { params: Promise<{ slug: str
                         {posPlayers.map(p => (
                           <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(17,24,39,.08)" }}>
                             <span style={{ width: 30, height: 30, borderRadius: 8, background: club.home_color || "#101820", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flex: "none" }}>{p.jersey_number}</span>
-                            <span style={{ fontSize: 14, lineHeight: 1.3 }}>{p.full_name}</span>
+                            <span style={{ fontSize: 14, lineHeight: 1.3 }}>{formatPlayerName(p.full_name)}</span>
                           </div>
                         ))}
                       </div>
