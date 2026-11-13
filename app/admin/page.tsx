@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { LEAGUE_TZ, toLeagueInput, fromLeagueInput } from "@/lib/utils";
 import MatchdayScreen from "./MatchdayScreen";
+import { formatPlayerName } from "@/lib/playerName";
 
 const ADMIN_KEY = "spl_admin";
 
@@ -618,7 +619,7 @@ export default function AdminPage() {
                   ) : (
                     <tr key={p.id}>
                       <td><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 6, background: "#101820", color: "#fff", fontSize: 13, fontWeight: 600 }}>{p.jersey_number}</span></td>
-                      <td style={{ fontWeight: 500 }}>{p.full_name}</td>
+                      <td style={{ fontWeight: 500 }}>{formatPlayerName(p.full_name)}</td>
                       <td><span style={{ background: "rgba(17,24,39,.07)", borderRadius: 6, padding: "3px 8px", fontSize: 12, fontWeight: 500 }}>{p.position}</span></td>
                       <td style={{ color: "#66707d", fontSize: 13 }}>{p.date_of_birth || "-"}</td>
                       <td style={{ textAlign: "right" }}>

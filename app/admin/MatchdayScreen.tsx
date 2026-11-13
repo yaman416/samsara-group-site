@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { LEAGUE_TZ } from "@/lib/utils";
 import { CARD_LABELS, CARD_TYPES, leagueDateKey, pickMatchday, tallyGoals, type CardType, type MatchSheet } from "@/lib/matchday";
+import { formatPlayerName } from "@/lib/playerName";
 
 type Club = { id: string; name: string; short_code: string };
 type Fixture = {
@@ -39,7 +40,7 @@ let rowKey = 0;
 const nextKey = () => ++rowKey;
 const other = (s: Side): Side => (s === "home" ? "away" : "home");
 const toMinute = (v: string) => (v.trim() === "" ? null : parseInt(v, 10));
-const playerLabel = (p: SquadPlayer) => `${p.jersey_number != null ? `#${p.jersey_number} ` : ""}${p.full_name}`;
+const playerLabel = (p: SquadPlayer) => `${p.jersey_number != null ? `#${p.jersey_number} ` : ""}${formatPlayerName(p.full_name)}`;
 const resultOf = (f: Fixture) => (Array.isArray(f.results) ? f.results[0] ?? null : f.results ?? null);
 const dayLabel = (iso: string) => new Date(iso).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: LEAGUE_TZ });
 const timeLabel = (iso: string) => new Date(iso).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: LEAGUE_TZ });

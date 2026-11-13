@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import SiteLayout from "@/components/SiteLayout";
+import { formatPlayerName } from "@/lib/playerName";
 
 type ClubRef = { id: string; name: string; short_code: string; home_color: string; away_color: string; logo_url: string | null };
 type GoalScorer = { id: string; minute: number | null; is_own_goal: boolean; is_penalty: boolean; club_id: string; players: { full_name: string; jersey_number: number } | null; clubs: { name: string; short_code: string } | null };
@@ -83,7 +84,7 @@ export default function MatchPage() {
   for (const g of fixture.goal_scorers ?? []) {
     const isHome = g.club_id === fixture.home_club.id;
     const side = g.is_own_goal ? (isHome ? "away" : "home") : (isHome ? "home" : "away");
-    allEvents.push({ minute: g.minute, type: g.is_own_goal ? "og" : g.is_penalty ? "pen" : "goal", label: g.players?.full_name ?? "Unknown", side });
+    allEvents.push({ minute: g.minute, type: g.is_own_goal ? "og" : g.is_penalty ? "pen" : "goal", label: g.players?.full_name ? formatPlayerName(g.players.full_name) : "Unknown", side });
   }
   // Cards are not linked to a club yet, so they get their own list instead of a side of the timeline.
   const cards = [...(fixture.cards ?? [])].sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999));
@@ -117,7 +118,7 @@ export default function MatchPage() {
               {done && (
                 <div style={{ fontSize: 13, color: "#66707d", lineHeight: 1.8 }}>
                   {homeGoals.map(g => (
-                    <div key={g.id}>{g.players?.full_name}{g.minute ? ` ${g.minute}'` : ""}{g.is_own_goal ? " (OG)" : g.is_penalty ? " (P)" : ""}</div>
+                    <div key={g.id}>{formatPlayerName(g.players?.full_name)}{g.minute ? ` ${g.minute}'` : ""}{g.is_own_goal ? " (OG)" : g.is_penalty ? " (P)" : ""}</div>
                   ))}
                 </div>
               )}
@@ -147,7 +148,7 @@ export default function MatchPage() {
               {done && (
                 <div style={{ fontSize: 13, color: "#66707d", lineHeight: 1.8 }}>
                   {awayGoals.map(g => (
-                    <div key={g.id}>{g.players?.full_name}{g.minute ? ` ${g.minute}'` : ""}{g.is_own_goal ? " (OG)" : g.is_penalty ? " (P)" : ""}</div>
+                    <div key={g.id}>{formatPlayerName(g.players?.full_name)}{g.minute ? ` ${g.minute}'` : ""}{g.is_own_goal ? " (OG)" : g.is_penalty ? " (P)" : ""}</div>
                   ))}
                 </div>
               )}
