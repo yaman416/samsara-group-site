@@ -27,7 +27,8 @@ export async function GET(req: NextRequest) {
     .eq("id", club.season_id)
     .maybeSingle();
 
-  return NextResponse.json({ ...club, squad_deadline: season?.squad_deadline ?? null });
+  const { squad_deadline_override, ...clubFields } = club;
+  return NextResponse.json({ ...clubFields, squad_deadline: squad_deadline_override ?? season?.squad_deadline ?? null });
 }
 
 export async function PATCH(req: NextRequest) {
@@ -35,6 +36,8 @@ export async function PATCH(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const updates = await req.json();
+  // Only the committee may extend a club's squad deadline.
+  delete updates.squad_deadline_override;
   const { error } = await supabaseAdmin
     .from("clubs")
     .update(updates)
