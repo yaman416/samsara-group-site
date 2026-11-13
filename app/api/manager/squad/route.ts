@@ -13,8 +13,11 @@ async function getClubId(req: NextRequest): Promise<string | null> {
 }
 
 async function checkDeadline(clubId: string): Promise<boolean> {
-  const { data: club } = await supabaseAdmin.from("clubs").select("season_id").eq("id", clubId).single();
-  if (!club?.season_id) return false;
+  const { data: club } = await supabaseAdmin.from("clubs").select("season_id, squad_deadline_override").eq("id", clubId).single();
+  if (!club) return false;
+  // A per-club extension (set by the committee) takes precedence over the season deadline.
+  if (club.squad_deadline_override) return new Date() > new Date(club.squad_deadline_override);
+  if (!club.season_id) return false;
   const { data: season } = await supabaseAdmin.from("seasons").select("squad_deadline").eq("id", club.season_id).single();
   if (!season?.squad_deadline) return false;
   return new Date() > new Date(season.squad_deadline);
