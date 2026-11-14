@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   if (stErr) return NextResponse.json({ error: "Live feed unavailable" }, { status: 500 });
 
   const fixtureId = req.nextUrl.searchParams.get("fixture") || state?.fixture_id || null;
-  let fixture = null, live = null, next = null;
+  let fixture = null, live = null, next = null, day: unknown[] = [];
 
   if (fixtureId && /^[0-9a-f-]{36}$/i.test(fixtureId)) {
     const [f, l, res] = await Promise.all([
@@ -49,6 +49,13 @@ export async function GET(req: NextRequest) {
           .eq("status", "scheduled").gt("played_at", f.data.played_at).order("played_at").limit(1));
         const x = n?.[0];
         if (x) next = { played_at: x.played_at, venue: x.venue, home: club(x.home as never), away: club(x.away as never) };
+        // The day's matches on the same ground, for the "Live now" screen (all kick-offs fall within 12 hours either side).
+        const t = Date.parse(f.data.played_at), H12 = 12 * 3600 * 1000;
+        let q = supabaseAdmin.from("fixtures").select(FIX_COLS).eq("season_id", f.data.season_id)
+          .gte("played_at", new Date(t - H12).toISOString()).lte("played_at", new Date(t + H12).toISOString()).order("played_at").limit(8);
+        if (f.data.venue) q = q.eq("venue", f.data.venue);
+        const { data: d } = await q;
+        day = (d ?? []).map(y => ({ id: y.id, played_at: y.played_at, home: club(y.home as never), away: club(y.away as never) }));
       }
     }
   }
@@ -58,7 +65,7 @@ export async function GET(req: NextRequest) {
     : null;
 
   return NextResponse.json(
-    { now: new Date().toISOString(), fixture, live, next, lower },
+    { now: new Date().toISOString(), fixture, live, next, day, lower },
     { headers: { "Cache-Control": "public, max-age=0, s-maxage=1, stale-while-revalidate=1" } },
   );
 }

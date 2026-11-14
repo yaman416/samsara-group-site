@@ -144,3 +144,18 @@ body{font-family:Inter,system-ui,sans-serif;font-variant-numeric:tabular-nums}
 .tick .row .dk{height:56px;padding:2px 10px}.tick .row .dk img{height:52px}
 .tick .row .nm{font-size:25px}
 .tick .row .grp{font-size:15px;padding:8px 14px}
+
+/* Live now: stream holding screen */
+.brk.now h1{top:206px;display:flex;justify-content:center;align-items:center;gap:26px}
+.brk.now h1 .dot{width:44px;height:44px;border-radius:50%;background:var(--red);animation:livedot 1.4s ease-in-out infinite}
+@keyframes livedot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+.brk.now .sub{position:absolute;top:326px;left:0;right:0;text-align:center;font-weight:600;font-size:22px;letter-spacing:4px;color:#777}
+.brk.now .fx{position:absolute;top:378px;left:330px;right:330px;height:286px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.brk.now .fx .m{display:grid;grid-template-columns:170px 1fr 60px 1fr;align-items:center;background:#fff;border:2px solid #e3e3e8;border-left:8px solid #e3e3e8;height:86px;padding-right:24px;font-weight:700;font-size:30px}
+.brk.now .fx .m.on{border-left-color:var(--red)}
+.brk.now .fx .m .tm{font-size:24px;color:var(--red);text-align:center;letter-spacing:.5px}
+.brk.now .fx .m .h,.brk.now .fx .m .a{display:flex;align-items:center;gap:16px;white-space:nowrap;overflow:hidden}
+.brk.now .fx .m .h{justify-content:flex-end}
+.brk.now .fx .m img{height:58px;width:58px;object-fit:contain;flex:none}
+.brk.now .fx .m i{font-style:normal;color:var(--red);text-align:center;font-size:22px}
+.brk.now .fx.n4{gap:8px}.brk.now .fx.n4 .m{height:66px;font-size:26px}.brk.now .fx.n4 .m img{height:46px;width:46px}

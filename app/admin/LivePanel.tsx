@@ -194,6 +194,7 @@ export function BroadcastControls({ fixtures, state, onState }: { fixtures: Fx[]
           <div style={{ fontSize: 13, color: MUTED, marginTop: 12, display: "grid", gap: 10 }}>
             <div>Overlays for OBS (Browser source, 1920 x 1080). Tap a name to preview it; paste the grey link into OBS:</div>
             {([
+              ["Live now screen", "live-now.html", "Full screen for the start of the stream: LIVE NOW, today's matches on this ground, partners."],
               ["1. Match scoreboard", "scoreboard.html", "Score, clock and partner bar over the main camera."],
               ["2. Break / marketing screen", "break.html", "Full screen for kick-off soon, HT and FT, with partners."],
               ["3. Interview name strap", "lower-third.html", "Blank until you press Show on the right. Second camera."],
