@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8"><title>SPL Live Now</title>
+<!-- OBS browser source, 1920 x 1080, full screen. Holding screen for the start of the stream: LIVE NOW, the day's matches on this ground, partners.
+     Options: ?fixture=<id>  ?title=Starting%20Soon  ?rotate=6 (seconds per partner page) -->
+<link rel="stylesheet" href="broadcast.css"></head><body>
+<div class="brk now">
+<svg class="sw" viewBox="0 0 1920 1080"><path d="M1460,0 L1920,0 L1920,170 Q1760,50 1460,0Z" fill="#c8102e"/><path d="M1780,0 L1920,0 L1920,120 L1810,90Z" fill="#9e0c22"/><path d="M0,900 Q260,950 560,1080 L0,1080Z" fill="#c8102e"/><path d="M0,1000 Q100,1020 200,1080 L0,1080Z" fill="#9e0c22"/></svg>
+<div class="hdr"><div class="sba"><img src="img/sba.png" alt=""><b>SBA PROPERTY GROUP</b><i>PRESENTS</i></div><img class="crest" src="img/spl-crest.png" alt=""><div class="ssn"><i>SEASON 3</i><b>2026-2027</b></div></div>
+<h1><span class="dot"></span><span id="ttl">Live <em>Now</em></span></h1>
+<div class="sub" id="sub">SAMSARA PREMIER LEAGUE</div>
+<div class="fx" id="fx"></div>
+<div class="spons"><small>THANK YOU TO OUR PARTNERS</small><div class="row" id="tiles"></div></div>
+</div>
+<script src="live.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)};
+var per=5,page=0,pages=Math.ceil(PARTNERS.length/per),rot=+(Live.param('rotate')||6)*1000;
+function drawTiles(){var s=PARTNERS.slice(page*per,page*per+per);
+  $('tiles').innerHTML=s.map(function(p){return '<div class="tile'+(p.dark?' dk':'')+'">'+partnerHtml(p)+'</div>'}).join('')}
+drawTiles();
+setInterval(function(){$('tiles').style.opacity=0;setTimeout(function(){page=(page+1)%pages;drawTiles();$('tiles').style.opacity=1},500)},rot);
+
+var custom=Live.param('title');
+if(custom){var w=custom.split(' '),last=w.pop();$('ttl').innerHTML=(w.length?Live.esc(w.join(' '))+' ':'')+'<em>'+Live.esc(last)+'</em>'}
+var sig='';
+Live.on(function(d){
+  var f=d.fixture,day=(d.day&&d.day.length?d.day:(f?[f]:[])).slice(0,4);
+  $('sub').textContent=f?('WEEK '+f.week+(f.venue?'  ·  '+f.venue:'')).toUpperCase():'SAMSARA PREMIER LEAGUE';
+  var s=JSON.stringify(day)+(f&&f.id);if(s===sig)return;sig=s;
+  $('fx').className='fx n'+day.length;
+  $('fx').innerHTML=day.map(function(m){
+    return '<div class="m'+(f&&m.id===f.id?' on':'')+'"><span class="tm">'+Live.esc(Live.time(m.played_at))+'</span>'+
+      '<span class="h">'+Live.esc(m.home.name)+'<img src="'+Live.logo(m.home)+'" alt=""></span><i>V</i>'+
+      '<span class="a"><img src="'+Live.logo(m.away)+'" alt="">'+Live.esc(m.away.name)+'</span></div>'}).join('');
+});
+</script></body></html>
