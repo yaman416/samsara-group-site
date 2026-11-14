@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { LEAGUE_TZ } from "@/lib/utils";
-import { CARD_LABELS, CARD_TYPES, leagueDateKey, pickMatchday, tallyGoals, type CardType, type MatchSheet } from "@/lib/matchday";
+import { leagueDateKey, pickMatchday, type CardType, type MatchSheet } from "@/lib/matchday";
+import { matchClock } from "@/lib/live";
 import { formatPlayerName } from "@/lib/playerName";
-import { BroadcastControls, LivePanel, liveApi, type BroadcastState, type LiveRow } from "./LivePanel";
+import { BroadcastControls, LiveControl, liveApi, type BroadcastState, type LiveRow } from "./LivePanel";
 
 type Club = { id: string; name: string; short_code: string };
 type Fixture = {
@@ -14,23 +15,22 @@ type Fixture = {
 type SquadPlayer = { id: string; club_id: string; full_name: string; jersey_number: number | null; position: string | null };
 type SavedGoal = { player_id: string; club_id: string; minute: number | null; is_own_goal: boolean; is_penalty: boolean };
 type SavedCard = { player_id: string | null; player_name: string; card_type: string; minute: number | null; reason: string | null };
-type TableRow = { position: number; club_name: string; short_code: string; home_color: string | null; played: number; won: number; drawn: number; lost: number; goal_diff: number; points: number };
 
 type Side = "home" | "away";
 type GoalKind = "goal" | "pen" | "og";
-type GoalRow = { key: number; side: Side; kind: GoalKind; player_id: string; minute: string };
-type CardRow = { key: number; side: Side; card_type: CardType; player_id: string; minute: string; reason?: string | null };
+// `side` is the team the goal counts for. An own goal's scorer comes from the other squad.
+type GoalRow = { key: number; side: Side; kind: GoalKind; player_id: string; typed: string; minute: number | null };
+type CardRow = { key: number; side: Side; card_type: CardType; player_id: string; typed: string; minute: number | null; reason: string | null };
 
 const F = "'DM Sans',system-ui,sans-serif";
-const MUTED = "#66707d";
-const label11: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 500, letterSpacing: ".1em", textTransform: "uppercase", color: MUTED, marginBottom: 6 };
+const MUTED = "#5b6470";
+const RED = "#c8102e";
+const GREEN = "#1f6b37";
 const field: React.CSSProperties = { border: "1px solid rgba(17,24,39,.18)", borderRadius: 8, fontSize: 16, padding: "8px 10px", fontFamily: F, color: "#101820", background: "#fff", minWidth: 0 };
-const pill = (bg: string, color: string): React.CSSProperties => ({ background: bg, color, fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: 6, whiteSpace: "nowrap" });
-const btn = (dark: boolean, disabled = false): React.CSSProperties => ({
-  background: dark ? "#101820" : "none", color: dark ? "#fff" : "#101820", border: dark ? 0 : "1px solid rgba(17,24,39,.18)",
-  fontSize: 13, fontWeight: 600, padding: "8px 16px", borderRadius: 999, cursor: disabled ? "default" : "pointer", fontFamily: F, opacity: disabled ? 0.5 : 1,
-});
-const linkBtn = (color: string): React.CSSProperties => ({ background: "none", border: "none", color, fontSize: 13, cursor: "pointer", fontFamily: F, padding: "4px 2px" });
+const pill = (bg: string, color: string): React.CSSProperties => ({ background: bg, color, fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 6, whiteSpace: "nowrap", letterSpacing: ".02em" });
+const sectionLabel: React.CSSProperties = { fontSize: 12, fontWeight: 600, letterSpacing: ".1em", textTransform: "uppercase", color: MUTED };
+const bigBtn = (bg: string): React.CSSProperties => ({ background: bg, color: "#fff", border: 0, borderRadius: 16, height: 60, fontSize: 18, fontWeight: 700, fontFamily: F, cursor: "pointer", width: "100%" });
+const ghostBtn: React.CSSProperties = { background: "#fff", border: "1px solid rgba(17,24,39,.18)", borderRadius: 12, minHeight: 48, padding: "0 12px", fontSize: 14, fontWeight: 600, fontFamily: F, cursor: "pointer", color: "#101820" };
 
 function api(path: string, opts: RequestInit = {}) {
   const key = typeof window !== "undefined" ? localStorage.getItem("spl_admin") || "" : "";
@@ -40,26 +40,32 @@ function api(path: string, opts: RequestInit = {}) {
 let rowKey = 0;
 const nextKey = () => ++rowKey;
 const other = (s: Side): Side => (s === "home" ? "away" : "home");
-const toMinute = (v: string) => (v.trim() === "" ? null : parseInt(v, 10));
-const playerLabel = (p: SquadPlayer) => `${p.jersey_number != null ? `#${p.jersey_number} ` : ""}${formatPlayerName(p.full_name)}`;
 const resultOf = (f: Fixture) => (Array.isArray(f.results) ? f.results[0] ?? null : f.results ?? null);
 const dayLabel = (iso: string) => new Date(iso).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: LEAGUE_TZ });
 const timeLabel = (iso: string) => new Date(iso).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: LEAGUE_TZ });
+
+// Only Ground 1 is scored live on match day. Other grounds enter the result after full time.
+// If no fixture that day names Ground 1, every match gets live scoring.
+const isGround1 = (venue: string | null) => /ground\s*1\b/i.test(venue ?? "");
+
+function useNow(ms = 1000) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), ms); return () => clearInterval(t); }, [ms]);
+  return now;
+}
 
 export default function MatchdayScreen() {
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
-  const [table, setTable] = useState<TableRow[]>([]);
+  const [view, setView] = useState<{ id: string; mode: "live" | "sheet" } | null>(null);
 
-  // Fixtures and table both come from the active season only.
+  // Fixtures come from the active season only.
   const load = useCallback(async () => {
     const seasons = await api("/api/admin/seasons");
     const active = seasons.ok ? ((await seasons.json()) as { id: string; is_active: boolean }[]).find(s => s.is_active) : null;
-    const q = active ? `?season_id=${active.id}` : "";
-    const [fr, tr] = await Promise.all([api("/api/admin/fixtures"), api(`/api/admin/league-table${q}`)]);
+    const fr = await api("/api/admin/fixtures");
     if (fr.ok) setFixtures(((await fr.json()) as Fixture[]).filter(f => !active || f.season_id === active.id));
-    if (tr.ok) setTable(await tr.json());
     setLoaded(true);
   }, []);
 
@@ -87,8 +93,8 @@ export default function MatchdayScreen() {
   const done = dayFixtures.filter(f => f.status === "completed").length;
   const when = selected === todayKey ? "Today" : selected && selected > todayKey ? "Next matchday" : "Past matchday";
   const unscheduled = fixtures.filter(f => !f.played_at).length;
-
-  function onSaved() { load(); }
+  const anyGround1 = dayFixtures.some(f => isGround1(f.venue));
+  const isLiveMatch = (f: Fixture) => !anyGround1 || isGround1(f.venue);
 
   // Live scores for this matchday's fixtures, refreshed every 5 seconds so two phones stay in step.
   const [live, setLive] = useState<Record<string, LiveRow>>({});
@@ -98,11 +104,13 @@ export default function MatchdayScreen() {
     if (!dayIds) return;
     let stop = false;
     const pull = async () => {
-      const r = await liveApi(undefined, `?fixture_ids=${dayIds}`);
-      if (!r.ok || stop) return;
-      const d: { live: LiveRow[]; state: BroadcastState | null } = await r.json();
-      setLive(Object.fromEntries(d.live.map(x => [x.fixture_id, x])));
-      setBstate(d.state);
+      try {
+        const r = await liveApi(undefined, `?fixture_ids=${dayIds}`);
+        if (!r.ok || stop) return;
+        const d: { live: LiveRow[]; state: BroadcastState | null } = await r.json();
+        setLive(Object.fromEntries(d.live.map(x => [x.fixture_id, x])));
+        setBstate(d.state);
+      } catch { /* keep the last values; the next pull retries */ }
     };
     pull();
     const t = setInterval(pull, 5000);
@@ -113,306 +121,490 @@ export default function MatchdayScreen() {
     if (r.ok) setBstate(s => ({ ...(s ?? { lt_name: null, lt_role: null, lt_club_id: null, lt_visible: false }), fixture_id: id }));
   }
 
+  const open = view ? fixtures.find(f => f.id === view.id) ?? null : null;
+  useEffect(() => { if (typeof window !== "undefined") window.scrollTo({ top: 0 }); }, [view]);
+
+  if (open && view?.mode === "live") {
+    return (
+      <LiveControl fixture={open} live={live[open.id] ?? null} onAir={bstate?.fixture_id === open.id}
+        onChange={row => setLive(l => ({ ...l, [open.id]: row }))} onSetOnAir={() => setOnAir(open.id)}
+        onBack={() => setView(null)} onFullTime={() => setView({ id: open.id, mode: "sheet" })} />
+    );
+  }
+  if (open && view?.mode === "sheet") {
+    return (
+      <MatchSheetView key={open.id} fixture={open} live={live[open.id] ?? null} liveMatch={isLiveMatch(open)}
+        onBack={() => setView(null)} onLive={() => setView({ id: open.id, mode: "live" })} onSaved={load} />
+    );
+  }
+
+  // Group the day's matches by ground, Ground 1 first.
+  const grounds = [...new Set(dayFixtures.map(f => f.venue || "Ground TBC"))].sort((a, b) => Number(isGround1(b)) - Number(isGround1(a)) || a.localeCompare(b));
+  const nextUp = dayFixtures.find(f => f.status !== "completed" && !(live[f.id] && live[f.id].period !== "pre"));
+
   return (
-    <div style={{ display: "grid", gap: 20 }}>
-      <div className="card admin-pad" style={{ padding: 24, display: "flex", gap: 16, alignItems: "flex-end", flexWrap: "wrap" }}>
-        <div style={{ flex: "1 1 260px", minWidth: 0 }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
-            <span style={pill(when === "Today" ? "#eef7f0" : "#f4f4f1", when === "Today" ? "#1f6b37" : MUTED)}>{when}</span>
-            {day && <span style={{ fontSize: 13, color: MUTED }}>{done} of {day.count} results saved</span>}
-          </div>
-          <div style={{ fontSize: 20, fontWeight: 600 }}>
-            {day ? `${day.label} · Week ${[...day.weeks].join(", ")}` : loaded ? "No matchdays scheduled" : "Loading..."}
-          </div>
-          <div style={{ fontSize: 13, color: MUTED, marginTop: 4 }}>Only this matchday&apos;s fixtures are shown. Saving a result updates points and positions straight away.</div>
+    <div style={{ display: "grid", gap: 16 }}>
+      <div style={{ background: "#101820", color: "#fff", borderRadius: 16, padding: "16px 18px", display: "grid", gap: 4 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={pill(when === "Today" ? RED : "rgba(255,255,255,.16)", "#fff")}>{when}</span>
+          {day && <span style={{ fontSize: 13, color: "#c7ccd2" }}>{done} of {day.count} results saved</span>}
         </div>
-        {days.length > 0 && (
-          <div style={{ flex: "0 1 260px", minWidth: 0 }}>
-            <label htmlFor="matchday-pick" style={label11}>Matchday</label>
-            <select id="matchday-pick" value={selected ?? ""} onChange={e => setPicked(e.target.value)} style={{ ...field, width: "100%" }}>
+        <div style={{ fontSize: 24, fontWeight: 700 }}>
+          {day ? `${day.label} · Week ${[...day.weeks].join(", ")}` : loaded ? "No matchdays scheduled" : "Loading..."}
+        </div>
+        {days.length > 1 && (
+          <label style={{ fontSize: 13, color: "#c7ccd2", display: "flex", gap: 8, alignItems: "center", marginTop: 4, flexWrap: "wrap" }}>
+            Show another day
+            <select value={selected ?? ""} onChange={e => { setPicked(e.target.value); setView(null); }} style={{ ...field, fontSize: 14, padding: "6px 8px", maxWidth: "100%" }}>
               {days.map(d => (
                 <option key={d.key} value={d.key}>{d.label} · Week {[...d.weeks].join(", ")}{d.key === todayKey ? " (today)" : ""}</option>
               ))}
             </select>
-          </div>
+          </label>
         )}
       </div>
 
       {loaded && days.length === 0 && (
-        <div className="card" style={{ padding: 48, textAlign: "center", color: "#98a1ab" }}>No fixtures with a date yet. Add them in the Fixtures tab first.</div>
-      )}
-      {unscheduled > 0 && (
-        <div style={{ fontSize: 13, color: "#8a5a12" }}>{unscheduled} fixture{unscheduled === 1 ? " has" : "s have"} no date and {unscheduled === 1 ? "is" : "are"} not shown here. Set the date in the Fixtures tab.</div>
+        <div className="card" style={{ padding: 40, textAlign: "center", color: MUTED }}>No fixtures with a date yet. Add them in Fixtures first.</div>
       )}
 
-      {dayFixtures.length > 0 && <BroadcastControls key={bstate ? "s" : "n"} fixtures={dayFixtures} state={bstate} onState={setBstate} />}
-
-      {dayFixtures.map(f => (
-        <MatchSheetCard key={f.id} fixture={f} onSaved={onSaved} live={live[f.id] ?? null} onAir={bstate?.fixture_id === f.id}
-          onLive={row => setLive(l => ({ ...l, [f.id]: row }))} onSetOnAir={() => setOnAir(f.id)} />
+      {grounds.map(g => (
+        <div key={g} style={{ display: "grid", gap: 10 }}>
+          <div style={sectionLabel}>{g}{anyGround1 ? (isGround1(g) ? " · live scoring" : " · result after full time") : ""}</div>
+          {dayFixtures.filter(f => (f.venue || "Ground TBC") === g).map(f => (
+            <MatchTile key={f.id} fixture={f} live={live[f.id] ?? null} liveMatch={isLiveMatch(f)} onAir={bstate?.fixture_id === f.id} nextUp={nextUp?.id === f.id}
+              onOpen={() => setView({ id: f.id, mode: isLiveMatch(f) && f.status !== "completed" && live[f.id]?.period !== "FT" ? "live" : "sheet" })} />
+          ))}
+        </div>
       ))}
 
-      {table.length > 0 && (
-        <div className="card" style={{ overflow: "hidden" }}>
-          <div style={{ padding: "16px 20px 4px", fontSize: 15, fontWeight: 600 }}>League table</div>
-          <div style={{ overflowX: "auto" }}>
-            <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead><tr><th>#</th><th>Club</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>
-              <tbody>
-                {table.map(r => (
-                  <tr key={r.short_code + r.club_name}>
-                    <td style={{ fontWeight: 700 }}>{r.position}</td>
-                    <td style={{ fontWeight: 600 }}>{r.club_name}</td>
-                    <td>{r.played}</td><td>{r.won}</td><td>{r.drawn}</td><td>{r.lost}</td>
-                    <td>{r.goal_diff > 0 ? `+${r.goal_diff}` : r.goal_diff}</td>
-                    <td style={{ fontWeight: 700 }}>{r.points}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {unscheduled > 0 && (
+        <div style={{ fontSize: 13, color: "#8a5a12" }}>{unscheduled} fixture{unscheduled === 1 ? " has" : "s have"} no date and {unscheduled === 1 ? "is" : "are"} not shown here. Set the date in Fixtures.</div>
+      )}
+
+      {dayFixtures.length > 0 && (
+        <details className="card" style={{ padding: "4px 18px" }}>
+          <summary style={{ cursor: "pointer", fontSize: 15, fontWeight: 600, padding: "14px 0", minHeight: 24 }}>Stream and lower third</summary>
+          <div style={{ margin: "0 -18px" }}>
+            <BroadcastControls key={bstate ? "s" : "n"} fixtures={dayFixtures} state={bstate} onState={setBstate} />
           </div>
-        </div>
+        </details>
       )}
     </div>
   );
 }
 
-function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
-  fixture: Fixture; onSaved: () => void; live: LiveRow | null; onAir: boolean; onLive: (row: LiveRow) => void; onSetOnAir: () => void;
+function MatchTile({ fixture: f, live, liveMatch, onAir, nextUp, onOpen }: {
+  fixture: Fixture; live: LiveRow | null; liveMatch: boolean; onAir: boolean; nextUp: boolean; onOpen: () => void;
+}) {
+  const now = useNow();
+  const saved = resultOf(f);
+  const completed = f.status === "completed" && !!saved;
+  const period = live?.period ?? "pre";
+  const inPlay = !completed && liveMatch && (period === "1H" || period === "2H");
+  const score = completed ? `${saved!.home_score} - ${saved!.away_score}` : liveMatch && live && period !== "pre" ? `${live.home_score} - ${live.away_score}` : null;
+
+  let badge: React.ReactNode;
+  let hint: string;
+  if (completed) { badge = <span style={pill("#eef7f0", GREEN)}>Result saved</span>; hint = "Tap to check or edit"; }
+  else if (liveMatch && period === "FT") { badge = <span style={pill("#fff3e0", "#8a4b00")}>Full time</span>; hint = "Tap to add scorers and cards, then save"; }
+  else if (liveMatch && period === "HT") { badge = <span style={pill("#fff3e0", "#8a4b00")}>Half time</span>; hint = "Tap to control"; }
+  else if (inPlay) { badge = <span style={pill(RED, "#fff")}>LIVE · {matchClock(live!, now)}</span>; hint = onAir ? "On stream · Tap to control" : "Tap to control"; }
+  else if (liveMatch) { badge = nextUp ? <span style={pill("#f0f1f3", MUTED)}>Next up</span> : null; hint = "Tap to open live scoring"; }
+  else { badge = <span style={pill("#f0f1f3", MUTED)}>Result after match</span>; hint = "Tap to enter the final score"; }
+
+  return (
+    <button type="button" onClick={onOpen}
+      style={{ all: "unset", boxSizing: "border-box", cursor: "pointer", background: "#fff", border: inPlay ? `2px solid ${RED}` : "1px solid rgba(17,24,39,.12)", borderRadius: 16, padding: "14px 16px", display: "grid", gap: 8, width: "100%" }}>
+      <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: MUTED }}>{f.played_at ? timeLabel(f.played_at) : "Time TBC"} · Week {f.week}</span>
+        {badge}
+      </span>
+      <span style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)", gap: 10, alignItems: "center" }}>
+        <span style={{ fontSize: 16, fontWeight: 600, textAlign: "right", lineHeight: 1.25 }}>{f.home_club.name}</span>
+        <span style={{ fontSize: score ? 26 : 18, fontWeight: 700, color: score ? "#101820" : MUTED, whiteSpace: "nowrap" }}>{score ?? "v"}</span>
+        <span style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.25 }}>{f.away_club.name}</span>
+      </span>
+      <span style={{ fontSize: 13, fontWeight: 600, textAlign: "center", color: inPlay ? RED : "#101820" }}>{hint}</span>
+    </button>
+  );
+}
+
+/** Finds the player wearing a number. */
+/** Everyone wearing a number. Two players can share one, so the caller must not guess between them. */
+const wearing = (pool: SquadPlayer[], typed: string) => (typed === "" ? [] : pool.filter(p => p.jersey_number === Number(typed)));
+/** True when another player's number starts with what was typed, so a second digit may follow. */
+const mayGrow = (pool: SquadPlayer[], typed: string) => pool.some(p => p.jersey_number != null && String(p.jersey_number).length > typed.length && String(p.jersey_number).startsWith(typed));
+
+/**
+ * After full time: final score, then a jersey number for each goal and card.
+ * Goal rows always match the score: changing the score adds or removes rows.
+ */
+function MatchSheetView({ fixture, live, liveMatch, onBack, onLive, onSaved }: {
+  fixture: Fixture; live: LiveRow | null; liveMatch: boolean; onBack: () => void; onLive: () => void; onSaved: () => void;
 }) {
   const saved = resultOf(fixture);
   const completed = fixture.status === "completed" && !!saved;
-  const homeId = fixture.home_club.id, awayId = fixture.away_club.id;
+  const homeId = fixture.home_club.id;
   const clubOf = (s: Side) => (s === "home" ? fixture.home_club : fixture.away_club);
 
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadErr, setLoadErr] = useState<string | null>(null);
   const [squads, setSquads] = useState<Record<Side, SquadPlayer[]>>({ home: [], away: [] });
-  const [score, setScore] = useState<Record<Side, string>>({ home: saved ? String(saved.home_score) : "", away: saved ? String(saved.away_score) : "" });
+  const [score, setScore] = useState<Record<Side, number>>({ home: 0, away: 0 });
   const [goals, setGoals] = useState<GoalRow[]>([]);
   const [cards, setCards] = useState<CardRow[]>([]);
+  const [sel, setSel] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [armClear, setArmClear] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  // The live score at the moment the sheet opened. Later live updates must not wipe what is being typed.
+  const [startLive] = useState(live);
 
-  async function openSheet() {
-    setOpen(true); setLoading(true); setMsg(null);
-    const r = await api(`/api/admin/match-sheet?fixture_id=${fixture.id}`);
-    setLoading(false);
-    if (!r.ok) { setMsg({ ok: false, text: (await r.json().catch(() => ({}))).error ?? "Could not load the match sheet." }); return; }
-    const d: { result: { home_score: number; away_score: number } | null; goals: SavedGoal[]; cards: SavedCard[]; home_players: SquadPlayer[]; away_players: SquadPlayer[] } = await r.json();
-    setSquads({ home: d.home_players, away: d.away_players });
-    if (d.result) setScore({ home: String(d.result.home_score), away: String(d.result.away_score) });
-    else if (live) setScore({ home: String(live.home_score), away: String(live.away_score) }); // carry over the live score
-    setGoals(d.goals.map(g => {
-      const playerSide: Side = g.club_id === homeId ? "home" : "away";
-      return { key: nextKey(), side: g.is_own_goal ? other(playerSide) : playerSide, kind: g.is_own_goal ? "og" : g.is_penalty ? "pen" : "goal", player_id: g.player_id, minute: g.minute != null ? String(g.minute) : "" };
-    }));
-    // Coming from the live scoreboard: one empty row per goal, ready for jersey numbers.
-    if (!d.result && live && d.goals.length === 0) {
-      setGoals([
-        ...Array.from({ length: live.home_score }, () => ({ key: nextKey(), side: "home" as Side, kind: "goal" as GoalKind, player_id: "", minute: "" })),
-        ...Array.from({ length: live.away_score }, () => ({ key: nextKey(), side: "away" as Side, kind: "goal" as GoalKind, player_id: "", minute: "" })),
-      ]);
+  useEffect(() => {
+    let stop = false;
+    (async () => {
+      try {
+        const r = await api(`/api/admin/match-sheet?fixture_id=${fixture.id}`);
+        if (stop) return;
+        if (!r.ok) { setLoadErr((await r.json().catch(() => ({}))).error ?? "Could not load the match sheet."); setLoading(false); return; }
+        const d: { result: { home_score: number; away_score: number } | null; goals: SavedGoal[]; cards: SavedCard[]; home_players: SquadPlayer[]; away_players: SquadPlayer[] } = await r.json();
+        if (stop) return;
+        const pools = { home: d.home_players, away: d.away_players };
+        setSquads(pools);
+        const sc = d.result ? { home: d.result.home_score, away: d.result.away_score } : startLive ? { home: startLive.home_score, away: startLive.away_score } : { home: 0, away: 0 };
+        setScore(sc);
+        const numOf = (pool: SquadPlayer[], id: string | null) => { const p = pool.find(x => x.id === id); return p?.jersey_number != null ? String(p.jersey_number) : ""; };
+        const rows: GoalRow[] = d.goals.map(g => {
+          const playerSide: Side = g.club_id === homeId ? "home" : "away";
+          return { key: nextKey(), side: g.is_own_goal ? other(playerSide) : playerSide, kind: g.is_own_goal ? "og" : g.is_penalty ? "pen" : "goal", player_id: g.player_id, typed: numOf(pools[playerSide], g.player_id), minute: g.minute };
+        });
+        // Fill up with blank rows so each team has one row per goal.
+        for (const s of ["home", "away"] as Side[]) {
+          const have = rows.filter(g => g.side === s).length;
+          for (let i = have; i < sc[s]; i++) rows.push({ key: nextKey(), side: s, kind: "goal", player_id: "", typed: "", minute: null });
+        }
+        rows.sort((a, b) => (a.side === b.side ? 0 : a.side === "home" ? -1 : 1));
+        setGoals(rows);
+        const sideOfPlayer = (id: string | null): Side => (d.away_players.some(p => p.id === id) ? "away" : "home");
+        setCards(d.cards.map(c => {
+          const side = sideOfPlayer(c.player_id);
+          const type: CardType = c.card_type === "yellow" || c.card_type === "yellow_red" || c.card_type === "red" ? c.card_type : c.card_type === "second_yellow" ? "yellow_red" : "yellow";
+          return { key: nextKey(), side, player_id: c.player_id ?? "", typed: numOf(pools[side], c.player_id), card_type: type, minute: c.minute, reason: c.reason };
+        }));
+        setSel(rows.find(g => !g.player_id)?.key ?? null);
+      } catch {
+        if (!stop) setLoadErr("No connection. Go back and open the match again.");
+      }
+      if (!stop) setLoading(false);
+    })();
+    return () => { stop = true; };
+  }, [fixture.id, homeId, startLive]);
+
+  const poolForGoal = (g: GoalRow) => (g.kind === "og" ? squads[other(g.side)] : squads[g.side]);
+  const allRows = [...goals.map(g => ({ key: g.key, pool: poolForGoal(g), typed: g.typed })), ...cards.map(c => ({ key: c.key, pool: squads[c.side], typed: c.typed }))];
+
+  function setTyped(key: number, typed: string) {
+    setDirty(true); setMsg(null);
+    const row = allRows.find(r => r.key === key);
+    if (!row) return;
+    const all = wearing(row.pool, typed);
+    const hit = all.length === 1 ? all[0] : undefined;
+    setGoals(gs => gs.map(g => (g.key === key ? { ...g, typed, player_id: hit?.id ?? "" } : g)));
+    setCards(cs => cs.map(c => (c.key === key ? { ...c, typed, player_id: hit?.id ?? "" } : c)));
+    // Move on once the number is complete and names exactly one player.
+    if (hit && !mayGrow(row.pool, typed)) advance(key);
+  }
+  function advance(from: number) {
+    const keys = allRows.map(r => r.key);
+    const i = keys.indexOf(from);
+    const nextBlank = allRows.slice(i + 1).find(r => r.typed === "");
+    setSel(nextBlank?.key ?? null);
+  }
+  function press(k: string) {
+    if (sel == null) return;
+    const row = allRows.find(r => r.key === sel);
+    if (!row) return;
+    if (k === "del") setTyped(sel, row.typed.slice(0, -1));
+    else if (k === "unknown") { setTyped(sel, ""); advance(sel); }
+    else if (row.typed.length < 2) setTyped(sel, row.typed + k);
+  }
+
+  function pickPlayer(key: number, p: SquadPlayer) {
+    setDirty(true); setMsg(null);
+    const typed = p.jersey_number != null ? String(p.jersey_number) : "";
+    setGoals(gs => gs.map(g => (g.key === key ? { ...g, typed, player_id: p.id } : g)));
+    setCards(cs => cs.map(c => (c.key === key ? { ...c, typed, player_id: p.id } : c)));
+    advance(key);
+  }
+
+  function changeScore(side: Side, delta: number) {
+    const n = Math.max(0, Math.min(99, score[side] + delta));
+    if (n === score[side]) return;
+    setDirty(true); setMsg(null);
+    setScore(s => ({ ...s, [side]: n }));
+    if (delta > 0) {
+      const row: GoalRow = { key: nextKey(), side, kind: "goal", player_id: "", typed: "", minute: null };
+      setGoals(gs => {
+        const lastIdx = gs.map(g => g.side).lastIndexOf(side);
+        const at = lastIdx >= 0 ? lastIdx + 1 : side === "home" ? 0 : gs.length;
+        return [...gs.slice(0, at), row, ...gs.slice(at)];
+      });
+      setSel(row.key);
+    } else {
+      // Remove a blank row for that team if there is one, else its last row.
+      setGoals(gs => {
+        const mine = gs.filter(g => g.side === side);
+        const drop = [...mine].reverse().find(g => !g.player_id) ?? mine[mine.length - 1];
+        return drop ? gs.filter(g => g.key !== drop.key) : gs;
+      });
     }
-    const sideOfPlayer = (id: string | null): Side => (d.away_players.some(p => p.id === id) ? "away" : "home");
-    setCards(d.cards.map(c => ({
-      key: nextKey(), side: sideOfPlayer(c.player_id), player_id: c.player_id ?? "",
-      card_type: (CARD_TYPES as readonly string[]).includes(c.card_type) ? (c.card_type as CardType) : c.card_type === "second_yellow" ? "yellow_red" : "yellow",
-      minute: c.minute != null ? String(c.minute) : "", reason: c.reason,
-    })));
   }
-
-  const goalCount = (s: Side, rows = goals) => rows.filter(g => g.side === s).length;
-
-  function addGoal(side: Side) {
-    const n = goalCount(side) + 1;
-    setGoals(g => [...g, { key: nextKey(), side, kind: "goal", player_id: "", minute: "" }]);
-    setScore(sc => ((parseInt(sc[side], 10) || 0) < n ? { ...sc, [side]: String(n) } : sc));
+  function addCard(side: Side, card_type: CardType) {
+    const row: CardRow = { key: nextKey(), side, card_type, player_id: "", typed: "", minute: null, reason: null };
+    setCards(cs => [...cs, row]);
+    setSel(row.key); setDirty(true); setMsg(null);
   }
-  function removeGoal(row: GoalRow) {
-    const before = goalCount(row.side);
-    setGoals(g => g.filter(x => x.key !== row.key));
-    setScore(sc => (parseInt(sc[row.side], 10) === before ? { ...sc, [row.side]: String(before - 1) } : sc));
-  }
-  const patchGoal = (key: number, patch: Partial<GoalRow>) => setGoals(g => g.map(x => (x.key === key ? { ...x, ...patch } : x)));
-  const patchCard = (key: number, patch: Partial<CardRow>) => setCards(c => c.map(x => (x.key === key ? { ...x, ...patch } : x)));
 
   async function save() {
     setMsg(null);
-    const hs = score.home.trim() === "" ? NaN : Number(score.home), as_ = score.away.trim() === "" ? NaN : Number(score.away);
-    if (!Number.isInteger(hs) || !Number.isInteger(as_) || hs < 0 || as_ < 0) { setMsg({ ok: false, text: "Enter the final score for both teams as whole numbers." }); return; }
-    if (cards.some(c => !c.player_id)) { setMsg({ ok: false, text: "Pick a player for every card, or remove the empty card rows." }); return; }
-    // Goal rows left without a scorer are skipped: the score still counts, the scorer stays unknown.
+    if (cards.some(c => !c.player_id)) { setMsg({ ok: false, text: "Every card needs the player's jersey number. Remove the card if you are not sure." }); return; }
     const sheet: MatchSheet = {
-      fixture_id: fixture.id, home_score: hs, away_score: as_,
+      fixture_id: fixture.id, home_score: score.home, away_score: score.away,
+      // Goal rows left blank are saved as unknown scorers: the score still counts.
       goals: goals.filter(g => g.player_id).map(g => ({
         player_id: g.player_id,
         club_id: g.kind === "og" ? clubOf(other(g.side)).id : clubOf(g.side).id,
-        minute: toMinute(g.minute), is_own_goal: g.kind === "og", is_penalty: g.kind === "pen",
+        minute: g.minute, is_own_goal: g.kind === "og", is_penalty: g.kind === "pen",
       })),
-      cards: cards.map(c => ({ player_id: c.player_id, card_type: c.card_type, minute: toMinute(c.minute), reason: c.reason ?? null })),
+      cards: cards.map(c => ({ player_id: c.player_id, card_type: c.card_type, minute: c.minute, reason: c.reason ?? null })),
     };
     setBusy(true);
-    const r = await api("/api/admin/match-sheet", { method: "POST", body: JSON.stringify(sheet) });
-    setBusy(false);
-    if (!r.ok) { setMsg({ ok: false, text: (await r.json().catch(() => ({}))).error ?? "Save failed." }); return; }
-    setMsg({ ok: true, text: "Saved. League table updated." });
-    onSaved();
+    try {
+      const r = await api("/api/admin/match-sheet", { method: "POST", body: JSON.stringify(sheet) });
+      if (!r.ok) { setMsg({ ok: false, text: (await r.json().catch(() => ({}))).error ?? "Save failed. Tap Save again." }); return; }
+      setMsg({ ok: true, text: "Saved. The league table is updated." });
+      setDirty(false);
+      onSaved();
+    } catch {
+      setMsg({ ok: false, text: "No connection. Nothing was saved. Tap Save again when you have signal." });
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function clear() {
-    if (!confirm(`Clear the result, goal scorers and cards for ${fixture.home_club.name} v ${fixture.away_club.name}?`)) return;
-    setBusy(true);
-    const r = await api("/api/admin/match-sheet", { method: "DELETE", body: JSON.stringify({ fixture_id: fixture.id }) });
+    if (!armClear) { setArmClear(true); setTimeout(() => setArmClear(false), 3000); return; }
+    setArmClear(false); setBusy(true);
+    const r = await api("/api/admin/match-sheet", { method: "DELETE", body: JSON.stringify({ fixture_id: fixture.id }) }).catch(() => null);
     setBusy(false);
-    if (!r.ok) { setMsg({ ok: false, text: "Could not clear the result." }); return; }
-    setScore({ home: "", away: "" }); setGoals([]); setCards([]);
+    if (!r || !r.ok) { setMsg({ ok: false, text: "Could not clear the result." }); return; }
+    setScore({ home: 0, away: 0 }); setGoals([]); setCards([]);
     setMsg({ ok: true, text: "Result cleared." });
     onSaved();
   }
 
-  const tally = tallyGoals(goals.filter(g => g.player_id).map(g => ({ club_id: g.kind === "og" ? clubOf(other(g.side)).id : clubOf(g.side).id, is_own_goal: g.kind === "og" })), homeId, awayId);
-  const missing = (["home", "away"] as Side[]).map(s => ({ s, n: (parseInt(score[s], 10) || 0) - (s === "home" ? tally.home : tally.away) })).filter(x => x.n > 0);
+  // A laptop keyboard works too: digits and Backspace go to the selected row.
+  useEffect(() => {
+    if (sel == null) return;
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA")) return;
+      if (/^[0-9]$/.test(e.key)) { e.preventDefault(); press(e.key); }
+      else if (e.key === "Backspace") { e.preventDefault(); press("del"); }
+      else if (e.key === "Escape") setSel(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
+  const blanks = goals.filter(g => !g.player_id).length;
+  const selRow = allRows.find(r => r.key === sel);
+
+  const rowStyle = (key: number): React.CSSProperties => ({
+    all: "unset", boxSizing: "border-box", cursor: "pointer", display: "grid", gridTemplateColumns: "72px 56px minmax(0,1fr) auto", gap: 8, alignItems: "center",
+    padding: "8px 12px", minHeight: 52, width: "100%", borderTop: "1px solid rgba(17,24,39,.08)",
+    background: sel === key ? "#fff5f6" : "#fff", outline: sel === key ? `2px solid ${RED}` : "none", outlineOffset: -2,
+  });
+  const nameFor = (pool: SquadPlayer[], typed: string, player_id: string, blank: string) => {
+    const p = pool.find(x => x.id === player_id);
+    if (p) return <span style={{ color: GREEN, fontWeight: 600 }}>{formatPlayerName(p.full_name)} ✓</span>;
+    if (typed && wearing(pool, typed).length > 1) return <span style={{ color: "#8a5a12", fontWeight: 600 }}>{wearing(pool, typed).length} players wear #{typed}. Pick one below</span>;
+    if (typed) return mayGrow(pool, typed) ? <span style={{ color: MUTED }}>Keep typing...</span> : <span style={{ color: "#a3211a", fontWeight: 600 }}>No #{typed} in squad</span>;
+    return <span style={{ color: "#8b939c" }}>{blank}</span>;
+  };
 
   return (
-    <div style={{ background: "#fff", border: `1px solid ${completed ? "rgba(31,107,55,.3)" : "rgba(17,24,39,.10)"}`, borderRadius: 16, overflow: "hidden" }}>
-      <div style={{ padding: "18px 20px", display: "grid", gap: 12 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: MUTED, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <span>{fixture.played_at ? timeLabel(fixture.played_at) : "Time TBC"}{fixture.venue ? ` · ${fixture.venue}` : ""}</span>
-          {completed ? <span style={pill("#eef7f0", "#1f6b37")}>Result saved</span> : <span style={pill("#f4f4f1", MUTED)}>Not played</span>}
+    <div style={{ display: "grid", gap: 14, paddingBottom: sel != null ? 300 : 0 }}>
+      <div style={{ background: "#101820", color: "#fff", borderRadius: 16, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+        <button type="button" onClick={onBack} aria-label="Back to all matches" style={{ background: "none", border: 0, color: "#fff", width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginLeft: -6 }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 700 }}>{completed ? "Result saved" : liveMatch && live?.period === "FT" ? "Full time" : "Enter result"}</div>
+          <div style={{ fontSize: 13, color: "#c7ccd2" }}>{[fixture.venue, fixture.played_at ? timeLabel(fixture.played_at) : null, `Week ${fixture.week}`].filter(Boolean).join(" · ")}</div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto minmax(0,1fr)", alignItems: "center", gap: 12 }}>
-          <div style={{ textAlign: "right", fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{fixture.home_club.name}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {open ? (
-              <>
-                <input type="number" inputMode="numeric" min={0} value={score.home} onChange={e => setScore(s => ({ ...s, home: e.target.value }))} className="score-in" placeholder="0" aria-label={`${fixture.home_club.name} final score`} />
-                <span style={{ fontWeight: 700, color: MUTED, fontSize: 18 }}>-</span>
-                <input type="number" inputMode="numeric" min={0} value={score.away} onChange={e => setScore(s => ({ ...s, away: e.target.value }))} className="score-in" placeholder="0" aria-label={`${fixture.away_club.name} final score`} />
-              </>
-            ) : (
-              <span style={{ fontSize: 18, fontWeight: 700, padding: "4px 12px", borderRadius: 999, background: completed ? "#101820" : "#f4f4f1", color: completed ? "#fff" : MUTED }}>
-                {completed ? `${saved!.home_score} - ${saved!.away_score}` : "v"}
-              </span>
-            )}
-          </div>
-          <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{fixture.away_club.name}</div>
-        </div>
-        {!open && (
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <button type="button" onClick={openSheet} style={btn(true)}>{completed ? "Edit result" : "Enter result"}</button>
-          </div>
+        {liveMatch && !completed && live?.period !== "FT" && (
+          <button type="button" onClick={onLive} style={{ background: "none", border: "1px solid rgba(255,255,255,.4)", color: "#fff", borderRadius: 999, height: 36, padding: "0 12px", fontSize: 13, fontWeight: 600, fontFamily: F, cursor: "pointer" }}>Live control</button>
         )}
       </div>
 
-      {!completed && !open && (
-        <LivePanel fixture={fixture} live={live} onAir={onAir} onChange={onLive} onSetOnAir={onSetOnAir} />
-      )}
-
-      {open && (
-        <div style={{ borderTop: "1px solid rgba(17,24,39,.08)", padding: 20, display: "grid", gap: 20 }}>
-          {loading ? <div style={{ color: MUTED, fontSize: 14 }}>Loading squads...</div> : (
-            <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,320px),1fr))", gap: 20 }}>
-                {(["home", "away"] as Side[]).map(side => {
-                  const club = clubOf(side);
-                  return (
-                    <div key={side} style={{ display: "grid", gap: 16, alignContent: "start" }}>
-                      <div style={{ fontSize: 15, fontWeight: 600 }}>{club.name}</div>
-                      {squads[side].length === 0 && (
-                        <div style={{ fontSize: 13, color: "#8a5a12", background: "#fff9ec", borderRadius: 8, padding: "8px 12px" }}>No registered players yet. You can still save the score.</div>
-                      )}
-
-                      <div>
-                        <div style={label11}>Goals</div>
-                        <div style={{ display: "grid", gap: 8 }}>
-                          {goals.filter(g => g.side === side).map(g => {
-                            const pool = g.kind === "og" ? squads[other(side)] : squads[side];
-                            return (
-                              <div key={g.key} style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                                <JerseyInput pool={pool} value={g.player_id} onPick={id => patchGoal(g.key, { player_id: id })} />
-                                <select aria-label="Goal scorer" value={g.player_id} onChange={e => patchGoal(g.key, { player_id: e.target.value })} style={{ ...field, flex: "1 1 160px" }}>
-                                  <option value="">{g.kind === "og" ? `${clubOf(other(side)).name} player...` : "Scorer..."}</option>
-                                  {pool.map(p => <option key={p.id} value={p.id}>{playerLabel(p)}</option>)}
-                                </select>
-                                <select aria-label="Goal type" value={g.kind} onChange={e => patchGoal(g.key, { kind: e.target.value as GoalKind, player_id: (e.target.value === "og") !== (g.kind === "og") ? "" : g.player_id })} style={{ ...field, flex: "0 0 auto" }}>
-                                  <option value="goal">Goal</option>
-                                  <option value="pen">Penalty</option>
-                                  <option value="og">Own goal</option>
-                                </select>
-                                <input aria-label="Goal minute" type="number" inputMode="numeric" min={0} max={130} placeholder="Min" value={g.minute} onChange={e => patchGoal(g.key, { minute: e.target.value })} style={{ ...field, width: 72 }} />
-                                <button type="button" onClick={() => removeGoal(g)} style={linkBtn("#a3211a")} aria-label="Remove goal">Remove</button>
-                              </div>
-                            );
-                          })}
-                          <div><button type="button" onClick={() => addGoal(side)} style={btn(false)}>+ Goal</button></div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div style={label11}>Cards</div>
-                        <div style={{ display: "grid", gap: 8 }}>
-                          {cards.filter(c => c.side === side).map(c => (
-                            <div key={c.key} style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                              <span aria-hidden style={{ width: 12, height: 16, borderRadius: 3, flexShrink: 0, background: c.card_type === "yellow" ? "#f0b429" : "#cf2e24" }} />
-                              <JerseyInput pool={squads[side]} value={c.player_id} onPick={id => patchCard(c.key, { player_id: id })} />
-                              <select aria-label="Booked player" value={c.player_id} onChange={e => patchCard(c.key, { player_id: e.target.value })} style={{ ...field, flex: "1 1 160px" }}>
-                                <option value="">Player...</option>
-                                {squads[side].map(p => <option key={p.id} value={p.id}>{playerLabel(p)}</option>)}
-                              </select>
-                              <select aria-label="Card" value={c.card_type} onChange={e => patchCard(c.key, { card_type: e.target.value as CardType })} style={{ ...field, flex: "0 0 auto" }}>
-                                {CARD_TYPES.map(t => <option key={t} value={t}>{CARD_LABELS[t]}</option>)}
-                              </select>
-                              <input aria-label="Card minute" type="number" inputMode="numeric" min={0} max={130} placeholder="Min" value={c.minute} onChange={e => patchCard(c.key, { minute: e.target.value })} style={{ ...field, width: 72 }} />
-                              <button type="button" onClick={() => setCards(cs => cs.filter(x => x.key !== c.key))} style={linkBtn("#a3211a")} aria-label="Remove card">Remove</button>
-                            </div>
-                          ))}
-                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                            <button type="button" onClick={() => setCards(cs => [...cs, { key: nextKey(), side, card_type: "yellow", player_id: "", minute: "" }])} style={btn(false)}>+ Yellow</button>
-                            <button type="button" onClick={() => setCards(cs => [...cs, { key: nextKey(), side, card_type: "red", player_id: "", minute: "" }])} style={btn(false)}>+ Red</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {missing.length > 0 && (
-                <div style={{ fontSize: 13, color: MUTED }}>
-                  {missing.map(m => `${clubOf(m.s).name}: ${m.n} goal${m.n === 1 ? "" : "s"} without a scorer`).join(" · ")}. Leave a row blank if the scorer is unknown; the score still counts.
+      {loading ? <div style={{ color: MUTED, fontSize: 14, padding: 20 }}>Loading squads...</div>
+        : loadErr ? <div role="alert" style={{ color: "#a3211a", fontSize: 14, padding: 20 }}>{loadErr}</div> : (
+        <>
+          <div className="card" style={{ padding: 16, display: "grid", gap: 8 }}>
+            <div style={sectionLabel}>Final score</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 12 }}>
+              {(["home", "away"] as Side[]).map(side => (
+                <div key={side} style={{ display: "grid", gap: 8, justifyItems: "center" }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, textAlign: "center", minHeight: 38, display: "flex", alignItems: "center" }}>{clubOf(side).name}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <button type="button" aria-label={`One goal less for ${clubOf(side).name}`} onClick={() => changeScore(side, -1)} disabled={score[side] === 0} style={{ ...ghostBtn, width: 48, padding: 0, fontSize: 22, borderRadius: 999, opacity: score[side] === 0 ? 0.4 : 1 }}>−</button>
+                    <span style={{ fontSize: 48, fontWeight: 700, minWidth: 44, textAlign: "center", lineHeight: 1 }} aria-live="polite">{score[side]}</span>
+                    <button type="button" aria-label={`One goal more for ${clubOf(side).name}`} onClick={() => changeScore(side, 1)} style={{ ...ghostBtn, width: 48, padding: 0, fontSize: 22, borderRadius: 999 }}>+</button>
+                  </div>
                 </div>
-              )}
-              {msg && <div role="status" style={{ fontSize: 14, fontWeight: 500, color: msg.ok ? "#1f6b37" : "#a3211a" }}>{msg.text}</div>}
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                <button type="button" onClick={save} disabled={busy} style={btn(true, busy)}>{busy ? "Saving..." : completed ? "Update result" : "Save result"}</button>
-                <button type="button" onClick={() => { setOpen(false); setMsg(null); }} style={btn(false)}>Close</button>
-                {completed && <button type="button" onClick={clear} disabled={busy} style={{ ...linkBtn("#a3211a"), marginLeft: "auto" }}>Clear result</button>}
-              </div>
-            </>
+              ))}
+            </div>
+            {liveMatch && live && !completed && (live.home_score !== score.home || live.away_score !== score.away) && (
+              <div style={{ fontSize: 13, color: "#8a5a12", textAlign: "center" }}>The live score was {live.home_score} - {live.away_score}. The score you save here is the one that counts.</div>
+            )}
+          </div>
+
+          {(squads.home.length === 0 || squads.away.length === 0) && (
+            <div style={{ fontSize: 13, color: "#8a5a12", background: "#fff9ec", borderRadius: 10, padding: "10px 12px" }}>
+              {[squads.home.length === 0 ? fixture.home_club.name : null, squads.away.length === 0 ? fixture.away_club.name : null].filter(Boolean).join(" and ")} {squads.home.length === 0 && squads.away.length === 0 ? "have" : "has"} no registered players yet. You can still save the score.
+            </div>
           )}
-        </div>
+
+          <div className="card" style={{ overflow: "hidden" }}>
+            <div style={{ padding: "14px 16px 10px", display: "grid", gap: 2 }}>
+              <div style={sectionLabel}>Goals · tap a row, type the jersey number</div>
+              {goals.length === 0 && <div style={{ fontSize: 14, color: MUTED, paddingTop: 6 }}>No goals. Use + above if a team scored.</div>}
+            </div>
+            {goals.map(g => {
+              const pool = poolForGoal(g);
+              return (
+                <div key={g.key}><div style={{ position: "relative" }}>
+                  <button type="button" onClick={() => setSel(g.key)} style={rowStyle(g.key)} aria-label={`Goal for ${clubOf(g.side).name}, jersey number`}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{clubOf(g.side).short_code || clubOf(g.side).name}</span>
+                    <span style={{ fontSize: 17, fontWeight: 700 }}>#{g.typed || <span style={{ color: "#b3b9c0" }}>__</span>}</span>
+                    <span style={{ fontSize: 14, minWidth: 0 }}>{nameFor(pool, g.typed, g.player_id, g.kind === "og" ? `Own goal by ${clubOf(other(g.side)).short_code || "opponent"} player` : "Scorer unknown")}</span>
+                    <span style={{ width: 96 }} />
+                  </button>
+                  <select aria-label="Goal type" value={g.kind}
+                    onChange={e => { const kind = e.target.value as GoalKind; setDirty(true); setGoals(gs => gs.map(x => (x.key === g.key ? { ...x, kind, ...((kind === "og") !== (x.kind === "og") ? { player_id: "", typed: "" } : {}) } : x))); setSel(g.key); }}
+                    style={{ ...field, fontSize: 13, padding: "6px 6px", position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", width: 96 }}>
+                    <option value="goal">Goal</option>
+                    <option value="pen">Penalty</option>
+                    <option value="og">Own goal</option>
+                  </select>
+                </div>
+                {sel === g.key && <PickByName pool={pool} value={g.player_id} typed={g.typed} onPick={p => pickPlayer(g.key, p)} />}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="card" style={{ overflow: "hidden" }}>
+            <div style={{ padding: "14px 16px 10px", display: "grid", gap: 10 }}>
+              <div style={sectionLabel}>Cards</div>
+              {(["home", "away"] as Side[]).map(side => (
+                <div key={side} style={{ display: "grid", gap: 6 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{clubOf(side).name}</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 8 }}>
+                    {([["yellow", "Yellow", "#f0b429"], ["yellow_red", "2nd yellow", "#f0b429"], ["red", "Red", "#cf2e24"]] as [CardType, string, string][]).map(([t, label, color]) => (
+                      <button key={t} type="button" onClick={() => addCard(side, t)} style={{ ...ghostBtn, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "0 6px" }}>
+                        <span aria-hidden style={{ width: 10, height: 14, borderRadius: 2, background: color, boxShadow: t === "yellow_red" ? "4px 0 0 #cf2e24" : "none" }} />+ {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {cards.map(c => (
+              <div key={c.key}><div style={{ position: "relative" }}>
+                <button type="button" onClick={() => setSel(c.key)} style={rowStyle(c.key)} aria-label={`${c.card_type} card for ${clubOf(c.side).name}, jersey number`}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: MUTED, display: "flex", gap: 6, alignItems: "center" }}>
+                    <span aria-hidden style={{ width: 10, height: 14, borderRadius: 2, flexShrink: 0, background: c.card_type === "red" ? "#cf2e24" : "#f0b429", boxShadow: c.card_type === "yellow_red" ? "4px 0 0 #cf2e24" : "none" }} />
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginLeft: c.card_type === "yellow_red" ? 4 : 0 }}>{clubOf(c.side).short_code || clubOf(c.side).name}</span>
+                  </span>
+                  <span style={{ fontSize: 17, fontWeight: 700 }}>#{c.typed || <span style={{ color: "#b3b9c0" }}>__</span>}</span>
+                  <span style={{ fontSize: 14, minWidth: 0 }}>{nameFor(squads[c.side], c.typed, c.player_id, "Type the jersey number")}</span>
+                  <span style={{ width: 70 }} />
+                </button>
+                <button type="button" onClick={() => { setCards(cs => cs.filter(x => x.key !== c.key)); setDirty(true); if (sel === c.key) setSel(null); }}
+                  style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: 0, color: "#a3211a", fontSize: 13, fontWeight: 600, fontFamily: F, cursor: "pointer", height: 44, padding: "0 6px" }}>Remove</button>
+              </div>
+              {sel === c.key && <PickByName pool={squads[c.side]} value={c.player_id} typed={c.typed} onPick={p => pickPlayer(c.key, p)} />}
+              </div>
+            ))}
+          </div>
+
+          {msg && <div role="status" style={{ fontSize: 15, fontWeight: 600, color: msg.ok ? GREEN : "#a3211a", background: msg.ok ? "#eef7f0" : "#fdecea", borderRadius: 10, padding: "12px 14px" }}>{msg.text}</div>}
+
+          <div style={{ display: "grid", gap: 8 }}>
+            {blanks > 0 && <div style={{ fontSize: 13, color: MUTED, textAlign: "center" }}>{blanks} goal{blanks === 1 ? "" : "s"} without a scorer. That is fine if you do not know. The score still counts.</div>}
+            <button type="button" onClick={save} disabled={busy} style={{ ...bigBtn(GREEN), opacity: busy ? 0.6 : 1 }}>
+              {busy ? "Saving..." : completed && !dirty ? "Save again" : completed ? "Update result" : "Save result and update table"}
+            </button>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+              <button type="button" onClick={onBack} style={{ background: "none", border: 0, height: 44, fontSize: 14, color: MUTED, cursor: "pointer", fontFamily: F }}>Back to all matches</button>
+              {completed && (
+                <button type="button" onClick={clear} disabled={busy} style={{ background: "none", border: 0, height: 44, fontSize: 14, fontWeight: armClear ? 700 : 500, color: "#a3211a", cursor: "pointer", fontFamily: F }}>
+                  {armClear ? "Tap again to clear the result" : "Clear result"}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {sel != null && selRow && (
+            <div role="group" aria-label="Jersey number keypad" className="admin-keypad" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 60, background: "#fff", borderTop: "1px solid rgba(17,24,39,.15)", boxShadow: "0 -8px 24px rgba(16,24,32,.12)", padding: "10px 12px calc(12px + env(safe-area-inset-bottom))" }}>
+              <div style={{ maxWidth: 480, margin: "0 auto", display: "grid", gap: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>Jersey number: <span style={{ fontSize: 18 }}>#{selRow.typed || "__"}</span></span>
+                  <button type="button" onClick={() => setSel(null)} style={{ background: "none", border: 0, fontSize: 14, fontWeight: 600, color: MUTED, height: 40, cursor: "pointer", fontFamily: F }}>Done</button>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 8 }}>
+                  {["1", "2", "3", "4", "5", "6", "7", "8", "9", "unknown", "0", "del"].map(k => (
+                    <button key={k} type="button" onClick={() => press(k)} aria-label={k === "del" ? "Delete digit" : k === "unknown" ? "Scorer unknown, skip" : k}
+                      style={{ height: 52, borderRadius: 12, border: 0, background: "#eef0f2", fontSize: k.length > 1 ? 15 : 22, fontWeight: 600, fontFamily: F, cursor: "pointer", color: "#101820", touchAction: "manipulation" }}>
+                      {k === "del" ? "⌫" : k === "unknown" ? "Unknown" : k}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
-      {!open && msg && <div role="status" style={{ padding: "0 20px 16px", textAlign: "center", fontSize: 13, color: msg.ok ? "#1f6b37" : "#a3211a" }}>{msg.text}</div>}
     </div>
   );
 }
 
-/** Type a jersey number to pick the player. Shows "?" when no one in the squad wears it. */
-function JerseyInput({ pool, value, onPick }: { pool: SquadPlayer[]; value: string; onPick: (id: string) => void }) {
-  const current = pool.find(p => p.id === value);
-  const [text, setText] = useState("");
-  // A picked player shows their number; otherwise show what was typed (red when nobody wears it).
-  const shown = current ? (current.jersey_number != null ? String(current.jersey_number) : "") : text;
-  const miss = !current && text.trim() !== "";
+/** Under the selected row: pick by name when two players share a number, or a player has none. */
+function PickByName({ pool, value, typed, onPick }: { pool: SquadPlayer[]; value: string; typed: string; onPick: (p: SquadPlayer) => void }) {
+  const dupes = wearing(pool, typed);
+  const sorted = [...pool].sort((a, b) => (a.jersey_number ?? 999) - (b.jersey_number ?? 999) || a.full_name.localeCompare(b.full_name));
   return (
-    <input aria-label="Jersey number" type="number" inputMode="numeric" min={0} max={99} placeholder="No."
-      value={shown}
-      onChange={e => {
-        const v = e.target.value; setText(v);
-        const hit = v.trim() === "" ? undefined : pool.find(p => p.jersey_number === Number(v));
-        onPick(hit ? hit.id : "");
-      }}
-      style={{ ...field, width: 64, borderColor: miss ? "#a3211a" : undefined }} title={miss ? "No player with that number" : "Jersey number"} />
+    <div style={{ padding: "8px 12px 12px", background: "#fff5f6", display: "grid", gap: 8 }}>
+      {dupes.length > 1 && !value && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {dupes.map(p => (
+            <button key={p.id} type="button" onClick={() => onPick(p)} style={{ ...ghostBtn, minHeight: 44 }}>#{p.jersey_number} {formatPlayerName(p.full_name)}</button>
+          ))}
+        </div>
+      )}
+      {pool.length > 0 && (
+        <label style={{ fontSize: 13, color: MUTED, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          Or pick by name
+          <select value={value} onChange={e => { const p = pool.find(x => x.id === e.target.value); if (p) onPick(p); }} style={{ ...field, fontSize: 14, padding: "6px 8px", flex: "1 1 180px" }}>
+            <option value="">Choose a player...</option>
+            {sorted.map(p => <option key={p.id} value={p.id}>{p.jersey_number != null ? `#${p.jersey_number} ` : ""}{formatPlayerName(p.full_name)}</option>)}
+          </select>
+        </label>
+      )}
+    </div>
   );
 }

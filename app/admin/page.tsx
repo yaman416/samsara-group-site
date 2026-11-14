@@ -20,7 +20,7 @@ type Club = { id: string; name: string; short_code: string; community: string; h
 type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null };
 type Season = { id: string; name: string; year: number; is_active: boolean; squad_deadline: string | null };
 type Fixture = {
-  id: string; week: number; venue: string | null; played_at: string | null; status: string;
+  id: string; season_id?: string; week: number; venue: string | null; played_at: string | null; status: string;
   home_club: { id: string; name: string; short_code: string };
   away_club: { id: string; name: string; short_code: string };
   results: { home_score: number; away_score: number }[] | { home_score: number; away_score: number } | null;
@@ -67,7 +67,8 @@ export default function AdminPage() {
   }, []);
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState("");
-  const [screen, setScreen] = useState<Screen>("invites");
+  const [screen, setScreen] = useState<Screen>("matchday");
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const [, setSeasons] = useState<Season[]>([]);
   const [activeSeason, setActiveSeason] = useState<Season | null>(null);
@@ -107,7 +108,12 @@ export default function AdminPage() {
   const [regsError, setRegsError] = useState("");
 
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
-  const [weekFilter, setWeekFilter] = useState("");
+  const [weekPick, setWeekPick] = useState<number | "all" | null>(null);
+  const [changeTime, setChangeTime] = useState<{ id: string; time: string; busy: boolean; msg: string } | null>(null);
+  const [changedId, setChangedId] = useState<string | null>(null);
+  const [armDelete, setArmDelete] = useState<string | null>(null);
+  const [approveAllOpen, setApproveAllOpen] = useState(false);
+  const [approveMsg, setApproveMsg] = useState("");
   const [fixBusy, setFixBusy] = useState(false);
   const [nfOpen, setNfOpen] = useState(false);
   const [nfWeek, setNfWeek] = useState("");
@@ -141,10 +147,9 @@ export default function AdminPage() {
   const loadClubs    = useCallback(async () => { const r = await api("/api/admin/clubs"); if (r.ok) setClubs(await r.json()); }, []);
   const loadAuthUsers = useCallback(async () => { const r = await api("/api/admin/users"); if (r.ok) setAuthUsers(await r.json()); }, []);
   const loadFixtures = useCallback(async () => {
-    const url = weekFilter ? `/api/admin/fixtures?week=${weekFilter}` : "/api/admin/fixtures";
-    const r = await api(url);
+    const r = await api("/api/admin/fixtures");
     if (r.ok) setFixtures(await r.json());
-  }, [weekFilter]);
+  }, []);
   const loadTable = useCallback(async () => {
     const url = activeSeason ? `/api/admin/league-table?season_id=${activeSeason.id}` : "/api/admin/league-table";
     const r = await api(url);
@@ -152,7 +157,7 @@ export default function AdminPage() {
   }, [activeSeason]);
 
   /* eslint-disable react-hooks/set-state-in-effect -- these effects fetch data for the open screen */
-  useEffect(() => { if (authed) { loadSeasons(); loadClubs(); loadAuthUsers(); } }, [authed, loadSeasons, loadClubs, loadAuthUsers]);
+  useEffect(() => { if (authed) { loadSeasons(); loadClubs(); loadAuthUsers(); loadRegs(); } }, [authed, loadSeasons, loadClubs, loadAuthUsers, loadRegs]);
   useEffect(() => {
     if (!authed) return;
     if (screen === "invites")  loadInvites();
@@ -256,9 +261,36 @@ export default function AdminPage() {
   }
 
   async function deleteFixture(id: string) {
-    if (!confirm("Delete this fixture?")) return;
+    if (armDelete !== id) { setArmDelete(id); setTimeout(() => setArmDelete(a => (a === id ? null : a)), 3000); return; }
+    setArmDelete(null);
     await api("/api/admin/fixtures", { method: "DELETE", body: JSON.stringify({ id }) });
     loadFixtures();
+  }
+
+  // Change only the kick-off time, keeping the same day (Canberra time).
+  async function saveChangeTime() {
+    if (!changeTime) return;
+    const f = fixtures.find(x => x.id === changeTime.id);
+    if (!f?.played_at || !/^\d{2}:\d{2}$/.test(changeTime.time)) return;
+    setChangeTime({ ...changeTime, busy: true, msg: "" });
+    const played_at = fromLeagueInput(`${toLeagueInput(f.played_at).slice(0, 10)}T${changeTime.time}`);
+    const r = await api("/api/admin/fixtures", { method: "PATCH", body: JSON.stringify({ id: f.id, played_at }) }).catch(() => null);
+    if (!r || !r.ok) { setChangeTime({ ...changeTime, busy: false, msg: "Could not save the new time. Try again." }); return; }
+    setChangeTime(null); setChangedId(f.id); setTimeout(() => setChangedId(c => (c === f.id ? null : c)), 4000);
+    loadFixtures();
+  }
+
+  async function approveAll() {
+    const list = regs.filter(r => r.registration?.status === "pending");
+    setRegBusy("all"); setApproveMsg("");
+    let ok = 0;
+    for (const r of list) {
+      const res = await api(`/api/admin/registrations/${r.registration!.id}`, { method: "PATCH", body: JSON.stringify({ status: "approved", notes: regNote[r.registration!.id] || null }) }).catch(() => null);
+      if (res?.ok) ok++;
+    }
+    setRegBusy(null); setApproveAllOpen(false);
+    setApproveMsg(ok === list.length ? `Approved ${ok} squad${ok === 1 ? "" : "s"}.` : `Approved ${ok} of ${list.length}. Try again for the rest.`);
+    loadRegs();
   }
 
   async function saveEditFixture() {
@@ -277,15 +309,39 @@ export default function AdminPage() {
     loadFixtures();
   }
 
-  const NAV: { key: Screen; label: string }[] = [
-    { key: "invites",  label: "Invites" },
-    { key: "clubs",    label: "Clubs" },
-    { key: "squads",   label: "Squads" },
-    { key: "fixtures", label: "Fixtures" },
-    { key: "matchday", label: "Matchday" },
-    { key: "table",    label: "League Table" },
-    { key: "emails",   label: "Emails" },
+  // Match-day jobs first, pre-season setup after.
+  const NAV_GROUPS: { title: string; items: { key: Screen; label: string }[] }[] = [
+    { title: "Match day", items: [{ key: "matchday", label: "Today" }, { key: "table", label: "League table" }] },
+    { title: "Season setup", items: [{ key: "fixtures", label: "Fixtures" }, { key: "squads", label: "Squads" }, { key: "clubs", label: "Clubs" }, { key: "invites", label: "Invites" }, { key: "emails", label: "Emails" }] },
   ];
+  const NAV_ALL = NAV_GROUPS.flatMap(g => g.items);
+  const TABS: { key: Screen | "more"; label: string; icon: string }[] = [
+    { key: "matchday", label: "Today", icon: "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 7v5l3 2" },
+    { key: "fixtures", label: "Fixtures", icon: "M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2M4 10h16M9 3v4M15 3v4" },
+    { key: "squads", label: "Squads", icon: "M9 5a3 3 0 1 0 0 6a3 3 0 1 0 0-6M3 20c0-3 3-5 6-5s6 2 6 5M16 5a3 3 0 0 1 0 6M18 15c2 .5 3 2 3 5" },
+    { key: "table", label: "Table", icon: "M4 6h16M4 12h16M4 18h10" },
+    { key: "more", label: "More", icon: "M5 12h.01M12 12h.01M19 12h.01" },
+  ];
+  const MORE = NAV_ALL.filter(n => !TABS.some(t => t.key === n.key));
+  const pendingRegs = regs.filter(r => r.registration?.status === "pending");
+  const pendingSquads = pendingRegs.length;
+  // Fixtures screen: active season only, one week at a time (the next week to play by default).
+  const seasonFixtures = fixtures.filter(f => !activeSeason || !f.season_id || f.season_id === activeSeason.id);
+  const fixWeeks = [...new Set(seasonFixtures.map(f => f.week))].sort((a, b) => a - b);
+  const nowIso = new Date().toISOString();
+  const defaultWeek = seasonFixtures.filter(f => f.status !== "completed" && (f.played_at ?? "") >= nowIso.slice(0, 10)).sort((a, b) => (a.played_at ?? "").localeCompare(b.played_at ?? ""))[0]?.week ?? fixWeeks[0] ?? "all";
+  const shownWeek = weekPick !== null && (weekPick === "all" || fixWeeks.includes(weekPick)) ? weekPick : defaultWeek;
+  const shownFixtures = seasonFixtures.filter(f => shownWeek === "all" || f.week === shownWeek)
+    .sort((a, b) => (a.played_at ?? "").localeCompare(b.played_at ?? "") || (a.venue ?? "").localeCompare(b.venue ?? ""));
+  const weekDate = (w: number) => { const f = seasonFixtures.find(x => x.week === w && x.played_at); return f ? new Date(f.played_at!).toLocaleDateString("en-AU", { day: "numeric", month: "short", timeZone: LEAGUE_TZ }) : ""; };
+  // Kick-off times already used that day, offered as one-tap choices.
+  const dayTimes = (f: Fixture) => {
+    const day = toLeagueInput(f.played_at).slice(0, 10);
+    return [...new Set(seasonFixtures.filter(x => x.played_at && toLeagueInput(x.played_at).slice(0, 10) === day).map(x => toLeagueInput(x.played_at).slice(11, 16)))].sort();
+  };
+  const fmtTime = (t: string) => { const [h, m] = t.split(":").map(Number); return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
+  function go(k: Screen) { setScreen(k); setMoreOpen(false); if (typeof window !== "undefined") window.scrollTo({ top: 0 }); }
+  function signOut() { localStorage.removeItem(ADMIN_KEY); setAuthed(false); setMoreOpen(false); }
 
   if (!authChecked) return <div style={{ background: "#f4f4f1", minHeight: "100vh" }} />;
 
@@ -311,34 +367,75 @@ export default function AdminPage() {
         .score-in { width: 48px; border: 1.5px solid rgba(17,24,39,.18); border-radius: 8px; font-size: 16px; font-weight: 600; padding: 6px 8px; text-align: center; font-family: inherit; color: #101820; }
         .score-in:focus { outline: none; border-color: #101820; }
         .card { background: #fff; border: 1px solid rgba(17,24,39,.10); border-radius: 18px; }
-        .admin-nav { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-        .admin-nav::-webkit-scrollbar { display: none; }
         .admin-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 16px; align-items: end; }
         .admin-pair-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 14px; }
+        .admin-shell { display: block; }
+        .admin-side { display: none; }
+        .admin-top { position: sticky; top: 0; z-index: 50; background: #101820; height: 48px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .admin-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; background: #fff; border-top: 1px solid rgba(17,24,39,.12); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 2px 4px calc(4px + env(safe-area-inset-bottom)); }
+        .admin-more { position: fixed; left: 0; right: 0; bottom: calc(60px + env(safe-area-inset-bottom)); z-index: 69; background: #fff; border-top: 1px solid rgba(17,24,39,.12); box-shadow: 0 -8px 24px rgba(16,24,32,.12); display: grid; }
+        .admin-keypad { bottom: calc(60px + env(safe-area-inset-bottom)) !important; }
+        .admin-main { max-width: 1340px; margin: 0 auto; padding: 16px 16px 120px; box-sizing: border-box; }
+        @media (min-width: 960px) {
+          .admin-shell { display: flex; align-items: flex-start; }
+          .admin-side { display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; width: 232px; flex-shrink: 0; box-sizing: border-box; background: #101820; padding: 22px 12px; overflow-y: auto; }
+          .admin-top, .admin-tabs, .admin-more { display: none; }
+          .admin-keypad { bottom: 0 !important; left: 232px !important; }
+          .admin-main { flex: 1; min-width: 0; padding: 32px 32px 96px; }
+        }
         @media (max-width: 767px) {
           .card { border-radius: 14px; }
           .admin-pad { padding: 20px !important; }
         }
       `}</style>
 
-      {/* Topbar */}
-      <div style={{ background: "#101820", padding: "0 24px", position: "sticky", top: 0, zIndex: 50 }}>
-        <div className="admin-nav" style={{ maxWidth: 1340, margin: "0 auto", display: "flex", gap: 4, alignItems: "center", height: 52, overflowX: "auto" }}>
-          <h1 style={{ color: "#fff", fontWeight: 700, fontSize: 15, margin: "0 16px 0 0", whiteSpace: "nowrap" }}>SPL Admin</h1>
-          {NAV.map(n => (
-            <button key={n.key} type="button" onClick={() => setScreen(n.key)}
-              style={{ background: screen === n.key ? "rgba(255,255,255,.14)" : "none", border: "none", color: screen === n.key ? "#fff" : "#98a1ab", fontSize: 13, fontWeight: 500, padding: "8px 14px", borderRadius: 8, cursor: "pointer", whiteSpace: "nowrap" }}>
-              {n.label}
-            </button>
+      {/* Navigation: sidebar on a laptop, bottom tabs on a phone */}
+      <div className="admin-shell">
+        <aside className="admin-side" aria-label="Admin menu">
+          <div style={{ color: "#fff", fontWeight: 700, fontSize: 16, padding: "0 10px" }}>SPL Admin</div>
+          {activeSeason && <div style={{ color: "#98a1ab", fontSize: 12, padding: "2px 10px 14px" }}>{activeSeason.name}</div>}
+          {NAV_GROUPS.map(g => (
+            <div key={g.title} style={{ display: "grid", gap: 2, marginBottom: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab", padding: "6px 10px" }}>{g.title}</div>
+              {g.items.map(n => (
+                <button key={n.key} type="button" onClick={() => go(n.key)} aria-current={screen === n.key ? "page" : undefined}
+                  style={{ background: screen === n.key ? "rgba(255,255,255,.14)" : "none", border: "none", color: screen === n.key ? "#fff" : "#c7ccd2", fontSize: 14, fontWeight: screen === n.key ? 600 : 500, padding: "10px", borderRadius: 8, cursor: "pointer", textAlign: "left", fontFamily: F, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  {n.label}
+                  {n.key === "squads" && pendingSquads > 0 && <span style={{ background: "#c8102e", color: "#fff", fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "2px 8px" }}>{pendingSquads}</span>}
+                </button>
+              ))}
+            </div>
           ))}
           <div style={{ flex: 1 }} />
-          {activeSeason && <span style={{ color: "#66707d", fontSize: 12, whiteSpace: "nowrap" }}>{activeSeason.name}</span>}
-          <button type="button" onClick={() => { localStorage.removeItem(ADMIN_KEY); setAuthed(false); }}
-            style={{ background: "none", border: "none", color: "#66707d", fontSize: 13, cursor: "pointer", marginLeft: 12 }}>Sign out</button>
-        </div>
-      </div>
+          <button type="button" onClick={signOut} style={{ background: "none", border: "none", color: "#98a1ab", fontSize: 13, cursor: "pointer", textAlign: "left", padding: 10, fontFamily: F }}>Sign out</button>
+        </aside>
 
-      <div style={{ maxWidth: 1340, margin: "0 auto", padding: "32px 24px 96px" }}>
+        <div className="admin-top">
+          <span style={{ color: "#fff", fontWeight: 700, fontSize: 15 }}>SPL Admin</span>
+          <span style={{ color: "#98a1ab", fontSize: 12 }}>{NAV_ALL.find(n => n.key === screen)?.label}{activeSeason ? ` · ${activeSeason.name}` : ""}</span>
+        </div>
+
+        <nav className="admin-tabs" aria-label="Admin">
+          {TABS.map(t => (
+            <button key={t.key} type="button" onClick={() => t.key === "more" ? setMoreOpen(o => !o) : go(t.key)}
+              aria-current={screen === t.key ? "page" : undefined}
+              style={{ background: "none", border: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 0", minHeight: 52, fontSize: 12, fontFamily: F, cursor: "pointer", fontWeight: (t.key === "more" ? moreOpen || MORE.some(m => m.key === screen) : screen === t.key) ? 700 : 500, color: (t.key === "more" ? moreOpen || MORE.some(m => m.key === screen) : screen === t.key) ? "#101820" : "#5b6470", position: "relative" }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d={t.icon} /></svg>
+              {t.label}
+              {t.key === "squads" && pendingSquads > 0 && <span style={{ position: "absolute", top: 2, left: "56%", background: "#c8102e", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 999, padding: "1px 6px" }}>{pendingSquads}</span>}
+            </button>
+          ))}
+        </nav>
+        {moreOpen && (
+          <div className="admin-more" role="dialog" aria-label="More">
+            {MORE.map(m => (
+              <button key={m.key} type="button" onClick={() => go(m.key)} style={{ background: screen === m.key ? "#f4f4f1" : "#fff", border: 0, borderBottom: "1px solid rgba(17,24,39,.08)", textAlign: "left", padding: "0 18px", height: 52, fontSize: 16, fontWeight: 600, fontFamily: F, cursor: "pointer", color: "#101820" }}>{m.label}</button>
+            ))}
+            <button type="button" onClick={signOut} style={{ background: "#fff", border: 0, textAlign: "left", padding: "0 18px", height: 52, fontSize: 16, fontFamily: F, cursor: "pointer", color: "#a3211a" }}>Sign out</button>
+          </div>
+        )}
+
+      <div className="admin-main">
 
         {/* INVITES */}
         {screen === "invites" && (
@@ -658,6 +755,28 @@ export default function AdminPage() {
                 </div>
               );
             })()}
+            {pendingRegs.length > 0 && (
+              <div className="card" style={{ padding: 20, display: "grid", gap: 12, background: "#101820", color: "#fff", border: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 600 }}>{pendingRegs.length} squad{pendingRegs.length === 1 ? "" : "s"} submitted and waiting for approval</div>
+                {approveAllOpen && (
+                  <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, color: "#dfe3e7", display: "grid", gap: 4 }}>
+                    {pendingRegs.map(r => <li key={r.club.id}>{r.club.name} · {r.player_count} player{r.player_count === 1 ? "" : "s"}</li>)}
+                  </ul>
+                )}
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                  {approveAllOpen ? (
+                    <>
+                      <Btn variant="green" disabled={regBusy === "all"} onClick={approveAll}>{regBusy === "all" ? "Approving..." : `Approve these ${pendingRegs.length}`}</Btn>
+                      <Btn variant="ghost" style={{ color: "#fff", borderColor: "rgba(255,255,255,.4)" }} onClick={() => setApproveAllOpen(false)}>Cancel</Btn>
+                    </>
+                  ) : (
+                    <Btn variant="ghost" style={{ background: "#fff", color: "#101820", border: 0, fontWeight: 600 }} onClick={() => setApproveAllOpen(true)}>Review and approve all</Btn>
+                  )}
+                  {approveMsg && <span role="status" style={{ fontSize: 13, color: "#dfe3e7" }}>{approveMsg}</span>}
+                </div>
+              </div>
+            )}
+            {pendingRegs.length === 0 && approveMsg && <div role="status" style={{ fontSize: 14, color: "#1f6b37", fontWeight: 600 }}>{approveMsg}</div>}
             {regs.map(row => {
               const { club, registration: reg } = row;
               const statusColors: Record<string, { bg: string; color: string }> = {
@@ -678,7 +797,7 @@ export default function AdminPage() {
                       // eslint-disable-next-line @next/next/no-img-element
                       ? <img src={club.logo_url} alt="" width={40} height={40} style={{ width: 40, height: 40, objectFit: "contain", flexShrink: 0 }} />
                       : <div style={{ width: 40, height: 40, borderRadius: 8, background: club.home_color, flexShrink: 0 }} />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ flex: "1 1 180px", minWidth: 0 }}>
                       <div style={{ fontWeight: 600, fontSize: 15 }}>{club.name}</div>
                       <div style={{ fontSize: 13, color: "#66707d", marginTop: 2 }}>
                         {row.manager_email ?? (row.invite ? `Invite sent to ${row.invite.manager_email} on ${new Date(row.invite.created_at).toLocaleDateString("en-AU", { timeZone: LEAGUE_TZ })}` : "No invite sent")}
@@ -732,9 +851,8 @@ export default function AdminPage() {
         {screen === "fixtures" && (
           <div style={{ display: "grid", gap: 20 }}>
             <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-              <input type="number" value={weekFilter} onChange={e => setWeekFilter(e.target.value)} placeholder="Filter week..." style={{ ...inputSm, width: 140 }} />
-              <Btn variant="ghost" onClick={loadFixtures} style={{ padding: "10px 18px" }}>Filter</Btn>
-              <Btn variant="dark" onClick={() => setNfOpen(o => !o)} style={{ marginLeft: "auto" }}>+ Add fixture</Btn>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, flex: 1 }}>Fixtures</h2>
+              <Btn variant="dark" onClick={() => setNfOpen(o => !o)}>+ Add fixture</Btn>
             </div>
 
             {nfOpen && (
@@ -766,36 +884,64 @@ export default function AdminPage() {
               </div>
             )}
 
-            <div className="card" style={{ overflow: "hidden" }}>
-              <div style={{ overflowX: "auto" }}>
-                <table className="atbl" style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead style={{ background: "rgba(17,24,39,.03)" }}>
-                    <tr><th>Wk</th><th>Team</th><th>Opponent</th><th>Date</th><th>Venue</th><th>Status</th><th></th></tr>
-                  </thead>
-                  <tbody>
-                    {fixtures.length === 0 && <tr><td colSpan={7} style={{ textAlign: "center", color: "#98a1ab", padding: 32 }}>No fixtures yet.</td></tr>}
-                    {fixtures.map(f => (
-                      <tr key={f.id}>
-                        <td style={{ fontWeight: 600 }}>{f.week}</td>
-                        <td style={{ fontWeight: 500 }}>{f.home_club?.name}</td>
-                        <td style={{ fontWeight: 500 }}>{f.away_club?.name}</td>
-                        <td style={{ color: "#66707d", fontSize: 13 }}>{f.played_at ? new Date(f.played_at).toLocaleString("en-AU", { dateStyle: "short", timeStyle: "short", timeZone: LEAGUE_TZ }) : "-"}</td>
-                        <td style={{ color: "#66707d", fontSize: 13 }}>{f.venue || "-"}</td>
-                        <td>
-                          <span style={{ fontSize: 12, fontWeight: 500, padding: "3px 8px", borderRadius: 6, background: f.status === "completed" ? "#eef7f0" : "#f4f4f1", color: f.status === "completed" ? "#1f6b37" : "#66707d", textTransform: "capitalize" }}>
-                            {f.status}
-                          </span>
-                        </td>
-                        <td style={{ display: "flex", gap: 10 }}>
-                          <button type="button" onClick={() => setEditFixture({ id: f.id, week: String(f.week), home_club_id: f.home_club?.id ?? "", away_club_id: f.away_club?.id ?? "", venue: f.venue ?? "", played_at: toLeagueInput(f.played_at) })} style={{ background: "none", border: "none", color: "#1a56db", fontSize: 13, cursor: "pointer", fontFamily: F }}>Edit</button>
-                          <button type="button" onClick={() => deleteFixture(f.id)} style={{ background: "none", border: "none", color: "#a3211a", fontSize: 13, cursor: "pointer", fontFamily: F }}>Delete</button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} role="group" aria-label="Weeks">
+              {fixWeeks.map(w => (
+                <button key={w} type="button" onClick={() => setWeekPick(w)} aria-pressed={shownWeek === w}
+                  style={{ height: 40, padding: "0 14px", borderRadius: 999, border: shownWeek === w ? 0 : "1px solid rgba(17,24,39,.15)", background: shownWeek === w ? "#101820" : "#fff", color: shownWeek === w ? "#fff" : "#101820", fontSize: 13, fontWeight: shownWeek === w ? 600 : 500, cursor: "pointer", fontFamily: F }}>
+                  Wk {w}{weekDate(w) ? ` · ${weekDate(w)}` : ""}
+                </button>
+              ))}
+              {fixWeeks.length > 1 && (
+                <button type="button" onClick={() => setWeekPick("all")} aria-pressed={shownWeek === "all"}
+                  style={{ height: 40, padding: "0 14px", borderRadius: 999, border: shownWeek === "all" ? 0 : "1px solid rgba(17,24,39,.15)", background: shownWeek === "all" ? "#101820" : "#fff", color: shownWeek === "all" ? "#fff" : "#101820", fontSize: 13, cursor: "pointer", fontFamily: F }}>All</button>
+              )}
             </div>
+
+            {seasonFixtures.length === 0 && <div className="card" style={{ padding: 40, textAlign: "center", color: "#66707d" }}>No fixtures yet.</div>}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,340px),1fr))", gap: 12 }}>
+              {shownFixtures.map(f => {
+                const res = Array.isArray(f.results) ? f.results[0] : f.results;
+                const done = f.status === "completed";
+                const ct = changeTime?.id === f.id ? changeTime : null;
+                return (
+                  <div key={f.id} className="card" style={{ padding: "14px 16px", display: "grid", gap: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700 }}>
+                        {f.played_at ? new Date(f.played_at).toLocaleString("en-AU", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: LEAGUE_TZ }) : "Date TBC"}
+                        <span style={{ fontWeight: 400, color: "#66707d" }}>{f.venue ? ` · ${f.venue}` : ""}</span>
+                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap", background: done ? "#eef7f0" : "#f4f4f1", color: done ? "#1f6b37" : "#5b6470" }}>{done && res ? `FT ${res.home_score}-${res.away_score}` : `Week ${f.week}`}</span>
+                    </div>
+                    <div style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.3 }}>{f.home_club?.name} v {f.away_club?.name}</div>
+                    {ct ? (
+                      <div style={{ display: "grid", gap: 10, background: "#f8f8f6", borderRadius: 12, padding: 12 }}>
+                        <div style={{ fontSize: 13, color: "#4a545f" }}>Same day, new kick-off time (Canberra time)</div>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                          {dayTimes(f).map(t => (
+                            <button key={t} type="button" onClick={() => setChangeTime({ ...ct, time: t })}
+                              style={{ height: 44, padding: "0 14px", borderRadius: 10, border: ct.time === t ? 0 : "1px solid rgba(17,24,39,.2)", background: ct.time === t ? "#101820" : "#fff", color: ct.time === t ? "#fff" : "#101820", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: F }}>{fmtTime(t)}</button>
+                          ))}
+                          <input aria-label="Other time" type="time" value={ct.time} onChange={e => setChangeTime({ ...ct, time: e.target.value })} style={{ ...inputSm, width: 130, padding: "8px 10px" }} />
+                        </div>
+                        {ct.msg && <div role="status" style={{ fontSize: 13, color: "#a3211a" }}>{ct.msg}</div>}
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <Btn variant="green" disabled={ct.busy || !ct.time} onClick={saveChangeTime}>{ct.busy ? "Saving..." : `Save ${ct.time ? fmtTime(ct.time) : ""}`}</Btn>
+                          <Btn variant="ghost" onClick={() => setChangeTime(null)}>Cancel</Btn>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                        {f.played_at && <Btn variant="ghost" style={{ padding: "8px 14px", fontSize: 13 }} onClick={() => setChangeTime({ id: f.id, time: toLeagueInput(f.played_at).slice(11, 16), busy: false, msg: "" })}>Change time</Btn>}
+                        <Btn variant="ghost" style={{ padding: "8px 14px", fontSize: 13 }} onClick={() => setEditFixture({ id: f.id, week: String(f.week), home_club_id: f.home_club?.id ?? "", away_club_id: f.away_club?.id ?? "", venue: f.venue ?? "", played_at: toLeagueInput(f.played_at) })}>Edit</Btn>
+                        {changedId === f.id && <span role="status" style={{ fontSize: 13, color: "#1f6b37", fontWeight: 600 }}>Time saved</span>}
+                        <button type="button" onClick={() => deleteFixture(f.id)} style={{ marginLeft: "auto", background: "none", border: "none", color: "#a3211a", fontSize: 13, fontWeight: armDelete === f.id ? 700 : 500, cursor: "pointer", fontFamily: F, minHeight: 40 }}>{armDelete === f.id ? "Tap again to delete" : "Delete"}</button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
 
             {/* Edit fixture modal */}
             {editFixture && (
@@ -934,6 +1080,7 @@ export default function AdminPage() {
           </div>
         )}
 
+      </div>
       </div>
     </main>
   );
