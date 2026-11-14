@@ -231,7 +231,8 @@ function MatchTile({ fixture: f, live, liveMatch, onAir, nextUp, onOpen }: {
 }
 
 /** Finds the player wearing a number. */
-const byNumber = (pool: SquadPlayer[], typed: string) => (typed === "" ? undefined : pool.find(p => p.jersey_number === Number(typed)));
+/** Everyone wearing a number. Two players can share one, so the caller must not guess between them. */
+const wearing = (pool: SquadPlayer[], typed: string) => (typed === "" ? [] : pool.filter(p => p.jersey_number === Number(typed)));
 /** True when another player's number starts with what was typed, so a second digit may follow. */
 const mayGrow = (pool: SquadPlayer[], typed: string) => pool.some(p => p.jersey_number != null && String(p.jersey_number).length > typed.length && String(p.jersey_number).startsWith(typed));
 
@@ -308,10 +309,11 @@ function MatchSheetView({ fixture, live, liveMatch, onBack, onLive, onSaved }: {
     setDirty(true); setMsg(null);
     const row = allRows.find(r => r.key === key);
     if (!row) return;
-    const hit = byNumber(row.pool, typed);
+    const all = wearing(row.pool, typed);
+    const hit = all.length === 1 ? all[0] : undefined;
     setGoals(gs => gs.map(g => (g.key === key ? { ...g, typed, player_id: hit?.id ?? "" } : g)));
     setCards(cs => cs.map(c => (c.key === key ? { ...c, typed, player_id: hit?.id ?? "" } : c)));
-    // Move on once the number is complete.
+    // Move on once the number is complete and names exactly one player.
     if (hit && !mayGrow(row.pool, typed)) advance(key);
   }
   function advance(from: number) {
@@ -327,6 +329,14 @@ function MatchSheetView({ fixture, live, liveMatch, onBack, onLive, onSaved }: {
     if (k === "del") setTyped(sel, row.typed.slice(0, -1));
     else if (k === "unknown") { setTyped(sel, ""); advance(sel); }
     else if (row.typed.length < 2) setTyped(sel, row.typed + k);
+  }
+
+  function pickPlayer(key: number, p: SquadPlayer) {
+    setDirty(true); setMsg(null);
+    const typed = p.jersey_number != null ? String(p.jersey_number) : "";
+    setGoals(gs => gs.map(g => (g.key === key ? { ...g, typed, player_id: p.id } : g)));
+    setCards(cs => cs.map(c => (c.key === key ? { ...c, typed, player_id: p.id } : c)));
+    advance(key);
   }
 
   function changeScore(side: Side, delta: number) {
@@ -420,6 +430,7 @@ function MatchSheetView({ fixture, live, liveMatch, onBack, onLive, onSaved }: {
   const nameFor = (pool: SquadPlayer[], typed: string, player_id: string, blank: string) => {
     const p = pool.find(x => x.id === player_id);
     if (p) return <span style={{ color: GREEN, fontWeight: 600 }}>{formatPlayerName(p.full_name)} ✓</span>;
+    if (typed && wearing(pool, typed).length > 1) return <span style={{ color: "#8a5a12", fontWeight: 600 }}>{wearing(pool, typed).length} players wear #{typed}. Pick one below</span>;
     if (typed) return mayGrow(pool, typed) ? <span style={{ color: MUTED }}>Keep typing...</span> : <span style={{ color: "#a3211a", fontWeight: 600 }}>No #{typed} in squad</span>;
     return <span style={{ color: "#8b939c" }}>{blank}</span>;
   };
@@ -475,7 +486,7 @@ function MatchSheetView({ fixture, live, liveMatch, onBack, onLive, onSaved }: {
             {goals.map(g => {
               const pool = poolForGoal(g);
               return (
-                <div key={g.key} style={{ position: "relative" }}>
+                <div key={g.key}><div style={{ position: "relative" }}>
                   <button type="button" onClick={() => setSel(g.key)} style={rowStyle(g.key)} aria-label={`Goal for ${clubOf(g.side).name}, jersey number`}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{clubOf(g.side).short_code || clubOf(g.side).name}</span>
                     <span style={{ fontSize: 17, fontWeight: 700 }}>#{g.typed || <span style={{ color: "#b3b9c0" }}>__</span>}</span>
@@ -489,6 +500,8 @@ function MatchSheetView({ fixture, live, liveMatch, onBack, onLive, onSaved }: {
                     <option value="pen">Penalty</option>
                     <option value="og">Own goal</option>
                   </select>
+                </div>
+                {sel === g.key && <PickByName pool={pool} value={g.player_id} typed={g.typed} onPick={p => pickPlayer(g.key, p)} />}
                 </div>
               );
             })}
@@ -511,7 +524,7 @@ function MatchSheetView({ fixture, live, liveMatch, onBack, onLive, onSaved }: {
               ))}
             </div>
             {cards.map(c => (
-              <div key={c.key} style={{ position: "relative" }}>
+              <div key={c.key}><div style={{ position: "relative" }}>
                 <button type="button" onClick={() => setSel(c.key)} style={rowStyle(c.key)} aria-label={`${c.card_type} card for ${clubOf(c.side).name}, jersey number`}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: MUTED, display: "flex", gap: 6, alignItems: "center" }}>
                     <span aria-hidden style={{ width: 10, height: 14, borderRadius: 2, flexShrink: 0, background: c.card_type === "red" ? "#cf2e24" : "#f0b429", boxShadow: c.card_type === "yellow_red" ? "4px 0 0 #cf2e24" : "none" }} />
@@ -523,6 +536,8 @@ function MatchSheetView({ fixture, live, liveMatch, onBack, onLive, onSaved }: {
                 </button>
                 <button type="button" onClick={() => { setCards(cs => cs.filter(x => x.key !== c.key)); setDirty(true); if (sel === c.key) setSel(null); }}
                   style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: 0, color: "#a3211a", fontSize: 13, fontWeight: 600, fontFamily: F, cursor: "pointer", height: 44, padding: "0 6px" }}>Remove</button>
+              </div>
+              {sel === c.key && <PickByName pool={squads[c.side]} value={c.player_id} typed={c.typed} onPick={p => pickPlayer(c.key, p)} />}
               </div>
             ))}
           </div>
@@ -563,6 +578,32 @@ function MatchSheetView({ fixture, live, liveMatch, onBack, onLive, onSaved }: {
             </div>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+/** Under the selected row: pick by name when two players share a number, or a player has none. */
+function PickByName({ pool, value, typed, onPick }: { pool: SquadPlayer[]; value: string; typed: string; onPick: (p: SquadPlayer) => void }) {
+  const dupes = wearing(pool, typed);
+  const sorted = [...pool].sort((a, b) => (a.jersey_number ?? 999) - (b.jersey_number ?? 999) || a.full_name.localeCompare(b.full_name));
+  return (
+    <div style={{ padding: "8px 12px 12px", background: "#fff5f6", display: "grid", gap: 8 }}>
+      {dupes.length > 1 && !value && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {dupes.map(p => (
+            <button key={p.id} type="button" onClick={() => onPick(p)} style={{ ...ghostBtn, minHeight: 44 }}>#{p.jersey_number} {formatPlayerName(p.full_name)}</button>
+          ))}
+        </div>
+      )}
+      {pool.length > 0 && (
+        <label style={{ fontSize: 13, color: MUTED, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          Or pick by name
+          <select value={value} onChange={e => { const p = pool.find(x => x.id === e.target.value); if (p) onPick(p); }} style={{ ...field, fontSize: 14, padding: "6px 8px", flex: "1 1 180px" }}>
+            <option value="">Choose a player...</option>
+            {sorted.map(p => <option key={p.id} value={p.id}>{p.jersey_number != null ? `#${p.jersey_number} ` : ""}{formatPlayerName(p.full_name)}</option>)}
+          </select>
+        </label>
       )}
     </div>
   );

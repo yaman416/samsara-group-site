@@ -34,11 +34,26 @@ test('period changes start and stop the clock', () => {
   // tapping Kick-off again later keeps the original start
   assert.equal(applyLiveAction(s, { type: 'period', period: '1H' }, '2026-11-14T05:20:00.000Z').period_started_at, T);
   s = applyLiveAction(s, { type: 'period', period: 'HT' }, T);
-  assert.equal(s.period_started_at, null);
   assert.equal(matchClock(s, Date.parse(T)), 'HT');
   s = applyLiveAction(s, { type: 'period', period: '2H' }, T);
   assert.equal(matchClock(s, Date.parse(T) + 65000), '31:05');
   assert.equal(matchClock(emptyLive(), Date.parse(T)), '');
+});
+
+test('stepping back from a mis-tapped half time or full time keeps the clock', () => {
+  const later = '2026-11-14T05:20:00.000Z';
+  let s = applyLiveAction(emptyLive(), { type: 'period', period: '1H' }, T);
+  s = applyLiveAction(s, { type: 'period', period: 'HT' }, later);
+  s = applyLiveAction(s, { type: 'period', period: '1H' }, later);
+  assert.equal(s.period_started_at, T);
+  assert.equal(matchClock(s, Date.parse(T) + 754000), '12:34');
+  s = applyLiveAction(s, { type: 'period', period: 'HT' }, later);
+  s = applyLiveAction(s, { type: 'period', period: '2H' }, later);
+  assert.equal(s.period_started_at, later); // a real 2nd half starts its own clock
+  s = applyLiveAction(s, { type: 'period', period: 'FT' }, '2026-11-14T05:50:00.000Z');
+  s = applyLiveAction(s, { type: 'period', period: '2H' }, '2026-11-14T05:51:00.000Z');
+  assert.equal(s.period_started_at, later);
+  assert.equal(applyLiveAction(s, { type: 'period', period: 'pre' }, later).period_started_at, null);
 });
 
 test('rejects bad scores and half lengths', () => {
