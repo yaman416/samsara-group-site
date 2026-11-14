@@ -12,6 +12,8 @@ Three OBS browser-source pages, served by the site, that follow the live score e
 Add each as a **Browser** source, untick *Local file*, paste the URL, width **1920**, height **1080**.
 Put the scoreboard on the match scene, the break page on its own scene, and the lower third on the second-camera scene.
 
+The pages scale to fit any window, so they also work in a normal browser tab. Add `?preview=1` to see them on a grass-coloured backdrop (never in OBS).
+
 URL options:
 - any page: `?fixture=<fixture id>` pins a match (e.g. a second stream on the other ground). Without it the page shows the match set on stream in the admin portal.
 - scoreboard: `?ticker=0` hides the partner bar, `?presented=0` hides the SBA tag, `?speed=50` slows the bar.

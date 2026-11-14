@@ -62,5 +62,22 @@
     { n: "The Saharsh Pavilion", f: "saharsh-pavilion.png", sq: true },
   ];
 
+  // Fit the 1920 x 1080 canvas to whatever window shows it (OBS at 1920 x 1080 stays 1:1).
+  function fit() {
+    var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    if (!isFinite(s) || s <= 0) s = 1;
+    var b = document.body.style;
+    b.transformOrigin = "0 0";
+    b.transform = Math.abs(s - 1) < 0.002 ? "" : "scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  // ?preview=1 (used by the links in the admin portal) adds a grass-coloured backdrop so the
+  // white graphics are easy to see in a normal browser tab. Never use it in the streaming software.
+  if (P.get("preview") === "1" && !document.querySelector(".brk")) {
+    document.documentElement.style.background = "#4a5a48";
+  }
+
   poll();
 })();
