@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><title>SPL Break Screen</title>
-<!-- OBS browser source, 1920 x 1080, full screen. Title follows the match: KICK-OFF SOON, HALF TIME, FULL TIME.
+<!-- OBS browser source, 1920 x 1080, full screen. Title follows the match: KICK-OFF SOON, HT, FT.
      Options: ?fixture=<id>  ?title=Short%20Break  ?rotate=6 (seconds per partner page) -->
 <link rel="stylesheet" href="broadcast.css"></head><body>
 <div class="brk">
@@ -31,7 +31,7 @@ Live.on(function(d){
   var f=d.fixture,l=d.live||{period:'pre',home_score:0,away_score:0};
   if(custom) title(custom);
   else if(!f) $('ttl').innerHTML='Samsara <em>Premier League</em>';
-  else title({pre:'Kick-off Soon',HT:'Half Time',FT:'Full Time','1H':'Short Break','2H':'Short Break'}[l.period]||'Short Break');
+  else title({pre:'Kick-off Soon',HT:'HT',FT:'FT','1H':'Short Break','2H':'Short Break'}[l.period]||'Short Break');
   if(!f){$('score').style.display='none';$('next').style.display='none';return}
   $('score').style.display='';
   $('hl').src=Live.logo(f.home);$('al').src=Live.logo(f.away);$('hnm').textContent=f.home.name;$('anm').textContent=f.away.name;

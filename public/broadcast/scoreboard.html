@@ -52,7 +52,7 @@ Live.on(function(d){
 function tickClock(){
   if(!data||!data.fixture)return;var l=data.live||{period:'pre'},c=Live.clock(l),el=$('clk');
   if(l.period==='pre'){el.className='clk big';el.innerHTML=Live.esc(Live.time(data.fixture.played_at)||'LIVE')+'<small>KICK-OFF</small>'}
-  else if(l.period==='HT'||l.period==='FT'){el.className='clk';el.innerHTML=c+'<small>'+(l.period==='HT'?'HALF TIME':'FULL TIME')+'</small>'}
+  else if(l.period==='HT'||l.period==='FT'){el.className='clk solo';el.textContent=c}
   else{el.className='clk solo';el.textContent=c}
 }
 setInterval(tickClock,250);

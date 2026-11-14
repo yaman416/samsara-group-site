@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   if (fixtureId && /^[0-9a-f-]{36}$/i.test(fixtureId)) {
     const [f, l, res] = await Promise.all([
       supabaseAdmin.from("fixtures").select(FIX_COLS).eq("id", fixtureId).maybeSingle(),
-      supabaseAdmin.from("live_matches").select("home_score, away_score, period, period_started_at, half_minutes, last_goal_side, last_goal_at").eq("fixture_id", fixtureId).maybeSingle(),
+      supabaseAdmin.from("live_matches").select("home_score, away_score, period, period_started_at, half_minutes, last_goal_side, last_goal_at, paused_at").eq("fixture_id", fixtureId).maybeSingle(),
       supabaseAdmin.from("results").select("home_score, away_score").eq("fixture_id", fixtureId).maybeSingle(),
     ]);
     if (f.data) {
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       live = l.data ?? null;
       // Once the result is saved, the saved score wins (it may correct the live one).
       if (f.data.status === "completed" && res.data) {
-        live = { half_minutes: 30, period_started_at: null, last_goal_side: null, last_goal_at: null, ...(live ?? {}),
+        live = { half_minutes: 30, period_started_at: null, last_goal_side: null, last_goal_at: null, ...(live ?? {}), paused_at: null,
           home_score: res.data.home_score, away_score: res.data.away_score, period: "FT" };
       }
       // Up next: the next scheduled match on the same ground, otherwise the next match anywhere.

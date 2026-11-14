@@ -30,7 +30,7 @@
       if (l.period === "FT") return "FT";
       if (l.period === "pre" || !l.period_started_at) return "";
       var base = l.period === "2H" ? l.half_minutes * 60 : 0;
-      var s = base + Math.max(0, Math.floor((Live.now() - Date.parse(l.period_started_at)) / 1000));
+      var s = base + Math.max(0, Math.floor(((l.paused_at ? Date.parse(l.paused_at) : Live.now()) - Date.parse(l.period_started_at)) / 1000));
       return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
     },
     periodLabel: function (l) {
@@ -59,7 +59,7 @@
     { n: "Lhotse", f: "lhotse.png" },
     { n: "The Saharsh Pavilion", f: "saharsh-pavilion.png", sq: true, g: "VENUE PARTNER" },
     { n: "Avyukta", f: "avyukt.png", sq: true, text: true, g: "MEDIA PARTNERS" },
-    { n: "Katha Visuals" },
+    { n: "Katha Visuals", f: "katha-visuals.png", sq: true },
   ];
   // One partner as HTML, for the bar (cls "") or the wall.
   window.partnerHtml = function (p) {

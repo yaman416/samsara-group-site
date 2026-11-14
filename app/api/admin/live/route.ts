@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { checkAdminKey } from "@/lib/admin-auth";
 import { applyLiveAction, emptyLive, type LiveAction, type LiveState } from "@/lib/live";
 
-const LIVE_COLS = "fixture_id, home_score, away_score, period, period_started_at, half_minutes, last_goal_side, last_goal_at, updated_at";
+const LIVE_COLS = "fixture_id, home_score, away_score, period, period_started_at, half_minutes, last_goal_side, last_goal_at, paused_at, updated_at";
 const STATE_COLS = "fixture_id, lt_name, lt_role, lt_club_id, lt_visible, updated_at";
 
 // GET ?fixture_ids=a,b,c  -> live rows for those fixtures + the broadcast state (on-air match, lower third)
