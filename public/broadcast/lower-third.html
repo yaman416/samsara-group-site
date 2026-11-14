@@ -8,7 +8,8 @@
 <script src="live.js"></script>
 <script>
 var $=function(i){return document.getElementById(i)};
-var fixedName=Live.param('name'),fixedRole=Live.param('role'),showScore=Live.param('score')!=='0',data=null;
+var fixedName=Live.param('name'),fixedRole=Live.param('role');if(Live.param('preview')==='1'&&fixedName===null){fixedName='Guest Name';fixedRole='Role · Club'}
+var _x=0,showScore=Live.param('score')!=='0',data=null;
 Live.on(function(d){
   data=d;var lo=d.lower||{};
   var name=fixedName!==null?fixedName:lo.name, role=fixedRole!==null?fixedRole:lo.role;
