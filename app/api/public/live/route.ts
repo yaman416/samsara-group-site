@@ -27,13 +27,19 @@ export async function GET(req: NextRequest) {
   let fixture = null, live = null, next = null;
 
   if (fixtureId && /^[0-9a-f-]{36}$/i.test(fixtureId)) {
-    const [f, l] = await Promise.all([
+    const [f, l, res] = await Promise.all([
       supabaseAdmin.from("fixtures").select(FIX_COLS).eq("id", fixtureId).maybeSingle(),
       supabaseAdmin.from("live_matches").select("home_score, away_score, period, period_started_at, half_minutes, last_goal_side, last_goal_at").eq("fixture_id", fixtureId).maybeSingle(),
+      supabaseAdmin.from("results").select("home_score, away_score").eq("fixture_id", fixtureId).maybeSingle(),
     ]);
     if (f.data) {
       fixture = { id: f.data.id, week: f.data.week, venue: f.data.venue, played_at: f.data.played_at, home: club(f.data.home as never), away: club(f.data.away as never) };
       live = l.data ?? null;
+      // Once the result is saved, the saved score wins (it may correct the live one).
+      if (f.data.status === "completed" && res.data) {
+        live = { half_minutes: 30, period_started_at: null, last_goal_side: null, last_goal_at: null, ...(live ?? {}),
+          home_score: res.data.home_score, away_score: res.data.away_score, period: "FT" };
+      }
       // Up next: the next scheduled match on the same ground, otherwise the next match anywhere.
       if (f.data.played_at) {
         const base = supabaseAdmin.from("fixtures").select(FIX_COLS).eq("season_id", f.data.season_id).eq("status", "scheduled")

@@ -49,18 +49,29 @@ export async function POST(req: NextRequest) {
   const { fixture_id, action } = body as { fixture_id?: string; action?: LiveAction };
   if (!fixture_id || !action) return NextResponse.json({ error: "fixture_id and action required" }, { status: 400 });
 
-  const { data: row, error: readErr } = await supabaseAdmin.from("live_matches").select(LIVE_COLS).eq("fixture_id", fixture_id).maybeSingle();
-  if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
-  const current: LiveState = row ? (row as LiveState) : emptyLive();
-  const next = applyLiveAction(current, action, now);
-  if (typeof next === "string") return NextResponse.json({ error: next }, { status: 400 });
-
-  const { data, error } = await supabaseAdmin
-    .from("live_matches")
-    .upsert({ fixture_id, ...next, updated_at: now }, { onConflict: "fixture_id" })
-    .select(LIVE_COLS)
-    .single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // Optimistic concurrency: write only if nobody else changed the row since we read it,
+  // otherwise read again and re-apply, so taps from two phones are never lost.
+  let data: unknown = null;
+  for (let attempt = 0; attempt < 6 && !data; attempt++) {
+    const stamp = new Date().toISOString();
+    const { data: row, error: readErr } = await supabaseAdmin.from("live_matches").select(LIVE_COLS).eq("fixture_id", fixture_id).maybeSingle();
+    if (readErr) return NextResponse.json({ error: readErr.message }, { status: 500 });
+    const current: LiveState = row ? (row as LiveState) : emptyLive();
+    const next = applyLiveAction(current, action, stamp);
+    if (typeof next === "string") return NextResponse.json({ error: next }, { status: 400 });
+    const fields = { ...next, updated_at: stamp };
+    if (row) {
+      const { data: upd, error } = await supabaseAdmin.from("live_matches").update(fields)
+        .eq("fixture_id", fixture_id).eq("updated_at", row.updated_at).select(LIVE_COLS);
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      if (upd && upd.length) data = upd[0];
+    } else {
+      const { data: ins, error } = await supabaseAdmin.from("live_matches").insert({ fixture_id, ...fields }).select(LIVE_COLS);
+      if (error && error.code !== "23505") return NextResponse.json({ error: error.message }, { status: 500 });
+      if (ins && ins.length) data = ins[0];
+    }
+  }
+  if (!data) return NextResponse.json({ error: "Busy, please tap again." }, { status: 409 });
 
   // First tap on a match puts it on air if nothing else is.
   const { data: st } = await supabaseAdmin.from("broadcast_state").select("fixture_id").eq("id", 1).maybeSingle();

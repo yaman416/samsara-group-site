@@ -31,6 +31,8 @@ test('period changes start and stop the clock', () => {
   let s = applyLiveAction(emptyLive(), { type: 'period', period: '1H' }, T);
   assert.equal(s.period_started_at, T);
   assert.equal(matchClock(s, Date.parse(T) + 754000), '12:34');
+  // tapping Kick-off again later keeps the original start
+  assert.equal(applyLiveAction(s, { type: 'period', period: '1H' }, '2026-11-14T05:20:00.000Z').period_started_at, T);
   s = applyLiveAction(s, { type: 'period', period: 'HT' }, T);
   assert.equal(s.period_started_at, null);
   assert.equal(matchClock(s, Date.parse(T)), 'HT');

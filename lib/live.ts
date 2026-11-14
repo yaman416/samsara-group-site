@@ -45,6 +45,7 @@ export function applyLiveAction(s: LiveState, a: LiveAction, nowIso: string): Li
     }
     case "period": {
       if (!PERIODS.includes(a.period)) return "Unknown period.";
+      if (a.period === s.period) return s; // a repeat tap must not restart the clock
       const running = a.period === "1H" || a.period === "2H";
       return { ...s, period: a.period, period_started_at: running ? nowIso : null };
     }
