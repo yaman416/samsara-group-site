@@ -1,9 +1,13 @@
 /* SPL Season 3 broadcast overlays: Direction A, clean white Season 3 template. 1920 x 1080. */
-@font-face{font-family:Osw;src:url(fonts/Oswald-Bold.ttf);font-weight:700}
-@font-face{font-family:Osw;src:url(fonts/Oswald-Medium.ttf);font-weight:500}
-@font-face{font-family:Anton;src:url(fonts/Anton.ttf)}
-@font-face{font-family:Spray;src:url(fonts/RubikSprayPaint.woff2)}
+/* One clean family everywhere: Inter. (Old names kept as aliases so the rules below still apply.) */
+@font-face{font-family:Inter;src:url(fonts/Inter-Medium.otf);font-weight:500}
 @font-face{font-family:Inter;src:url(fonts/Inter-SemiBold.otf);font-weight:600}
+@font-face{font-family:Inter;src:url(fonts/Inter-Bold.otf);font-weight:700}
+@font-face{font-family:Inter;src:url(fonts/Inter-ExtraBold.otf);font-weight:800}
+@font-face{font-family:Osw;src:url(fonts/Inter-SemiBold.otf);font-weight:500}
+@font-face{font-family:Osw;src:url(fonts/Inter-Bold.otf);font-weight:700}
+@font-face{font-family:Anton;src:url(fonts/Inter-ExtraBold.otf)}
+@font-face{font-family:Spray;src:url(fonts/Inter-ExtraBold.otf)}
 :root{--red:#c8102e;--dred:#9e0c22;--ink:#111}
 *{margin:0;padding:0;box-sizing:border-box}
 html{overflow:hidden;background:transparent}
@@ -104,3 +108,31 @@ img{display:block}
 .tick .row{gap:60px;padding-left:60px}
 .tick .row img{height:32px;max-width:150px}.tick .row img.sq{height:44px}
 .tick .row .dk{height:42px;padding:2px 8px}.tick .row .dk img{height:38px}
+
+/* v3: Inter everywhere, no half labels, grouped partner bar */
+body{font-family:Inter,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.bug .team{font-size:23px;letter-spacing:.5px}
+.bug .sc{font-size:36px;gap:10px}.bug .sc i{font-size:24px}
+.bug .clk{font-size:26px}.bug .clk.solo{font-size:30px}.bug .clk.big{font-size:21px}
+.bug .clk small{font-family:Inter;font-weight:700;font-size:11px;letter-spacing:1.5px}
+.pres{font-weight:600;letter-spacing:1.5px}
+.goalpop b{font-size:30px;letter-spacing:1px}.goalpop span{font-size:21px;letter-spacing:.5px}
+.tick .row{gap:48px;padding-left:48px}
+.tick .row .pt{display:inline-flex;align-items:center;gap:10px}
+.tick .row .nm{font-weight:700;font-size:20px;color:#111;letter-spacing:.2px}
+.tick .row .grp{background:var(--red);color:#fff;font-weight:700;font-size:13px;letter-spacing:2px;padding:7px 12px}
+.brk .hdr .sba b{font-size:17px;letter-spacing:.5px}.brk .hdr .sba i{font-size:22px;letter-spacing:2px}
+.brk .hdr .ssn i{font-size:32px;letter-spacing:1px}.brk .hdr .ssn b{font-size:22px}
+.brk h1{font-size:96px;letter-spacing:-1px;font-weight:800;top:222px}
+.brk .score .t{font-size:26px}
+.brk .score .n{font-size:128px;letter-spacing:0}.brk .score .n.v{font-size:76px}
+.brk .score .meta{font-size:19px;letter-spacing:3px;font-weight:600}
+.brk .spons small{font-size:18px;letter-spacing:4px}
+.brk .spons .tile .pt{display:flex;flex-direction:column;align-items:center;gap:6px;max-width:100%}
+.brk .spons .tile .nm{font-weight:700;font-size:20px;text-align:center}
+.brk .spons .tile .pt img+.nm{font-size:15px}
+.brk .spons .tile .pt img:not(:only-child){max-height:62px}
+.brk .next{font-size:24px;letter-spacing:1px}.brk .next span{letter-spacing:2px}
+.lt .tx b{font-size:46px;letter-spacing:0;font-weight:800}
+.lt .tx span{font-size:21px;letter-spacing:1.5px;font-weight:600}
+.bugmini .s{font-size:28px}.bugmini .l{font-size:16px;letter-spacing:1px}

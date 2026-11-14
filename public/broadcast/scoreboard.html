@@ -10,7 +10,7 @@
 </div>
 <div class="abs pres fade hide" id="pres"><span>PRESENTED BY</span><img src="img/sba.png" alt=""><span>SBA PROPERTY GROUP</span></div>
 <div class="abs goalpop fade hide" id="goal"><b>GOAL</b><img id="gl" alt=""><span id="gt"></span></div>
-<div class="abs tick" id="tick"><span class="k">PARTNERS</span><div class="row" id="row"></div></div>
+<div class="abs tick" id="tick"><div class="row" id="row"></div></div>
 <script src="live.js"></script>
 <script>
 var $=function(i){return document.getElementById(i)};
@@ -19,7 +19,7 @@ var data=null, seenGoal=null, hideT=null, prev={h:null,a:null};
 // Partner ticker: two copies of the row scroll left forever.
 if(Live.param('ticker')==='0') $('tick').style.display='none';
 else{
-  var html=PARTNERS.map(function(p){var im='<img src="sponsors/'+p.f+'" alt=""'+(p.sq&&!p.dark?' class="sq"':'')+'>';return p.dark?'<span class="dk">'+im+'</span>':im}).join('');
+  var html=PARTNERS.map(function(p){return (p.g?'<span class="grp">'+p.g+'</span>':'')+partnerHtml(p)}).join('');
   $('row').innerHTML=html+html;
   var x=0,speed=+(Live.param('speed')||70),t0=null;
   requestAnimationFrame(function step(t){
@@ -53,7 +53,7 @@ function tickClock(){
   if(!data||!data.fixture)return;var l=data.live||{period:'pre'},c=Live.clock(l),el=$('clk');
   if(l.period==='pre'){el.className='clk big';el.innerHTML=Live.esc(Live.time(data.fixture.played_at)||'LIVE')+'<small>KICK-OFF</small>'}
   else if(l.period==='HT'||l.period==='FT'){el.className='clk';el.innerHTML=c+'<small>'+(l.period==='HT'?'HALF TIME':'FULL TIME')+'</small>'}
-  else{el.className='clk';el.innerHTML=c+'<small>'+Live.periodLabel(l)+'</small>'}
+  else{el.className='clk solo';el.textContent=c}
 }
 setInterval(tickClock,250);
 </script></body></html>

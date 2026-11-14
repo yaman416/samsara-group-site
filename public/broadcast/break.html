@@ -21,7 +21,7 @@ var $=function(i){return document.getElementById(i)};
 // Partner wall: pages of 5 that rotate.
 var per=5,page=0,pages=Math.ceil(PARTNERS.length/per),rot=+(Live.param('rotate')||6)*1000;
 function drawTiles(){var s=PARTNERS.slice(page*per,page*per+per);
-  $('tiles').innerHTML=s.map(function(p){return '<div class="tile'+(p.dark?' dk':'')+'"><img src="sponsors/'+p.f+'" alt=""></div>'}).join('')}
+  $('tiles').innerHTML=s.map(function(p){return '<div class="tile'+(p.dark?' dk':'')+'">'+partnerHtml(p)+'</div>'}).join('')}
 drawTiles();
 setInterval(function(){$('tiles').style.opacity=0;setTimeout(function(){page=(page+1)%pages;drawTiles();$('tiles').style.opacity=1},500)},rot);
 

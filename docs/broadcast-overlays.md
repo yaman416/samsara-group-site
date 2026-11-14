@@ -4,7 +4,7 @@ Three OBS browser-source pages, served by the site, that follow the live score e
 
 | Page | What it shows |
 |---|---|
-| `/broadcast/scoreboard.html` | Scoreboard top left (crests, short codes, score, match clock), "Presented by SBA Property Group", a GOAL pop-up for 8 seconds after each goal tap, scrolling partner bar along the bottom. Transparent. |
+| `/broadcast/scoreboard.html` | Scoreboard top left (crests, short codes, score, match clock), "Presented by SBA Property Group", a GOAL pop-up for 8 seconds after each goal tap, scrolling partner bar along the bottom (Season 3 partners, venue partner, media partners; edit the list in `public/broadcast/live.js`). All text is Inter. The clock runs 00:00 to half-time and continues from the half length to full time, with no half labels. Transparent. |
 | `/broadcast/break.html` | Full-screen break card. Title follows the match: KICK-OFF SOON, HALF TIME, FULL TIME (SHORT BREAK during play). Live score, rotating partner wall, UP NEXT fixture on the same ground. |
 | `/broadcast/lower-third.html` | Second-camera name strap (name, role, club crest) plus a small score badge top right. Transparent. |
 
