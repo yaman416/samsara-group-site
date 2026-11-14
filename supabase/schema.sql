@@ -321,8 +321,10 @@ create table if not exists live_matches (
   half_minutes      int not null default 30 check (half_minutes between 1 and 60),
   last_goal_side    text check (last_goal_side in ('home','away')),
   last_goal_at      timestamptz,
+  paused_at         timestamptz,  -- clock paused mid-half
   updated_at        timestamptz not null default now()
 );
+alter table live_matches add column if not exists paused_at timestamptz;
 create table if not exists broadcast_state (
   id          int primary key default 1 check (id = 1),
   fixture_id  uuid references fixtures(id) on delete set null,  -- the match on air

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { matchClock, PERIOD_LABELS, type LiveAction, type LiveState, type Period } from "@/lib/live";
+import { matchClock, type LiveAction, type LiveState, type Period } from "@/lib/live";
 
 // Live match controls for the broadcast scoreboard (Matchday screen).
 // During play: tap +1 for the team that scored. Scorers and cards go in the match sheet after full time.
@@ -29,12 +29,19 @@ export function liveApi(body?: unknown, query = "") {
   });
 }
 
-// The one big clock button: what to tap next.
+// The big green clock button: what to tap next.
 const NEXT_STEP: Partial<Record<Period, { to: Period; label: string }>> = {
-  pre: { to: "1H", label: "▶ Start clock (Kick-off)" },
-  "1H": { to: "HT", label: "⏸ Half-time (stop clock)" },
-  HT: { to: "2H", label: "▶ Start 2nd half" },
-  "2H": { to: "FT", label: "■ Full time (stop clock)" },
+  pre: { to: "1H", label: "▶ START CLOCK" },
+  "1H": { to: "HT", label: "HT (stop clock for half-time)" },
+  HT: { to: "2H", label: "▶ START CLOCK (2nd half)" },
+  "2H": { to: "FT", label: "FT (stop clock, match over)" },
+};
+const STAGE: Record<Period, string> = { pre: "Not started", "1H": "1st half", HT: "HT", "2H": "2nd half", FT: "FT" };
+const bigBtn = (bg: string, busy: boolean): React.CSSProperties => ({
+  background: bg, color: "#fff", border: 0, borderRadius: 12, padding: "16px 12px", fontSize: 18, fontWeight: 700, fontFamily: F, cursor: "pointer", opacity: busy ? 0.6 : 1,
+});
+const smallBtn: React.CSSProperties = {
+  background: "#fff", color: "#101820", border: "1px solid rgba(17,24,39,.25)", borderRadius: 10, padding: "12px 10px", fontSize: 15, fontWeight: 600, fontFamily: F, cursor: "pointer",
 };
 
 function useNow(ms = 1000) {
@@ -51,7 +58,7 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
   const now = useNow();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const s: LiveState = live ?? { home_score: 0, away_score: 0, period: "pre", period_started_at: null, half_minutes: 30, last_goal_side: null, last_goal_at: null };
+  const s: LiveState = live ?? { home_score: 0, away_score: 0, period: "pre", period_started_at: null, half_minutes: 30, last_goal_side: null, last_goal_at: null, paused_at: null };
 
   async function act(action: LiveAction) {
     setBusy(true); setErr(null);
@@ -62,9 +69,15 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
     onChange(d as LiveRow);
   }
   function setPeriod(p: Period) {
-    if (p === "FT" && !confirm("Full time? The clock stops and the break screen shows FULL TIME.")) return;
+    if (p === "FT" && !confirm("Full time? The clock stops and the overlays show FT.")) return;
     act({ type: "period", period: p });
   }
+  function reset() {
+    if (!confirm("Reset this match to not started? The clock and the live score go back to zero.")) return;
+    act({ type: "reset" });
+  }
+  const running = (s.period === "1H" || s.period === "2H") && !!s.period_started_at;
+  const paused = running && !!s.paused_at;
 
   const clock = matchClock(s, now);
   const sides = [
@@ -76,9 +89,6 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
     <div style={{ borderTop: "1px solid rgba(17,24,39,.08)", padding: "16px 20px", display: "grid", gap: 14, background: onAir ? "#fff7f8" : "#fafaf8" }}>
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
         <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".1em", textTransform: "uppercase", color: MUTED }}>Live score</span>
-        <span style={{ fontSize: 13, fontWeight: 600, color: s.period === "1H" || s.period === "2H" ? RED : MUTED }}>
-          {PERIOD_LABELS[s.period]}{clock && s.period !== "HT" && s.period !== "FT" ? ` · ${clock}` : ""}
-        </span>
         <span style={{ marginLeft: "auto" }}>
           {onAir
             ? <span style={{ background: RED, color: "#fff", fontSize: 12, fontWeight: 700, padding: "4px 10px", borderRadius: 6, letterSpacing: ".06em" }}>ON STREAM</span>
@@ -86,12 +96,32 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
         </span>
       </div>
 
-      {NEXT_STEP[s.period] && (
-        <button type="button" disabled={busy} onClick={() => setPeriod(NEXT_STEP[s.period]!.to)}
-          style={{ background: "#1f6b37", color: "#fff", border: 0, borderRadius: 12, padding: "16px 12px", fontSize: 18, fontWeight: 700, fontFamily: F, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>
-          {NEXT_STEP[s.period]!.label}
-        </button>
-      )}
+      {/* Match clock: what the stream shows, and the buttons that drive it. */}
+      <div style={{ border: "1px solid rgba(17,24,39,.14)", borderRadius: 14, background: "#fff", padding: 14, display: "grid", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".1em", textTransform: "uppercase", color: MUTED }}>Match clock</span>
+          <span data-testid="clock" style={{ fontSize: 40, fontWeight: 700, lineHeight: 1, fontVariantNumeric: "tabular-nums", color: running && !paused ? RED : "#101820" }}>
+            {s.period === "pre" ? "00:00" : clock}
+          </span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: paused ? "#8a5a12" : MUTED }}>
+            {paused ? "Paused" : s.period === "pre" ? "Not started" : running ? `Running · ${STAGE[s.period]}` : s.period === "HT" ? "Clock stopped" : "Match over"}
+          </span>
+        </div>
+        {NEXT_STEP[s.period] && (
+          <button type="button" disabled={busy} onClick={() => setPeriod(NEXT_STEP[s.period]!.to)} style={bigBtn("#1f6b37", busy)}>
+            {NEXT_STEP[s.period]!.label}
+          </button>
+        )}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(110px,1fr))", gap: 8 }}>
+          {running && (paused
+            ? <button type="button" disabled={busy} onClick={() => act({ type: "resume" })} style={{ ...smallBtn, background: "#1f6b37", color: "#fff", border: 0 }}>▶ Resume clock</button>
+            : <button type="button" disabled={busy} onClick={() => act({ type: "pause" })} style={smallBtn}>⏸ Pause clock</button>)}
+          {running && <button type="button" disabled={busy} onClick={() => act({ type: "adjust", seconds: -60 })} style={smallBtn}>− 1 min</button>}
+          {running && <button type="button" disabled={busy} onClick={() => act({ type: "adjust", seconds: 60 })} style={smallBtn}>+ 1 min</button>}
+          <button type="button" disabled={busy || (s.period === "pre" && s.home_score + s.away_score === 0)} onClick={reset}
+            style={{ ...smallBtn, color: "#a3211a", opacity: s.period === "pre" && s.home_score + s.away_score === 0 ? 0.4 : 1 }}>↺ Reset match</button>
+        </div>
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         {sides.map(x => (
@@ -111,14 +141,15 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {([["1H", "Kick-off"], ["HT", "Half-time"], ["2H", "Restart"], ["FT", "Full time"]] as [Period, string][]).map(([p, label]) => (
+        <span style={{ fontSize: 12, color: MUTED, alignSelf: "center" }}>Jump to:</span>
+        {([["1H", "1st half"], ["HT", "HT"], ["2H", "2nd half"], ["FT", "FT"]] as [Period, string][]).map(([p, label]) => (
           <button key={p} type="button" disabled={busy} onClick={() => setPeriod(p)} style={chip(s.period === p)}>{label}</button>
         ))}
         <select aria-label="Half length" value={s.half_minutes} onChange={e => act({ type: "half_minutes", minutes: Number(e.target.value) })} style={{ ...field, fontSize: 13, padding: "6px 8px", marginLeft: "auto" }}>
           {[20, 25, 30, 35, 40, 45].map(m => <option key={m} value={m}>{m} min halves</option>)}
         </select>
       </div>
-      {s.period === "FT" && <div style={{ fontSize: 13, color: MUTED }}>Full time. Open the match sheet below to add scorers&apos; jersey numbers and cards, then save the result.</div>}
+      {s.period === "FT" && <div style={{ fontSize: 13, color: MUTED }}>Match over. Open the match sheet below to add scorers&apos; jersey numbers and cards, then save the result.</div>}
       {err && <div role="status" style={{ fontSize: 13, color: "#a3211a" }}>{err}</div>}
     </div>
   );
@@ -164,7 +195,7 @@ export function BroadcastControls({ fixtures, state, onState }: { fixtures: Fx[]
             <div>Overlays for OBS (Browser source, 1920 x 1080). Tap a name to preview it; paste the grey link into OBS:</div>
             {([
               ["1. Match scoreboard", "scoreboard.html", "Score, clock and partner bar over the main camera."],
-              ["2. Break / marketing screen", "break.html", "Full screen for kick-off soon, half-time and full time, with partners."],
+              ["2. Break / marketing screen", "break.html", "Full screen for kick-off soon, HT and FT, with partners."],
               ["3. Interview name strap", "lower-third.html", "Blank until you press Show on the right. Second camera."],
             ] as const).map(([title, file, note]) => (
               <div key={file}>

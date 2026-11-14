@@ -47,3 +47,22 @@ test('rejects bad scores and half lengths', () => {
   const s = applyLiveAction(emptyLive(), { type: 'score', home: 3, away: 2 }, T);
   assert.equal(s.home_score + s.away_score, 5);
 });
+
+test('pause holds the clock, resume carries on, adjust moves it, reset clears it', () => {
+  let s = applyLiveAction(emptyLive(), { type: 'period', period: '1H' }, T);
+  const at = m => Date.parse(T) + m * 60000;
+  s = applyLiveAction(s, { type: 'pause' }, new Date(at(10)).toISOString());
+  assert.equal(matchClock(s, at(15)), '10:00');
+  s = applyLiveAction(s, { type: 'resume' }, new Date(at(15)).toISOString());
+  assert.equal(s.paused_at, null);
+  assert.equal(matchClock(s, at(16)), '11:00');
+  s = applyLiveAction(s, { type: 'adjust', seconds: 60 }, new Date(at(16)).toISOString());
+  assert.equal(matchClock(s, at(16)), '12:00');
+  s = applyLiveAction(s, { type: 'adjust', seconds: -3600 }, new Date(at(16)).toISOString());
+  assert.equal(matchClock(s, at(16)), '00:00');
+  s = applyLiveAction(s, { type: 'goal', side: 'home' }, T);
+  s = applyLiveAction(s, { type: 'period', period: 'FT' }, T);
+  s = applyLiveAction(s, { type: 'reset' }, T);
+  assert.deepEqual([s.period, s.home_score, s.period_started_at], ['pre', 0, null]);
+  assert.equal(typeof applyLiveAction(s, { type: 'pause' }, T), 'string');
+});

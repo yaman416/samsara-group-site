@@ -9,6 +9,7 @@ export type LiveState = {
   home_score: number; away_score: number; period: Period;
   period_started_at: string | null; half_minutes: number;
   last_goal_side: "home" | "away" | null; last_goal_at: string | null;
+  paused_at?: string | null; // set while the clock is paused mid-half
 };
 
 export type LiveAction =
@@ -17,14 +18,19 @@ export type LiveAction =
   | { type: "period"; period: Period }
   | { type: "score"; home: number; away: number }
   | { type: "half_minutes"; minutes: number }
+  | { type: "pause" }
+  | { type: "resume" }
+  | { type: "adjust"; seconds: number } // move the running clock forward (+) or back (-)
   | { type: "reset" };
 
 export const emptyLive = (half_minutes = 30): LiveState => ({
   home_score: 0, away_score: 0, period: "pre", period_started_at: null, half_minutes,
-  last_goal_side: null, last_goal_at: null,
+  last_goal_side: null, last_goal_at: null, paused_at: null,
 });
 
 const okScore = (n: unknown) => typeof n === "number" && Number.isInteger(n) && n >= 0 && n <= 99;
+
+const isRunning = (s: LiveState) => (s.period === "1H" || s.period === "2H") && !!s.period_started_at;
 
 /** Applies one admin tap. Returns the new state, or an error message. */
 export function applyLiveAction(s: LiveState, a: LiveAction, nowIso: string): LiveState | string {
@@ -47,7 +53,25 @@ export function applyLiveAction(s: LiveState, a: LiveAction, nowIso: string): Li
       if (!PERIODS.includes(a.period)) return "Unknown period.";
       if (a.period === s.period) return s; // a repeat tap must not restart the clock
       const running = a.period === "1H" || a.period === "2H";
-      return { ...s, period: a.period, period_started_at: running ? nowIso : null };
+      return { ...s, period: a.period, period_started_at: running ? nowIso : null, paused_at: null };
+    }
+    case "pause":
+      if (!isRunning(s)) return "The clock is not running.";
+      if (s.paused_at) return s;
+      return { ...s, paused_at: nowIso };
+    case "resume": {
+      if (!isRunning(s)) return "The clock is not running.";
+      if (!s.paused_at) return s;
+      // Shift the start forward by the time spent paused, so the clock carries on from where it stopped.
+      const start = Date.parse(s.period_started_at!) + (Date.parse(nowIso) - Date.parse(s.paused_at));
+      return { ...s, period_started_at: new Date(start).toISOString(), paused_at: null };
+    }
+    case "adjust": {
+      if (!isRunning(s)) return "Start the clock first.";
+      if (!Number.isInteger(a.seconds) || Math.abs(a.seconds) > 3600) return "Bad clock change.";
+      const ref = Date.parse(s.paused_at ?? nowIso);
+      const start = Math.min(ref, Date.parse(s.period_started_at!) - a.seconds * 1000); // never below the start of the half
+      return { ...s, period_started_at: new Date(start).toISOString() };
     }
     case "score":
       if (!okScore(a.home) || !okScore(a.away)) return "Scores must be whole numbers from 0 to 99.";
@@ -63,11 +87,11 @@ export function applyLiveAction(s: LiveState, a: LiveAction, nowIso: string): Li
 }
 
 /** Match clock text: counts up from 00:00 in the 1st half and from the half length in the 2nd. */
-export function matchClock(s: Pick<LiveState, "period" | "period_started_at" | "half_minutes">, nowMs: number): string {
+export function matchClock(s: Pick<LiveState, "period" | "period_started_at" | "half_minutes" | "paused_at">, nowMs: number): string {
   if (s.period === "HT") return "HT";
   if (s.period === "FT") return "FT";
   if (s.period === "pre" || !s.period_started_at) return "";
   const base = s.period === "2H" ? s.half_minutes * 60 : 0;
-  const secs = base + Math.max(0, Math.floor((nowMs - Date.parse(s.period_started_at)) / 1000));
+  const secs = base + Math.max(0, Math.floor(((s.paused_at ? Date.parse(s.paused_at) : nowMs) - Date.parse(s.period_started_at)) / 1000));
   return `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
 }
