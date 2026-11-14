@@ -35,76 +35,166 @@ function useNow(ms = 1000) {
   return now;
 }
 
-/** Score buttons and period controls for one match. */
-export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
+/** Ask for a second tap within 3 seconds before a big step (full time, stepping back). */
+function useTwoTap() {
+  const [armed, setArmed] = useState<string | null>(null);
+  useEffect(() => {
+    if (!armed) return;
+    const t = setTimeout(() => setArmed(null), 3000);
+    return () => clearTimeout(t);
+  }, [armed]);
+  return { armed, tap: (key: string, run: () => void) => { if (armed === key) { setArmed(null); run(); } else setArmed(key); } };
+}
+
+const NEXT: Record<Period, { to: Period | null; label: string }> = {
+  pre: { to: "1H", label: "Kick-off" },
+  "1H": { to: "HT", label: "Next: Half time" },
+  HT: { to: "2H", label: "Start 2nd half" },
+  "2H": { to: "FT", label: "Next: Full time" },
+  FT: { to: null, label: "Enter scorers and cards" },
+};
+const BACK: Record<Period, Period | null> = { pre: null, "1H": "pre", HT: "1H", "2H": "HT", FT: "2H" };
+const STEPS: Period[] = ["pre", "1H", "HT", "2H", "FT"];
+const STEP_NAMES: Record<Period, string> = { pre: "Kick-off", "1H": "1st half", HT: "Half time", "2H": "2nd half", FT: "Full time" };
+
+/**
+ * Full-screen live remote for one match: big +Goal buttons, one Next button for the clock,
+ * and Undo for the last goal. Scorers and cards go in the match sheet after full time.
+ */
+export function LiveControl({ fixture, live, onAir, onChange, onSetOnAir, onBack, onFullTime }: {
   fixture: Fx; live: LiveRow | null; onAir: boolean;
-  onChange: (row: LiveRow) => void; onSetOnAir: () => void;
+  onChange: (row: LiveRow) => void; onSetOnAir: () => void; onBack: () => void; onFullTime: () => void;
 }) {
   const now = useNow();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const { armed, tap } = useTwoTap();
   const s: LiveState = live ?? { home_score: 0, away_score: 0, period: "pre", period_started_at: null, half_minutes: 30, last_goal_side: null, last_goal_at: null };
 
   async function act(action: LiveAction) {
+    if (busy) return;
     setBusy(true); setErr(null);
-    const r = await liveApi({ fixture_id: fixture.id, action });
-    setBusy(false);
-    const d = await r.json().catch(() => ({}));
-    if (!r.ok) { setErr(d.error ?? "Could not update the live score."); return; }
-    onChange(d as LiveRow);
-  }
-  function setPeriod(p: Period) {
-    if (p === "FT" && !confirm("Full time? The clock stops and the break screen shows FULL TIME.")) return;
-    act({ type: "period", period: p });
+    try {
+      const r = await liveApi({ fixture_id: fixture.id, action });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { setErr(d.error ?? "Could not update the live score. Check the signal and tap again."); return; }
+      onChange(d as LiveRow);
+    } catch {
+      setErr("No connection. Check the signal and tap again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   const clock = matchClock(s, now);
+  const running = s.period === "1H" || s.period === "2H";
+  const next = NEXT[s.period];
+  const back = BACK[s.period];
+  const lastSide = s.last_goal_side;
+  const lastClub = lastSide === "home" ? fixture.home_club : lastSide === "away" ? fixture.away_club : null;
+  const time = fixture.played_at ? new Date(fixture.played_at).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: "Australia/Sydney" }) : "";
   const sides = [
     { side: "home" as const, club: fixture.home_club, score: s.home_score },
     { side: "away" as const, club: fixture.away_club, score: s.away_score },
   ];
 
+  function onNext() {
+    if (s.period === "FT") { onFullTime(); return; }
+    if (next.to === "FT") { tap("ft", () => act({ type: "period", period: "FT" })); return; }
+    if (next.to) act({ type: "period", period: next.to });
+  }
+
   return (
-    <div style={{ borderTop: "1px solid rgba(17,24,39,.08)", padding: "16px 20px", display: "grid", gap: 14, background: onAir ? "#fff7f8" : "#fafaf8" }}>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-        <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".1em", textTransform: "uppercase", color: MUTED }}>Live score</span>
-        <span style={{ fontSize: 13, fontWeight: 600, color: s.period === "1H" || s.period === "2H" ? RED : MUTED }}>
-          {PERIOD_LABELS[s.period]}{clock && s.period !== "HT" && s.period !== "FT" ? ` · ${clock}` : ""}
-        </span>
-        <span style={{ marginLeft: "auto" }}>
-          {onAir
-            ? <span style={{ background: RED, color: "#fff", fontSize: 12, fontWeight: 700, padding: "4px 10px", borderRadius: 6, letterSpacing: ".06em" }}>ON STREAM</span>
-            : <button type="button" onClick={onSetOnAir} style={chip(false)}>Show on stream</button>}
-        </span>
+    <div style={{ display: "grid", gap: 16 }}>
+      <div style={{ background: "#101820", color: "#fff", borderRadius: 16, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+        <button type="button" onClick={onBack} aria-label="Back to all matches" style={{ background: "none", border: 0, color: "#fff", width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginLeft: -6 }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 700 }}>{[fixture.venue, time].filter(Boolean).join(" · ") || "Live match"}</div>
+          <div style={{ fontSize: 13, color: "#c7ccd2", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fixture.home_club.name} v {fixture.away_club.name}</div>
+        </div>
+        {onAir
+          ? <span style={{ background: RED, color: "#fff", fontSize: 12, fontWeight: 700, padding: "5px 10px", borderRadius: 6, letterSpacing: ".05em", whiteSpace: "nowrap" }}>ON STREAM</span>
+          : <button type="button" onClick={onSetOnAir} style={{ background: "none", border: "1px solid rgba(255,255,255,.4)", color: "#fff", borderRadius: 999, height: 36, padding: "0 12px", fontSize: 13, fontWeight: 600, fontFamily: F, cursor: "pointer", whiteSpace: "nowrap" }}>Show on stream</button>}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div style={{ textAlign: "center", display: "grid", gap: 2 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: running ? RED : MUTED }}>{PERIOD_LABELS[s.period]}</div>
+        <div style={{ fontSize: 44, fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1.1, minHeight: 48 }}>{running ? clock : s.period === "pre" ? "00:00" : s.period}</div>
+        {s.period === "pre" ? (
+          <label style={{ fontSize: 13, color: MUTED, display: "inline-flex", gap: 6, alignItems: "center", justifyContent: "center" }}>
+            Half length
+            <select value={s.half_minutes} onChange={e => act({ type: "half_minutes", minutes: Number(e.target.value) })} style={{ ...field, fontSize: 14, padding: "4px 6px" }}>
+              {[20, 25, 30, 35, 40, 45].map(m => <option key={m} value={m}>{m} min</option>)}
+            </select>
+          </label>
+        ) : <div style={{ fontSize: 13, color: MUTED }}>{s.half_minutes} min halves</div>}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 12 }}>
         {sides.map(x => (
-          <div key={x.side} style={{ display: "grid", gap: 8, justifyItems: "stretch" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, textAlign: "center", lineHeight: 1.25, minHeight: 32 }}>{x.club.name}</div>
-            <div style={{ fontSize: 44, fontWeight: 700, textAlign: "center", lineHeight: 1 }}>{x.score}</div>
-            <button type="button" disabled={busy} onClick={() => act({ type: "goal", side: x.side })}
-              style={{ background: RED, color: "#fff", border: 0, borderRadius: 12, padding: "16px 8px", fontSize: 18, fontWeight: 700, fontFamily: F, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>
+          <div key={x.side} style={{ display: "grid", gap: 10 }}>
+            <div style={{ fontSize: 15, fontWeight: 600, textAlign: "center", lineHeight: 1.25, minHeight: 38, display: "flex", alignItems: "center", justifyContent: "center" }}>{x.club.name}</div>
+            <div style={{ fontSize: 72, fontWeight: 700, textAlign: "center", lineHeight: 1 }} aria-live="polite">{x.score}</div>
+            <button type="button" disabled={busy || s.period === "FT"} onClick={() => act({ type: "goal", side: x.side })}
+              aria-label={`Goal for ${x.club.name}`}
+              style={{ background: RED, color: "#fff", border: 0, borderRadius: 18, height: 120, fontSize: 26, fontWeight: 700, fontFamily: F, cursor: "pointer", opacity: busy || s.period === "FT" ? 0.55 : 1, touchAction: "manipulation" }}>
               + Goal
-            </button>
-            <button type="button" disabled={busy || x.score === 0} onClick={() => act({ type: "undo", side: x.side })}
-              style={{ background: "none", border: "1px solid rgba(17,24,39,.18)", borderRadius: 999, padding: "6px 8px", fontSize: 13, fontFamily: F, cursor: "pointer", color: "#101820", opacity: x.score === 0 ? 0.4 : 1 }}>
-              Undo goal
             </button>
           </div>
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {([["1H", "Kick-off"], ["HT", "Half-time"], ["2H", "2nd half"], ["FT", "Full time"]] as [Period, string][]).map(([p, label]) => (
-          <button key={p} type="button" disabled={busy} onClick={() => setPeriod(p)} style={chip(s.period === p)}>{label}</button>
-        ))}
-        <select aria-label="Half length" value={s.half_minutes} onChange={e => act({ type: "half_minutes", minutes: Number(e.target.value) })} style={{ ...field, fontSize: 13, padding: "6px 8px", marginLeft: "auto" }}>
-          {[20, 25, 30, 35, 40, 45].map(m => <option key={m} value={m}>{m} min halves</option>)}
-        </select>
+      {(s.home_score > 0 || s.away_score > 0) && (
+        <div style={{ background: "#fff", border: "1px solid rgba(17,24,39,.12)", borderRadius: 12, padding: "8px 12px", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          {lastClub && lastSide ? (
+            <>
+              <span style={{ flex: 1, fontSize: 14 }}>Last goal: <b>{lastClub.name}</b></span>
+              <button type="button" disabled={busy} onClick={() => act({ type: "undo", side: lastSide })} style={{ background: "none", border: "1px solid rgba(17,24,39,.25)", borderRadius: 999, height: 44, padding: "0 18px", fontSize: 14, fontWeight: 600, fontFamily: F, cursor: "pointer", color: "#101820" }}>Undo</button>
+            </>
+          ) : (
+            <>
+              <span style={{ flex: 1, fontSize: 14, color: MUTED }}>Take a goal off</span>
+              {sides.filter(x => x.score > 0).map(x => (
+                <button key={x.side} type="button" disabled={busy} onClick={() => act({ type: "undo", side: x.side })} style={{ background: "none", border: "1px solid rgba(17,24,39,.25)", borderRadius: 999, height: 44, padding: "0 14px", fontSize: 13, fontWeight: 600, fontFamily: F, cursor: "pointer", color: "#101820" }}>- {x.club.short_code || x.club.name}</button>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+
+      {err && <div role="alert" style={{ fontSize: 14, fontWeight: 600, color: "#a3211a", background: "#fdecea", borderRadius: 10, padding: "10px 12px" }}>{err}</div>}
+
+      <div style={{ display: "grid", gap: 8 }}>
+        <div aria-label="Match progress" style={{ display: "flex", justifyContent: "center", gap: 6, flexWrap: "wrap", fontSize: 12 }}>
+          {STEPS.map((p, i) => {
+            const idx = STEPS.indexOf(s.period);
+            const st = i < idx ? "done" : i === idx ? "now" : "todo";
+            return (
+              <span key={p} style={{ display: "inline-flex", gap: 6 }}>
+                {i > 0 && <span aria-hidden style={{ color: "#98a1ab" }}>›</span>}
+                <span style={{ fontWeight: st === "todo" ? 500 : 700, color: st === "now" ? (running ? RED : "#101820") : st === "done" ? "#101820" : MUTED }}>{STEP_NAMES[p]}{st === "done" ? " ✓" : ""}</span>
+              </span>
+            );
+          })}
+        </div>
+        <button type="button" disabled={busy && s.period !== "FT"} onClick={onNext}
+          style={{ background: s.period === "FT" ? "#1f6b37" : armed === "ft" ? RED : "#101820", color: "#fff", border: 0, borderRadius: 16, height: 64, fontSize: 19, fontWeight: 700, fontFamily: F, cursor: "pointer", touchAction: "manipulation" }}>
+          {armed === "ft" ? "Tap again to confirm Full time" : next.label}
+        </button>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {back ? (
+            <button type="button" disabled={busy} onClick={() => tap("back", () => act({ type: "period", period: back }))}
+              style={{ background: "none", border: 0, height: 44, fontSize: 14, color: armed === "back" ? "#a3211a" : MUTED, fontWeight: armed === "back" ? 700 : 500, cursor: "pointer", fontFamily: F, padding: "0 4px" }}>
+              {armed === "back" ? `Tap again: back to ${STEP_NAMES[back]}` : "Step back"}
+            </button>
+          ) : <span />}
+          {s.period !== "FT" && (
+            <button type="button" onClick={onFullTime} style={{ background: "none", border: 0, height: 44, fontSize: 14, color: MUTED, cursor: "pointer", fontFamily: F, padding: "0 4px" }}>Match sheet</button>
+          )}
+        </div>
       </div>
-      {s.period === "FT" && <div style={{ fontSize: 13, color: MUTED }}>Full time. Open the match sheet below to add scorers&apos; jersey numbers and cards, then save the result.</div>}
-      {err && <div role="status" style={{ fontSize: 13, color: "#a3211a" }}>{err}</div>}
     </div>
   );
 }
