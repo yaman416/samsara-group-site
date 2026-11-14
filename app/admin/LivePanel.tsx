@@ -111,7 +111,7 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        {([["1H", "Kick-off"], ["HT", "Half-time"], ["2H", "2nd half"], ["FT", "Full time"]] as [Period, string][]).map(([p, label]) => (
+        {([["1H", "Kick-off"], ["HT", "Half-time"], ["2H", "Restart"], ["FT", "Full time"]] as [Period, string][]).map(([p, label]) => (
           <button key={p} type="button" disabled={busy} onClick={() => setPeriod(p)} style={chip(s.period === p)}>{label}</button>
         ))}
         <select aria-label="Half length" value={s.half_minutes} onChange={e => act({ type: "half_minutes", minutes: Number(e.target.value) })} style={{ ...field, fontSize: 13, padding: "6px 8px", marginLeft: "auto" }}>

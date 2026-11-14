@@ -43,24 +43,32 @@
     esc: function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; }); },
   };
 
-  // Season 3 partners, in stage-script order (SBA Property Group appears separately as presenting partner).
+  // Bottom bar and partner wall: SPL Season 3 partners, then the venue partner, then media partners.
+  // `g` starts a labelled group in the bar. No `f` (logo file) = shown as a clean text name.
   window.PARTNERS = [
-    { n: "GTM", f: "gtm.png" },
+    { n: "SBA Property Group", f: "sba.png", g: "PARTNERS", img: "img/sba.png" },
+    { n: "GTM Property Solutions", f: "gtm.png" },
     { n: "Capital Education & Migration", f: "capital-education.png" },
     { n: "Capital Remittance", f: "capital-remittance.png", sq: true },
     { n: "Nepali Haat Bazaar", f: "nepalihaat.png" },
+    { n: "Chautari Mini Mart", f: "chautari.png" },
+    { n: "Navitas Skilled Futures", f: "navitas.png" },
+    { n: "Dikshant Dhungel, LJ Hooker", f: "dikshant.png" },
+    { n: "Ooshman", f: "ooshman.png" },
     { n: "The Monkey Temple", f: "monkeytemple.png", dark: true, sq: true },
     { n: "Lhotse", f: "lhotse.png" },
-    { n: "Ooshman", f: "ooshman.png" },
-    { n: "Dikshant Dhungel, LJ Hooker", f: "dikshant.png" },
-    { n: "Global Consult Canberra", f: "global-consultant.png" },
-    { n: "Navitas Skilled Futures", f: "navitas.png" },
-    { n: "Aussie Finance and Home Loans", f: "aussie-homes.png", sq: true },
-    { n: "Bittersweet Café", f: "bittersweet.png", sq: true },
-    { n: "Sherpa Removals", f: "sherpa-removal.png" },
-    { n: "Chautari Mini Mart", f: "chautari.png" },
-    { n: "The Saharsh Pavilion", f: "saharsh-pavilion.png", sq: true },
+    { n: "The Saharsh Pavilion", f: "saharsh-pavilion.png", sq: true, g: "VENUE PARTNER" },
+    { n: "Avyukta", f: "avyukt.png", sq: true, text: true, g: "MEDIA PARTNERS" },
+    { n: "Katha Visuals" },
   ];
+  // One partner as HTML, for the bar (cls "") or the wall.
+  window.partnerHtml = function (p) {
+    var src = p.img || (p.f ? "sponsors/" + p.f : null);
+    var im = src ? '<img src="' + src + '" alt=""' + (p.sq && !p.dark ? ' class="sq"' : "") + ">" : "";
+    var name = !src || p.text ? '<span class="nm">' + Live.esc(p.n) + "</span>" : "";
+    return p.dark ? '<span class="dk">' + im + "</span>" : '<span class="pt">' + im + name + "</span>";
+  };
+
 
   // Fit the 1920 x 1080 canvas to whatever window shows it (OBS at 1920 x 1080 stays 1:1).
   function fit() {
