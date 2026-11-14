@@ -6,7 +6,8 @@
 @font-face{font-family:Inter;src:url(fonts/Inter-SemiBold.otf);font-weight:600}
 :root{--red:#c8102e;--dred:#9e0c22;--ink:#111}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:1920px;height:1080px;overflow:hidden;background:transparent;font-family:Osw;color:var(--ink)}
+html{overflow:hidden;background:transparent}
+body{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;background:transparent;font-family:Osw;color:var(--ink)}
 img{display:block}
 .abs{position:absolute}
 .hide{opacity:0!important;transform:translateY(-14px)!important;pointer-events:none}
@@ -87,3 +88,19 @@ img{display:block}
 .bugmini img{height:46px;width:46px;object-fit:contain;margin:0 10px}
 .bugmini .s{background:var(--red);color:#fff;font-family:Anton;font-size:36px;height:100%;display:flex;align-items:center;padding:0 16px}
 .bugmini .l{background:var(--ink);color:#fff;font-weight:700;font-size:18px;letter-spacing:2px;height:100%;display:flex;align-items:center;padding:0 14px;min-width:84px;justify-content:center}
+
+/* v2: smaller scoreboard and partner bar */
+.bug{left:48px;top:40px;height:64px}
+.bug .crest{width:70px}.bug .crest img{height:52px}
+.bug .team{font-size:26px;padding:0 14px;gap:10px}.bug .team img{height:42px;width:42px}
+.bug .sc{font-size:40px;padding:0 16px;gap:12px;min-width:112px}.bug .sc i{font-size:28px}
+.bug .clk{font-size:30px;padding:0 14px;min-width:112px}.bug .clk small{font-size:12px;letter-spacing:2px;margin-top:3px}
+.bug .clk.big{font-size:25px}
+.pres{left:48px;top:104px;padding:4px 12px;font-size:12px;gap:8px;border-top-width:3px}.pres img{height:20px}
+.goalpop{left:48px;top:146px;padding:9px 20px 9px 16px;gap:12px;border-left-width:6px}
+.goalpop b{font-size:34px}.goalpop span{font-size:23px}.goalpop img{height:38px;width:38px}
+.tick{height:54px;border-top-width:4px}
+.tick .k{font-size:16px;padding:0 18px}
+.tick .row{gap:60px;padding-left:60px}
+.tick .row img{height:32px;max-width:150px}.tick .row img.sq{height:44px}
+.tick .row .dk{height:42px;padding:2px 8px}.tick .row .dk img{height:38px}

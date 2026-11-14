@@ -47,10 +47,10 @@ function useTwoTap() {
 }
 
 const NEXT: Record<Period, { to: Period | null; label: string }> = {
-  pre: { to: "1H", label: "Kick-off" },
-  "1H": { to: "HT", label: "Next: Half time" },
-  HT: { to: "2H", label: "Start 2nd half" },
-  "2H": { to: "FT", label: "Next: Full time" },
+  pre: { to: "1H", label: "▶ Start clock (Kick-off)" },
+  "1H": { to: "HT", label: "⏸ Half-time (stop clock)" },
+  HT: { to: "2H", label: "▶ Start 2nd half" },
+  "2H": { to: "FT", label: "■ Full time (stop clock)" },
   FT: { to: null, label: "Enter scorers and cards" },
 };
 const BACK: Record<Period, Period | null> = { pre: null, "1H": "pre", HT: "1H", "2H": "HT", FT: "2H" };
@@ -132,6 +132,11 @@ export function LiveControl({ fixture, live, onAir, onChange, onSetOnAir, onBack
         ) : <div style={{ fontSize: 13, color: MUTED }}>{s.half_minutes} min halves</div>}
       </div>
 
+      <button type="button" disabled={busy && s.period !== "FT"} onClick={onNext}
+        style={{ background: armed === "ft" ? RED : "#1f6b37", color: "#fff", border: 0, borderRadius: 16, height: 64, fontSize: 19, fontWeight: 700, fontFamily: F, cursor: "pointer", touchAction: "manipulation" }}>
+        {armed === "ft" ? "Tap again to confirm Full time" : next.label}
+      </button>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 12 }}>
         {sides.map(x => (
           <div key={x.side} style={{ display: "grid", gap: 10 }}>
@@ -179,10 +184,6 @@ export function LiveControl({ fixture, live, onAir, onChange, onSetOnAir, onBack
             );
           })}
         </div>
-        <button type="button" disabled={busy && s.period !== "FT"} onClick={onNext}
-          style={{ background: s.period === "FT" ? "#1f6b37" : armed === "ft" ? RED : "#101820", color: "#fff", border: 0, borderRadius: 16, height: 64, fontSize: 19, fontWeight: 700, fontFamily: F, cursor: "pointer", touchAction: "manipulation" }}>
-          {armed === "ft" ? "Tap again to confirm Full time" : next.label}
-        </button>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {back ? (
             <button type="button" disabled={busy} onClick={() => tap("back", () => act({ type: "period", period: back }))}
@@ -235,15 +236,23 @@ export function BroadcastControls({ fixtures, state, onState }: { fixtures: Fx[]
             <option value="">None</option>
             {fixtures.map(f => <option key={f.id} value={f.id}>{f.home_club.name} v {f.away_club.name}{f.venue ? ` · ${f.venue}` : ""}</option>)}
           </select>
-          <div style={{ fontSize: 12, color: MUTED, marginTop: 8, lineHeight: 1.6 }}>
-            OBS browser sources (1920 x 1080):<br />
-            <code>{link("scoreboard.html")}</code><br />
-            <code>{link("break.html")}</code><br />
-            <code>{link("lower-third.html")}</code>
+          <div style={{ fontSize: 13, color: MUTED, marginTop: 12, display: "grid", gap: 10 }}>
+            <div>Overlays for OBS (Browser source, 1920 x 1080). Tap a name to preview it; paste the grey link into OBS:</div>
+            {([
+              ["1. Match scoreboard", "scoreboard.html", "Score, clock and partner bar over the main camera."],
+              ["2. Break / marketing screen", "break.html", "Full screen for kick-off soon, half-time and full time, with partners."],
+              ["3. Interview name strap", "lower-third.html", "Blank until you press Show on the right. Second camera."],
+            ] as const).map(([title, file, note]) => (
+              <div key={file}>
+                <a href={`${link(file)}?preview=1`} target="_blank" rel="noreferrer" style={{ fontWeight: 700, color: RED, fontSize: 15 }}>{title} ↗</a>
+                <div>{note}</div>
+                <code style={{ fontSize: 12, wordBreak: "break-all" }}>{link(file)}</code>
+              </div>
+            ))}
           </div>
         </div>
         <div style={{ display: "grid", gap: 8, alignContent: "start" }}>
-          <span style={label11}>Second camera lower third</span>
+          <span style={label11}>Interview name strap (second camera)</span>
           <input aria-label="Name" placeholder="Name" value={name} onChange={e => setName(e.target.value)} style={field} maxLength={60} />
           <input aria-label="Role" placeholder="Role, e.g. Captain or Guest" value={role} onChange={e => setRole(e.target.value)} style={field} maxLength={80} />
           <select aria-label="Club" value={clubId} onChange={e => setClubId(e.target.value)} style={field}>
