@@ -1,0 +1,44 @@
+<!doctype html><html><head><meta charset="utf-8"><title>SPL Break Screen</title>
+<!-- OBS browser source, 1920 x 1080, full screen. Title follows the match: KICK-OFF SOON, HALF TIME, FULL TIME.
+     Options: ?fixture=<id>  ?title=Short%20Break  ?rotate=6 (seconds per partner page) -->
+<link rel="stylesheet" href="broadcast.css"></head><body>
+<div class="brk">
+<svg class="sw" viewBox="0 0 1920 1080"><path d="M1460,0 L1920,0 L1920,170 Q1760,50 1460,0Z" fill="#c8102e"/><path d="M1780,0 L1920,0 L1920,120 L1810,90Z" fill="#9e0c22"/><path d="M0,900 Q260,950 560,1080 L0,1080Z" fill="#c8102e"/><path d="M0,1000 Q100,1020 200,1080 L0,1080Z" fill="#9e0c22"/></svg>
+<div class="hdr"><div class="sba"><img src="img/sba.png" alt=""><b>SBA PROPERTY GROUP</b><i>PRESENTS</i></div><img class="crest" src="img/spl-crest.png" alt=""><div class="ssn"><i>SEASON 3</i><b>2026-2027</b></div></div>
+<h1 id="ttl">Samsara <em>Premier League</em></h1>
+<div class="score" id="score" style="display:none">
+  <div class="t"><img id="hl" alt=""><span id="hnm"></span></div>
+  <div class="n" id="num"></div>
+  <div class="t"><img id="al" alt=""><span id="anm"></span></div>
+  <div class="meta" id="meta"></div>
+</div>
+<div class="spons"><small>THANK YOU TO OUR PARTNERS</small><div class="row" id="tiles"></div></div>
+<div class="next" id="next" style="display:none"></div>
+</div>
+<script src="live.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)};
+// Partner wall: pages of 5 that rotate.
+var per=5,page=0,pages=Math.ceil(PARTNERS.length/per),rot=+(Live.param('rotate')||6)*1000;
+function drawTiles(){var s=PARTNERS.slice(page*per,page*per+per);
+  $('tiles').innerHTML=s.map(function(p){return '<div class="tile'+(p.dark?' dk':'')+'"><img src="sponsors/'+p.f+'" alt=""></div>'}).join('')}
+drawTiles();
+setInterval(function(){$('tiles').style.opacity=0;setTimeout(function(){page=(page+1)%pages;drawTiles();$('tiles').style.opacity=1},500)},rot);
+
+var custom=Live.param('title');
+function title(t){var w=t.split(' ');var last=w.pop();$('ttl').innerHTML=(w.length?Live.esc(w.join(' '))+' ':'')+'<em>'+Live.esc(last)+'</em>'}
+Live.on(function(d){
+  var f=d.fixture,l=d.live||{period:'pre',home_score:0,away_score:0};
+  if(custom) title(custom);
+  else if(!f) $('ttl').innerHTML='Samsara <em>Premier League</em>';
+  else title({pre:'Kick-off Soon',HT:'Half Time',FT:'Full Time','1H':'Short Break','2H':'Short Break'}[l.period]||'Short Break');
+  if(!f){$('score').style.display='none';$('next').style.display='none';return}
+  $('score').style.display='';
+  $('hl').src=Live.logo(f.home);$('al').src=Live.logo(f.away);$('hnm').textContent=f.home.name;$('anm').textContent=f.away.name;
+  if(l.period==='pre'){$('num').className='n v';$('num').textContent='V';$('meta').textContent=[Live.time(f.played_at),f.venue,'WEEK '+f.week].filter(Boolean).join('  ·  ').toUpperCase()}
+  else{$('num').className='n';$('num').innerHTML=l.home_score+'<i>-</i>'+l.away_score;$('meta').textContent=('WEEK '+f.week+(f.venue?'  ·  '+f.venue:'')).toUpperCase()}
+  var n=d.next;
+  if(n&&n.home&&n.away){$('next').style.display='';$('next').innerHTML='<span>UP NEXT</span>'+Live.esc(Live.time(n.played_at))+' &nbsp;·&nbsp; '+Live.esc(n.home.name)+' v '+Live.esc(n.away.name)}
+  else $('next').style.display='none';
+});
+</script></body></html>

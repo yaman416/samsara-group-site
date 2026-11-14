@@ -1,0 +1,59 @@
+<!doctype html><html><head><meta charset="utf-8"><title>SPL Scoreboard</title>
+<!-- OBS browser source, 1920 x 1080, transparent. Options: ?fixture=<id>  ?ticker=0  ?presented=0  ?speed=60 -->
+<link rel="stylesheet" href="broadcast.css"></head><body>
+<div class="abs bug fade hide" id="bug">
+  <div class="crest"><img src="img/spl-crest.png" alt=""></div>
+  <div class="team"><img id="hl" alt=""><span id="hs"></span></div>
+  <div class="sc"><b id="hn">0</b><i>-</i><b id="an">0</b></div>
+  <div class="team"><span id="as"></span><img id="al" alt=""></div>
+  <div class="clk" id="clk"></div>
+</div>
+<div class="abs pres fade hide" id="pres"><span>PRESENTED BY</span><img src="img/sba.png" alt=""><span>SBA PROPERTY GROUP</span></div>
+<div class="abs goalpop fade hide" id="goal"><b>GOAL</b><img id="gl" alt=""><span id="gt"></span></div>
+<div class="abs tick" id="tick"><span class="k">PARTNERS</span><div class="row" id="row"></div></div>
+<script src="live.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)};
+var data=null, seenGoal=null, hideT=null, prev={h:null,a:null};
+
+// Partner ticker: two copies of the row scroll left forever.
+if(Live.param('ticker')==='0') $('tick').style.display='none';
+else{
+  var html=PARTNERS.map(function(p){var im='<img src="sponsors/'+p.f+'" alt=""'+(p.sq&&!p.dark?' class="sq"':'')+'>';return p.dark?'<span class="dk">'+im+'</span>':im}).join('');
+  $('row').innerHTML=html+html;
+  var x=0,speed=+(Live.param('speed')||70),t0=null;
+  requestAnimationFrame(function step(t){
+    if(t0!==null){x-=speed*(t-t0)/1000;var half=$('row').scrollWidth/2;if(half>0&&-x>=half)x+=half;$('row').style.transform='translateX('+x+'px)'}
+    t0=t;requestAnimationFrame(step)});
+}
+var showPres=Live.param('presented')!=='0';
+
+function setNum(id,v,key){var el=$(id);if(prev[key]!==null&&prev[key]!==v){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}prev[key]=v;el.textContent=v}
+
+Live.on(function(d){
+  data=d;var f=d.fixture,l=d.live||{home_score:0,away_score:0,period:'pre'};
+  if(!f){$('bug').classList.add('hide');$('pres').classList.add('hide');return}
+  $('bug').classList.remove('hide');$('pres').classList.toggle('hide',!showPres);
+  $('hl').src=Live.logo(f.home);$('al').src=Live.logo(f.away);
+  $('hs').textContent=f.home.short;$('as').textContent=f.away.short;
+  setNum('hn',l.home_score,'h');setNum('an',l.away_score,'a');
+  // GOAL pop-up: only for a goal tapped in the last 20 seconds, shown for 8 seconds.
+  if(l.last_goal_at&&l.last_goal_at!==seenGoal){
+    seenGoal=l.last_goal_at;
+    if(Live.now()-Date.parse(l.last_goal_at)<20000){
+      var c=l.last_goal_side==='away'?f.away:f.home;
+      $('gl').src=Live.logo(c);$('gt').textContent=c.name;$('goal').classList.remove('hide');
+      clearTimeout(hideT);hideT=setTimeout(function(){$('goal').classList.add('hide')},8000);
+    }
+  }
+  if(!l.last_goal_at) $('goal').classList.add('hide');
+  tickClock();
+});
+function tickClock(){
+  if(!data||!data.fixture)return;var l=data.live||{period:'pre'},c=Live.clock(l),el=$('clk');
+  if(l.period==='pre'){el.className='clk big';el.innerHTML=Live.esc(Live.time(data.fixture.played_at)||'LIVE')+'<small>KICK-OFF</small>'}
+  else if(l.period==='HT'||l.period==='FT'){el.className='clk';el.innerHTML=c+'<small>'+(l.period==='HT'?'HALF TIME':'FULL TIME')+'</small>'}
+  else{el.className='clk';el.innerHTML=c+'<small>'+Live.periodLabel(l)+'</small>'}
+}
+setInterval(tickClock,250);
+</script></body></html>

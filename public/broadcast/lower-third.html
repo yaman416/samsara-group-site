@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><title>SPL Lower Third</title>
+<!-- OBS browser source, 1920 x 1080, transparent. Text comes from the admin portal (Matchday > Live stream).
+     Options: ?fixture=<id>  ?score=0 (hide the corner score)  ?name=..&role=.. (fixed text, ignores the portal) -->
+<link rel="stylesheet" href="broadcast.css"></head><body>
+<div class="abs bugmini fade hide" id="mini"><img id="hl" alt=""><span class="s" id="sc"></span><img id="al" alt=""><span class="l" id="lb"></span></div>
+<div class="abs lt hide" id="lt"><div class="cr"><img id="cr" src="img/spl-crest.png" alt=""></div><div class="tx"><b id="nm"></b><span id="rl"></span></div></div>
+<div class="abs lt2 hide" id="lt2">SPL SEASON 3 · LIVE FROM THE GROUND</div>
+<script src="live.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)};
+var fixedName=Live.param('name'),fixedRole=Live.param('role'),showScore=Live.param('score')!=='0',data=null;
+Live.on(function(d){
+  data=d;var lo=d.lower||{};
+  var name=fixedName!==null?fixedName:lo.name, role=fixedRole!==null?fixedRole:lo.role;
+  var role2=[role,lo.club&&fixedName===null?lo.club.name:null].filter(Boolean).join(' · ');
+  var on=fixedName!==null?true:!!(lo.visible&&name);
+  $('nm').textContent=name||'';$('rl').textContent=role2;$('rl').style.display=role2?'':'none';
+  $('cr').src=fixedName===null&&lo.club?Live.logo(lo.club):'img/spl-crest.png';
+  $('lt').classList.toggle('hide',!on);$('lt2').classList.toggle('hide',!on);
+  var f=d.fixture;
+  if(!showScore||!f){$('mini').classList.add('hide');return}
+  var l=d.live||{period:'pre',home_score:0,away_score:0};
+  $('mini').classList.remove('hide');$('hl').src=Live.logo(f.home);$('al').src=Live.logo(f.away);
+  $('sc').textContent=l.home_score+'-'+l.away_score;tick();
+});
+function tick(){if(!data||!data.fixture)return;var l=data.live||{period:'pre'};
+  $('lb').textContent=l.period==='pre'?'LIVE':(l.period==='HT'||l.period==='FT')?l.period:Live.clock(l)}
+setInterval(tick,500);
+</script></body></html>
