@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { LEAGUE_TZ } from "@/lib/utils";
 import { CARD_LABELS, CARD_TYPES, leagueDateKey, pickMatchday, tallyGoals, type CardType, type MatchSheet } from "@/lib/matchday";
 import { formatPlayerName } from "@/lib/playerName";
+import { BroadcastControls, LivePanel, liveApi, type BroadcastState, type LiveRow } from "./LivePanel";
 
 type Club = { id: string; name: string; short_code: string };
 type Fixture = {
@@ -89,6 +90,29 @@ export default function MatchdayScreen() {
 
   function onSaved() { load(); }
 
+  // Live scores for this matchday's fixtures, refreshed every 5 seconds so two phones stay in step.
+  const [live, setLive] = useState<Record<string, LiveRow>>({});
+  const [bstate, setBstate] = useState<BroadcastState | null>(null);
+  const dayIds = dayFixtures.map(f => f.id).join(",");
+  useEffect(() => {
+    if (!dayIds) return;
+    let stop = false;
+    const pull = async () => {
+      const r = await liveApi(undefined, `?fixture_ids=${dayIds}`);
+      if (!r.ok || stop) return;
+      const d: { live: LiveRow[]; state: BroadcastState | null } = await r.json();
+      setLive(Object.fromEntries(d.live.map(x => [x.fixture_id, x])));
+      setBstate(d.state);
+    };
+    pull();
+    const t = setInterval(pull, 5000);
+    return () => { stop = true; clearInterval(t); };
+  }, [dayIds]);
+  async function setOnAir(id: string) {
+    const r = await liveApi({ on_air: id });
+    if (r.ok) setBstate(s => ({ ...(s ?? { lt_name: null, lt_role: null, lt_club_id: null, lt_visible: false }), fixture_id: id }));
+  }
+
   return (
     <div style={{ display: "grid", gap: 20 }}>
       <div className="card admin-pad" style={{ padding: 24, display: "flex", gap: 16, alignItems: "flex-end", flexWrap: "wrap" }}>
@@ -121,7 +145,12 @@ export default function MatchdayScreen() {
         <div style={{ fontSize: 13, color: "#8a5a12" }}>{unscheduled} fixture{unscheduled === 1 ? " has" : "s have"} no date and {unscheduled === 1 ? "is" : "are"} not shown here. Set the date in the Fixtures tab.</div>
       )}
 
-      {dayFixtures.map(f => <MatchSheetCard key={f.id} fixture={f} onSaved={onSaved} />)}
+      {dayFixtures.length > 0 && <BroadcastControls key={bstate ? "s" : "n"} fixtures={dayFixtures} state={bstate} onState={setBstate} />}
+
+      {dayFixtures.map(f => (
+        <MatchSheetCard key={f.id} fixture={f} onSaved={onSaved} live={live[f.id] ?? null} onAir={bstate?.fixture_id === f.id}
+          onLive={row => setLive(l => ({ ...l, [f.id]: row }))} onSetOnAir={() => setOnAir(f.id)} />
+      ))}
 
       {table.length > 0 && (
         <div className="card" style={{ overflow: "hidden" }}>
@@ -148,7 +177,9 @@ export default function MatchdayScreen() {
   );
 }
 
-function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () => void }) {
+function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
+  fixture: Fixture; onSaved: () => void; live: LiveRow | null; onAir: boolean; onLive: (row: LiveRow) => void; onSetOnAir: () => void;
+}) {
   const saved = resultOf(fixture);
   const completed = fixture.status === "completed" && !!saved;
   const homeId = fixture.home_club.id, awayId = fixture.away_club.id;
@@ -171,10 +202,18 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
     const d: { result: { home_score: number; away_score: number } | null; goals: SavedGoal[]; cards: SavedCard[]; home_players: SquadPlayer[]; away_players: SquadPlayer[] } = await r.json();
     setSquads({ home: d.home_players, away: d.away_players });
     if (d.result) setScore({ home: String(d.result.home_score), away: String(d.result.away_score) });
+    else if (live) setScore({ home: String(live.home_score), away: String(live.away_score) }); // carry over the live score
     setGoals(d.goals.map(g => {
       const playerSide: Side = g.club_id === homeId ? "home" : "away";
       return { key: nextKey(), side: g.is_own_goal ? other(playerSide) : playerSide, kind: g.is_own_goal ? "og" : g.is_penalty ? "pen" : "goal", player_id: g.player_id, minute: g.minute != null ? String(g.minute) : "" };
     }));
+    // Coming from the live scoreboard: one empty row per goal, ready for jersey numbers.
+    if (!d.result && live && d.goals.length === 0) {
+      setGoals([
+        ...Array.from({ length: live.home_score }, () => ({ key: nextKey(), side: "home" as Side, kind: "goal" as GoalKind, player_id: "", minute: "" })),
+        ...Array.from({ length: live.away_score }, () => ({ key: nextKey(), side: "away" as Side, kind: "goal" as GoalKind, player_id: "", minute: "" })),
+      ]);
+    }
     const sideOfPlayer = (id: string | null): Side => (d.away_players.some(p => p.id === id) ? "away" : "home");
     setCards(d.cards.map(c => ({
       key: nextKey(), side: sideOfPlayer(c.player_id), player_id: c.player_id ?? "",
@@ -202,10 +241,11 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
     setMsg(null);
     const hs = score.home.trim() === "" ? NaN : Number(score.home), as_ = score.away.trim() === "" ? NaN : Number(score.away);
     if (!Number.isInteger(hs) || !Number.isInteger(as_) || hs < 0 || as_ < 0) { setMsg({ ok: false, text: "Enter the final score for both teams as whole numbers." }); return; }
-    if (goals.some(g => !g.player_id) || cards.some(c => !c.player_id)) { setMsg({ ok: false, text: "Pick a player for every goal and card, or remove the empty rows." }); return; }
+    if (cards.some(c => !c.player_id)) { setMsg({ ok: false, text: "Pick a player for every card, or remove the empty card rows." }); return; }
+    // Goal rows left without a scorer are skipped: the score still counts, the scorer stays unknown.
     const sheet: MatchSheet = {
       fixture_id: fixture.id, home_score: hs, away_score: as_,
-      goals: goals.map(g => ({
+      goals: goals.filter(g => g.player_id).map(g => ({
         player_id: g.player_id,
         club_id: g.kind === "og" ? clubOf(other(g.side)).id : clubOf(g.side).id,
         minute: toMinute(g.minute), is_own_goal: g.kind === "og", is_penalty: g.kind === "pen",
@@ -231,7 +271,7 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
     onSaved();
   }
 
-  const tally = tallyGoals(goals.map(g => ({ club_id: g.kind === "og" ? clubOf(other(g.side)).id : clubOf(g.side).id, is_own_goal: g.kind === "og" })), homeId, awayId);
+  const tally = tallyGoals(goals.filter(g => g.player_id).map(g => ({ club_id: g.kind === "og" ? clubOf(other(g.side)).id : clubOf(g.side).id, is_own_goal: g.kind === "og" })), homeId, awayId);
   const missing = (["home", "away"] as Side[]).map(s => ({ s, n: (parseInt(score[s], 10) || 0) - (s === "home" ? tally.home : tally.away) })).filter(x => x.n > 0);
 
   return (
@@ -265,6 +305,10 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
         )}
       </div>
 
+      {!completed && !open && (
+        <LivePanel fixture={fixture} live={live} onAir={onAir} onChange={onLive} onSetOnAir={onSetOnAir} />
+      )}
+
       {open && (
         <div style={{ borderTop: "1px solid rgba(17,24,39,.08)", padding: 20, display: "grid", gap: 20 }}>
           {loading ? <div style={{ color: MUTED, fontSize: 14 }}>Loading squads...</div> : (
@@ -286,6 +330,7 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
                             const pool = g.kind === "og" ? squads[other(side)] : squads[side];
                             return (
                               <div key={g.key} style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                                <JerseyInput pool={pool} value={g.player_id} onPick={id => patchGoal(g.key, { player_id: id })} />
                                 <select aria-label="Goal scorer" value={g.player_id} onChange={e => patchGoal(g.key, { player_id: e.target.value })} style={{ ...field, flex: "1 1 160px" }}>
                                   <option value="">{g.kind === "og" ? `${clubOf(other(side)).name} player...` : "Scorer..."}</option>
                                   {pool.map(p => <option key={p.id} value={p.id}>{playerLabel(p)}</option>)}
@@ -310,6 +355,7 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
                           {cards.filter(c => c.side === side).map(c => (
                             <div key={c.key} style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                               <span aria-hidden style={{ width: 12, height: 16, borderRadius: 3, flexShrink: 0, background: c.card_type === "yellow" ? "#f0b429" : "#cf2e24" }} />
+                              <JerseyInput pool={squads[side]} value={c.player_id} onPick={id => patchCard(c.key, { player_id: id })} />
                               <select aria-label="Booked player" value={c.player_id} onChange={e => patchCard(c.key, { player_id: e.target.value })} style={{ ...field, flex: "1 1 160px" }}>
                                 <option value="">Player...</option>
                                 {squads[side].map(p => <option key={p.id} value={p.id}>{playerLabel(p)}</option>)}
@@ -334,7 +380,7 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
 
               {missing.length > 0 && (
                 <div style={{ fontSize: 13, color: MUTED }}>
-                  {missing.map(m => `${clubOf(m.s).name}: ${m.n} goal${m.n === 1 ? "" : "s"} without a scorer`).join(" · ")}. That is fine if the scorer is unknown.
+                  {missing.map(m => `${clubOf(m.s).name}: ${m.n} goal${m.n === 1 ? "" : "s"} without a scorer`).join(" · ")}. Leave a row blank if the scorer is unknown; the score still counts.
                 </div>
               )}
               {msg && <div role="status" style={{ fontSize: 14, fontWeight: 500, color: msg.ok ? "#1f6b37" : "#a3211a" }}>{msg.text}</div>}
@@ -349,5 +395,24 @@ function MatchSheetCard({ fixture, onSaved }: { fixture: Fixture; onSaved: () =>
       )}
       {!open && msg && <div role="status" style={{ padding: "0 20px 16px", textAlign: "center", fontSize: 13, color: msg.ok ? "#1f6b37" : "#a3211a" }}>{msg.text}</div>}
     </div>
+  );
+}
+
+/** Type a jersey number to pick the player. Shows "?" when no one in the squad wears it. */
+function JerseyInput({ pool, value, onPick }: { pool: SquadPlayer[]; value: string; onPick: (id: string) => void }) {
+  const current = pool.find(p => p.id === value);
+  const [text, setText] = useState("");
+  // A picked player shows their number; otherwise show what was typed (red when nobody wears it).
+  const shown = current ? (current.jersey_number != null ? String(current.jersey_number) : "") : text;
+  const miss = !current && text.trim() !== "";
+  return (
+    <input aria-label="Jersey number" type="number" inputMode="numeric" min={0} max={99} placeholder="No."
+      value={shown}
+      onChange={e => {
+        const v = e.target.value; setText(v);
+        const hit = v.trim() === "" ? undefined : pool.find(p => p.jersey_number === Number(v));
+        onPick(hit ? hit.id : "");
+      }}
+      style={{ ...field, width: 64, borderColor: miss ? "#a3211a" : undefined }} title={miss ? "No player with that number" : "Jersey number"} />
   );
 }

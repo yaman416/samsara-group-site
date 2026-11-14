@@ -306,3 +306,32 @@ on conflict do nothing;
 
 -- Existing databases: add the per-club squad deadline extension.
 alter table clubs add column if not exists squad_deadline_override timestamptz;
+
+-- ============================================================
+-- LIVE BROADCAST (match-day scoreboard for the OBS overlays)
+-- Written only by admin server routes (service role); read by /api/public/live.
+-- RLS on with no policies, like every other table.
+-- ============================================================
+create table if not exists live_matches (
+  fixture_id        uuid primary key references fixtures(id) on delete cascade,
+  home_score        int not null default 0 check (home_score between 0 and 99),
+  away_score        int not null default 0 check (away_score between 0 and 99),
+  period            text not null default 'pre' check (period in ('pre','1H','HT','2H','FT')),
+  period_started_at timestamptz,
+  half_minutes      int not null default 30 check (half_minutes between 1 and 60),
+  last_goal_side    text check (last_goal_side in ('home','away')),
+  last_goal_at      timestamptz,
+  updated_at        timestamptz not null default now()
+);
+create table if not exists broadcast_state (
+  id          int primary key default 1 check (id = 1),
+  fixture_id  uuid references fixtures(id) on delete set null,  -- the match on air
+  lt_name     text,                                             -- lower third
+  lt_role     text,
+  lt_club_id  uuid references clubs(id) on delete set null,
+  lt_visible  boolean not null default false,
+  updated_at  timestamptz not null default now()
+);
+insert into broadcast_state (id) values (1) on conflict do nothing;
+alter table live_matches    enable row level security;
+alter table broadcast_state enable row level security;
