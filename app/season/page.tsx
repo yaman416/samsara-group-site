@@ -130,7 +130,6 @@ export default function SeasonPage() {
     setTabState(t);
     try { history.replaceState(null, "", t === "Overview" ? location.pathname : `#${t.toLowerCase()}`); } catch {}
   }
-  const [cd, setCd] = useState({ dd: "--", hh: "--", mm: "--" });
 
   const [clubs, setClubs] = useState<Club[]>([]);
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
@@ -163,22 +162,10 @@ export default function SeasonPage() {
     load();
   }, []);
 
-  useEffect(() => {
-    function tick() {
-      const target = new Date("2026-11-14T16:00:00+11:00").getTime();
-      let s = Math.max(0, Math.floor((target - Date.now()) / 1000));
-      const d = Math.floor(s / 86400); s -= d * 86400;
-      const h = Math.floor(s / 3600); s -= h * 3600;
-      const m = Math.floor(s / 60);
-      const pad = (n: number) => String(n).padStart(2, "0");
-      setCd({ dd: pad(d), hh: pad(h), mm: pad(m) });
-    }
-    tick();
-    const t = setInterval(tick, 1000);
-    return () => clearInterval(t);
-  }, []);
-
   const upcoming = fixtures.filter(f => f.status === "scheduled").slice(0, 6);
+  // Next matchday: the earliest scheduled kick-off.
+  const nextKick = fixtures.filter(f => f.status === "scheduled" && f.played_at).map(f => f.played_at as string).sort()[0] ?? null;
+  const nextWeekNo = nextKick ? fixtures.find(f => f.played_at === nextKick)?.week ?? null : null;
   const completedCount = results.length;
   const hasResults = completedCount > 0;
   const hasFixtures = fixtures.length > 0;
@@ -279,7 +266,7 @@ export default function SeasonPage() {
               </div>
             </div>
             <div className="season-meta" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(100px,1fr))", gap: 32, paddingBottom: 6 }}>
-              <div><div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Starts</div><div style={{ fontSize: 17, fontWeight: 500, marginTop: 6 }}>14 Nov 2026</div></div>
+              <div><div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>{hasResults ? "Started" : "Starts"}</div><div style={{ fontSize: 17, fontWeight: 500, marginTop: 6 }}>14 Nov 2026</div></div>
               <div><div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Venue</div><div style={{ fontSize: 17, fontWeight: 500, marginTop: 6 }}>Nicholls</div></div>
               <div><div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Clubs</div><div style={{ fontSize: 17, fontWeight: 500, marginTop: 6 }}>{loading ? "--" : clubs.length || 12}</div></div>
               {hasResults && <div><div style={{ fontSize: 11, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Played</div><div style={{ fontSize: 17, fontWeight: 500, marginTop: 6 }}>{completedCount}</div></div>}
@@ -319,16 +306,12 @@ export default function SeasonPage() {
               </div>
 
               <div className="season-card" style={{ background: "#101820", color: "#fff", borderRadius: 18, padding: 36 }}>
-                <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>Kick-off in</div>
-                <div style={{ display: "flex", gap: 22, marginTop: 26 }}>
-                  {[["dd", "Days"], ["hh", "Hrs"], ["mm", "Min"]].map(([k, label]) => (
-                    <div key={k}>
-                      <div style={{ fontSize: 40, fontWeight: 500, lineHeight: 1, letterSpacing: "-.03em", fontVariantNumeric: "tabular-nums" }}>{cd[k as keyof typeof cd]}</div>
-                      <div style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab", marginTop: 8 }}>{label}</div>
-                    </div>
-                  ))}
+                <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase", color: "#98a1ab" }}>{nextWeekNo ? `Next matchday · Week ${nextWeekNo}` : "Next matchday"}</div>
+                <div style={{ fontFamily: "Lora,Georgia,serif", fontSize: 28, lineHeight: 1.2, marginTop: 22 }}>
+                  {nextKick ? new Date(nextKick).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", timeZone: TZ }) : loading ? "--" : "To be announced"}
                 </div>
-                <div style={{ marginTop: "auto", paddingTop: 28, fontSize: 15, color: "#98a1ab", lineHeight: 1.6 }}>Saturday 14 November 2026<br />Nicholls Synthetic Field</div>
+                {nextKick && <div style={{ fontSize: 15, color: "#c3cad2", marginTop: 10 }}>First kick-off {fmtTime(new Date(nextKick))}</div>}
+                <div style={{ marginTop: "auto", paddingTop: 28, fontSize: 15, color: "#98a1ab", lineHeight: 1.6 }}>Nicholls Synthetic Field<br />Ground 1 and Ground 2</div>
               </div>
 
               <div className="season-card" style={{ background: "#fff", border: "1px solid rgba(17,24,39,.10)", borderRadius: 18, padding: 36 }}>
