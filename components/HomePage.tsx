@@ -6,6 +6,7 @@ import Link from "next/link";
 import LeagueTableSection from "@/components/LeagueTableSection";
 import FixturesResultsSection from "@/components/FixturesResultsSection";
 import Modal from "@/components/Modal";
+import SeasonNow from "@/components/SeasonNow";
 import { supabase } from "@/lib/supabase";
 
 const RED = "#cf2e24";
@@ -36,13 +37,8 @@ const HERO_SHOTS = [
 ];
 
 
-function pad(n: number) {
-  return String(n).padStart(2, "0");
-}
-
 export default function HomePage() {
   const [slide, setSlide] = useState(0);
-  const [cd, setCd] = useState({ dd: "--", hh: "--", mm: "--", ss: "--" });
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -93,20 +89,6 @@ export default function HomePage() {
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
-
-  useEffect(() => {
-    function tick() {
-      const target = new Date("2026-11-14T16:00:00+11:00").getTime();
-      let s = Math.max(0, Math.floor((target - Date.now()) / 1000));
-      const d = Math.floor(s / 86400); s -= d * 86400;
-      const h = Math.floor(s / 3600); s -= h * 3600;
-      const m = Math.floor(s / 60); s -= m * 60;
-      setCd({ dd: pad(d), hh: pad(h), mm: pad(m), ss: pad(s) });
-    }
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
   }, []);
 
   return (
@@ -248,14 +230,14 @@ export default function HomePage() {
           </h1>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 22, flexWrap: "wrap" as const, justifyContent: "center" }}>
             <span style={{ background: RED, color: "#fff", fontSize: 12, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const, padding: "9px 16px", borderRadius: 6 }}>Season 03 · 2026-27</span>
-            <span style={{ fontSize: 15, color: "rgba(255,255,255,.82)" }}>Kick-off Saturday 14 November 2026</span>
+            <span style={{ fontSize: 15, color: "rgba(255,255,255,.82)" }}>Now under way · Saturdays at Nicholls</span>
           </div>
           <p style={{ maxWidth: "56ch", margin: "22px 0 0", fontSize: 18, lineHeight: 1.7, color: "rgba(255,255,255,.86)" }}>
             Our annual football season, back for a third year. Canberra&apos;s Nepalese and Bhutanese communities. One shield.
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const, justifyContent: "center", marginTop: 34 }}>
-            <a href="#register" style={{ background: RED, color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 30px", borderRadius: 999, textDecoration: "none" }}>Register a club</a>
-            <a href="/about" style={{ border: "1px solid rgba(255,255,255,.42)", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 30px", borderRadius: 999, textDecoration: "none" }}>About us</a>
+            <Link href="/season#fixtures" style={{ background: RED, color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 30px", borderRadius: 999, textDecoration: "none" }}>Fixtures and results</Link>
+            <Link href="/season#table" style={{ border: "1px solid rgba(255,255,255,.42)", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 30px", borderRadius: 999, textDecoration: "none" }}>League table</Link>
           </div>
 
           {/* Slide dots */}
@@ -276,31 +258,17 @@ export default function HomePage() {
         <div style={{ display: "flex", width: "max-content", animation: "spl-marquee 38s linear infinite" }}>
           {[0, 1].map((i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 40, padding: "12px 20px", fontSize: 12, fontWeight: 500, letterSpacing: ".12em", textTransform: "uppercase" as const }}>
-              <span>Season 3 kicks off 14 November 2026</span><span style={{ opacity: .5 }}>◆</span>
+              <span>Season 3 is under way</span><span style={{ opacity: .5 }}>◆</span>
+              <span>Matches every Saturday from 4 pm</span><span style={{ opacity: .5 }}>◆</span>
               <span>Nicholls Synthetic Field, Canberra</span><span style={{ opacity: .5 }}>◆</span>
-              <span>Invitation-only club registration</span><span style={{ opacity: .5 }}>◆</span>
-              <span>Register your club now</span><span style={{ opacity: .5 }}>◆</span>
+              <span>Results and table updated every matchday</span><span style={{ opacity: .5 }}>◆</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── COUNTDOWN ── */}
-      <section className="spl-section" style={{ background: "#fff", padding: "88px 0", borderTop: "1px solid rgba(17,24,39,.08)", borderBottom: "1px solid rgba(17,24,39,.08)" }}>
-        <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: RED }}>Countdown</div>
-          <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(28px,3.4vw,42px)", lineHeight: 1.2, letterSpacing: "-.012em", margin: "16px 0 44px" }}>Season 3 starts in</h2>
-          <div style={{ display: "flex", gap: "clamp(20px,5vw,72px)", alignItems: "flex-start", justifyContent: "center", flexWrap: "wrap" as const }}>
-            {[{ val: cd.dd, label: "Days" }, { val: cd.hh, label: "Hours" }, { val: cd.mm, label: "Mins" }, { val: cd.ss, label: "Secs", red: true }].map((u) => (
-              <div key={u.label}>
-                <div style={{ fontSize: "clamp(40px,7vw,80px)", fontWeight: 500, lineHeight: .95, letterSpacing: "-.03em", fontVariantNumeric: "tabular-nums", color: u.red ? RED : DARK }}>{u.val}</div>
-                <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: ".14em", textTransform: "uppercase" as const, color: MUTED, marginTop: 10 }}>{u.label}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ marginTop: 40, fontSize: 15, color: MUTED }}>Saturday 14 November 2026 · Nicholls Synthetic Field, Canberra</div>
-        </div>
-      </section>
+      {/* ── THIS SEASON: live match, latest results, table, next matchday ── */}
+      <SeasonNow />
 
       {/* ── HONOURS BOARD ── */}
       <section className="spl-section" style={{ position: "relative", padding: "120px 0", overflow: "hidden" }}>
@@ -387,15 +355,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── REGISTER CTA ── */}
+      {/* ── FOLLOW / MANAGERS CTA ── */}
       <section id="register" className="spl-section" style={{ background: RED, color: "#fff", padding: "96px 0" }}>
         <div style={{ maxWidth: 1340, margin: "0 auto", padding: "0 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,300px),1fr))", gap: 44, alignItems: "center" }}>
-          <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(30px,4.2vw,52px)", lineHeight: 1.16, letterSpacing: "-.014em", margin: 0 }}>Got an invitation code?</h2>
+          <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 600, fontSize: "clamp(30px,4.2vw,52px)", lineHeight: 1.16, letterSpacing: "-.014em", margin: 0 }}>Follow every matchday</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 22, alignItems: "flex-start" }}>
             <p style={{ margin: 0, fontSize: 18, lineHeight: 1.7, maxWidth: "46ch", color: "rgba(255,255,255,.92)" }}>
-              Registration for Season 3 is invitation-only. Enter your club&apos;s code to set up a manager account and register your squad.
+              Results, the league table and next week&apos;s fixtures update here after every Saturday. Club managers can sign in to the manager portal for squads and match-day details.
             </p>
-            <a href="/register" style={{ background: "#0b0e11", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 32px", borderRadius: 999, textDecoration: "none" }}>Start registration</a>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
+              <Link href="/season" style={{ background: "#0b0e11", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 32px", borderRadius: 999, textDecoration: "none" }}>Season hub</Link>
+              <a href="/register?signin=1" style={{ border: "1px solid rgba(255,255,255,.5)", color: "#fff", fontSize: 15, fontWeight: 500, padding: "16px 32px", borderRadius: 999, textDecoration: "none" }}>Manager sign in</a>
+            </div>
           </div>
         </div>
       </section>
