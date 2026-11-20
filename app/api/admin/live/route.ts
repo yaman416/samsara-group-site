@@ -73,6 +73,13 @@ export async function POST(req: NextRequest) {
   }
   if (!data) return NextResponse.json({ error: "Busy, please tap again." }, { status: 409 });
 
+  // Resetting a match that has no saved result also removes the scorers saved during play,
+  // so a test run or false start leaves nothing behind.
+  if (action.type === "reset") {
+    const { data: res } = await supabaseAdmin.from("results").select("id").eq("fixture_id", fixture_id).maybeSingle();
+    if (!res) await supabaseAdmin.from("goal_scorers").delete().eq("fixture_id", fixture_id);
+  }
+
   // First tap on a match puts it on air if nothing else is.
   const { data: st } = await supabaseAdmin.from("broadcast_state").select("fixture_id").eq("id", 1).maybeSingle();
   if (!st?.fixture_id) await supabaseAdmin.from("broadcast_state").upsert({ id: 1, fixture_id, updated_at: now });

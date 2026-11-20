@@ -1,9 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
-import { matchClock, type LiveAction, type LiveState, type Period } from "@/lib/live";
+import { useCallback, useEffect, useState } from "react";
+import { liveMinute, matchClock, type LiveAction, type LiveState, type Period } from "@/lib/live";
+import { LiveScorers, goalSide, playerLabel, useLiveGoals } from "./LiveScorers";
 
 // Live match controls for the broadcast scoreboard (Matchday screen).
-// During play: tap +1 for the team that scored. Scorers and cards go in the match sheet after full time.
+// During play: tap + Goal for the team that scored, then type the scorer's jersey number (saved straight away).
+// Missing scorers, cards and corrections can still go in the match sheet after full time.
 
 export type LiveRow = LiveState & { fixture_id: string; updated_at?: string };
 export type BroadcastState = { fixture_id: string | null; lt_name: string | null; lt_role: string | null; lt_club_id: string | null; lt_visible: boolean };
@@ -60,21 +62,44 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
   const [err, setErr] = useState<string | null>(null);
   const s: LiveState = live ?? { home_score: 0, away_score: 0, period: "pre", period_started_at: null, half_minutes: 30, last_goal_side: null, last_goal_at: null, paused_at: null };
 
+  const scorers = useLiveGoals(fixture.id);
+  const [ask, setAsk] = useState<"home" | "away" | null>(null);
+  const clearAsk = useCallback(() => setAsk(null), []);
+  const minuteNow = useCallback(() => (live ? liveMinute(live, Date.now()) : null), [live]);
+
   async function act(action: LiveAction) {
     setBusy(true); setErr(null);
     const r = await liveApi({ fixture_id: fixture.id, action });
     setBusy(false);
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) { setErr(d.error ?? "Could not update the live score."); return; }
+    if (!r.ok) { setErr(d.error ?? "Could not update the live score."); return false; }
     onChange(d as LiveRow);
+    return true;
+  }
+  async function goal(side: "home" | "away") {
+    if (await act({ type: "goal", side })) setAsk(side);
+  }
+  // Taking a goal off: if every goal for that team has a scorer, the latest scorer goes too.
+  async function undo(side: "home" | "away") {
+    const score = side === "home" ? s.home_score : s.away_score;
+    const mine = scorers.goals.filter(g => goalSide(g, fixture) === side);
+    const last = mine.length >= score ? mine[mine.length - 1] : null;
+    if (last) {
+      const p = [...scorers.squads.home, ...scorers.squads.away].find(x => x.id === last.player_id);
+      if (!confirm(`Undo the last goal? This also removes the scorer ${p ? playerLabel(p) : ""}.`)) return;
+      const r = await fetch("/api/admin/live-goals", { method: "DELETE", headers: { "Content-Type": "application/json", "x-admin-key": localStorage.getItem("spl_admin") || "" }, body: JSON.stringify({ id: last.id, fixture_id: fixture.id }) });
+      if (!r.ok) { setErr("Could not remove the scorer, so the goal was kept."); return; }
+      scorers.setGoals(g => g.filter(x => x.id !== last.id));
+    }
+    await act({ type: "undo", side });
   }
   function setPeriod(p: Period) {
     if (p === "FT" && !confirm("Full time? The clock stops and the overlays show FT.")) return;
     act({ type: "period", period: p });
   }
   function reset() {
-    if (!confirm("Reset this match to not started? The clock and the live score go back to zero.")) return;
-    act({ type: "reset" });
+    if (!confirm("Reset this match to not started? The clock, the live score and the scorers saved so far are cleared.")) return;
+    act({ type: "reset" }).then(() => scorers.refresh());
   }
   const running = (s.period === "1H" || s.period === "2H") && !!s.period_started_at;
   const paused = running && !!s.paused_at;
@@ -128,17 +153,19 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
           <div key={x.side} style={{ display: "grid", gap: 8, justifyItems: "stretch" }}>
             <div style={{ fontSize: 13, fontWeight: 600, textAlign: "center", lineHeight: 1.25, minHeight: 32 }}>{x.club.name}</div>
             <div style={{ fontSize: 44, fontWeight: 700, textAlign: "center", lineHeight: 1 }}>{x.score}</div>
-            <button type="button" disabled={busy} onClick={() => act({ type: "goal", side: x.side })}
+            <button type="button" disabled={busy} onClick={() => goal(x.side)}
               style={{ background: RED, color: "#fff", border: 0, borderRadius: 12, padding: "16px 8px", fontSize: 18, fontWeight: 700, fontFamily: F, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>
               + Goal
             </button>
-            <button type="button" disabled={busy || x.score === 0} onClick={() => act({ type: "undo", side: x.side })}
+            <button type="button" disabled={busy || x.score === 0} onClick={() => undo(x.side)}
               style={{ background: "none", border: "1px solid rgba(17,24,39,.18)", borderRadius: 999, padding: "6px 8px", fontSize: 13, fontFamily: F, cursor: "pointer", color: "#101820", opacity: x.score === 0 ? 0.4 : 1 }}>
               Undo goal
             </button>
           </div>
         ))}
       </div>
+
+      <LiveScorers fixture={fixture} scores={{ home: s.home_score, away: s.away_score }} data={scorers} ask={ask} onAsked={clearAsk} minuteNow={minuteNow} />
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <span style={{ fontSize: 12, color: MUTED, alignSelf: "center" }}>Jump to:</span>
@@ -149,7 +176,7 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
           {[20, 25, 30, 35, 40, 45].map(m => <option key={m} value={m}>{m} min halves</option>)}
         </select>
       </div>
-      {s.period === "FT" && <div style={{ fontSize: 13, color: MUTED }}>Match over. Open the match sheet below to add scorers&apos; jersey numbers and cards, then save the result.</div>}
+      {s.period === "FT" && <div style={{ fontSize: 13, color: MUTED }}>Match over. Tap Enter result above to check the scorers, add cards, and save the final result.</div>}
       {err && <div role="status" style={{ fontSize: 13, color: "#a3211a" }}>{err}</div>}
     </div>
   );

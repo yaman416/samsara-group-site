@@ -56,3 +56,21 @@ test('rejects bad scores, card types and minutes', () => {
   assert.ok(validateMatchSheet(sheet({ goals: [goal('h1', H, { minute: 200 })] }), H, A, players).length);
   assert.ok(validateMatchSheet(sheet({ goals: [goal('h1', H, { is_own_goal: true, is_penalty: true })] }), H, A, players).length);
 });
+
+test('live goal: scorer must be in the scoring team, own goal from the other team', () => {
+  const { checkLiveGoal } = m.exports;
+  const ok = checkLiveGoal({ side: 'home', kind: 'goal', player_id: 'h1', minute: 12 }, H, A, players);
+  assert.deepEqual(ok, { player_id: 'h1', club_id: H, minute: 12, is_own_goal: false, is_penalty: false });
+  assert.equal(typeof checkLiveGoal({ side: 'home', kind: 'goal', player_id: 'a1', minute: 12 }, H, A, players), 'string');
+  const og = checkLiveGoal({ side: 'home', kind: 'og', player_id: 'a1', minute: null }, H, A, players);
+  assert.equal(og.club_id, A); assert.equal(og.is_own_goal, true);
+  assert.equal(typeof checkLiveGoal({ side: 'home', kind: 'og', player_id: 'h1', minute: 3 }, H, A, players), 'string');
+  assert.equal(checkLiveGoal({ side: 'away', kind: 'pen', player_id: 'a1', minute: 40 }, H, A, players).is_penalty, true);
+  assert.equal(typeof checkLiveGoal({ side: 'away', kind: 'goal', player_id: 'x1', minute: 1 }, H, A, players), 'string');
+  assert.equal(typeof checkLiveGoal({ side: 'away', kind: 'goal', player_id: 'a1', minute: 200 }, H, A, players), 'string');
+});
+
+test('Player of the Match must come from either squad', () => {
+  assert.deepEqual(validateMatchSheet(sheet({ potm_player_id: 'a1' }), H, A, players), []);
+  assert.equal(validateMatchSheet(sheet({ potm_player_id: 'x1' }), H, A, players).length, 1);
+});

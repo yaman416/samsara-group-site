@@ -337,3 +337,7 @@ create table if not exists broadcast_state (
 insert into broadcast_state (id) values (1) on conflict do nothing;
 alter table live_matches    enable row level security;
 alter table broadcast_state enable row level security;
+
+-- 21 Nov 2026: Player of the Match per fixture, and save order for goal scorers entered live
+alter table fixtures add column if not exists potm_player_id uuid references players(id) on delete set null;
+alter table goal_scorers add column if not exists created_at timestamptz not null default now();

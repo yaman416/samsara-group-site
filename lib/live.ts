@@ -95,3 +95,11 @@ export function matchClock(s: Pick<LiveState, "period" | "period_started_at" | "
   const secs = base + Math.max(0, Math.floor(((s.paused_at ? Date.parse(s.paused_at) : nowMs) - Date.parse(s.period_started_at)) / 1000));
   return `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
 }
+
+/** Football minute of the live clock (00:30 = 1st minute, 31:10 in the 2nd half = 32nd). Null when the clock isn't running. */
+export function liveMinute(s: Pick<LiveState, "period" | "period_started_at" | "half_minutes" | "paused_at">, nowMs: number): number | null {
+  if ((s.period !== "1H" && s.period !== "2H") || !s.period_started_at) return null;
+  const base = s.period === "2H" ? s.half_minutes * 60 : 0;
+  const secs = base + Math.max(0, Math.floor(((s.paused_at ? Date.parse(s.paused_at) : nowMs) - Date.parse(s.period_started_at)) / 1000));
+  return Math.min(130, Math.floor(secs / 60) + 1);
+}
