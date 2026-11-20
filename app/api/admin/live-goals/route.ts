@@ -73,6 +73,21 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin.from("goal_scorers").insert({ fixture_id: f.id, ...row }).select(GOAL_COLS).single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Two phones saving the same goal at once can both pass the check above. Count again
+  // after the insert and take this row back out if it went over.
+  const after = await loadGoals(f.id);
+  if (!after.error) {
+    // Keep the earliest rows (by save time, then id) so exactly one of two clashing saves survives.
+    const forClub = body.side === "home" ? f.home_club_id : f.away_club_id;
+    const sideRows = (after.data ?? [])
+      .filter(g => (g.is_own_goal ? g.club_id !== forClub : g.club_id === forClub))
+      .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)) || String(a.id).localeCompare(String(b.id)));
+    if (sideRows.findIndex(g => g.id === data.id) >= max) {
+      await supabaseAdmin.from("goal_scorers").delete().eq("id", data.id);
+      return NextResponse.json({ error: "Someone else just saved a scorer for this goal. Check the list." }, { status: 409 });
+    }
+  }
   return NextResponse.json(data);
 }
 
