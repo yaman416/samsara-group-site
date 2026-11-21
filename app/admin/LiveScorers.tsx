@@ -242,6 +242,8 @@ export function PotmBox({ squads, clubOf, value, onPick }: {
   const currentSide: Side = current && squads.away.some(p => p.id === current.id) ? "away" : "home";
   const [side, setSide] = useState<Side>(currentSide);
   const [num, setNum] = useState("");
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   // Follow the saved pick (it loads after the squads, or changes from the list or another phone)
   // so the highlighted team and the jersey box always match the player shown.
   const [synced, setSynced] = useState<string | null>(null);
@@ -263,7 +265,7 @@ export function PotmBox({ squads, clubOf, value, onPick }: {
         : <div style={{ fontSize: 13, color: MUTED }}>Not picked yet.</div>}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {(["home", "away"] as Side[]).map(s => (
-          <button key={s} type="button" style={chip(side === s)} onClick={() => { setSide(s); setNum(""); }}>{clubOf(s).name}</button>
+          <button key={s} type="button" style={chip(side === s)} onClick={() => { if (timer.current) clearTimeout(timer.current); setSide(s); setNum(""); }}>{clubOf(s).name}</button>
         ))}
       </div>
       <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
@@ -272,14 +274,19 @@ export function PotmBox({ squads, clubOf, value, onPick }: {
           <input aria-label="Player of the Match jersey number" type="number" inputMode="numeric" min={0} max={99} value={num} placeholder="No."
             onChange={e => {
               const v = e.target.value; setNum(v);
+              if (timer.current) clearTimeout(timer.current);
               const hit = v.trim() === "" ? undefined : pool.find(p => p.jersey_number === Number(v));
-              if (hit && hit.id !== value) onPick(hit.id);
+              if (!hit || hit.id === value) return;
+              // "1" could be the start of "10": wait a moment so only the finished number is saved.
+              const longer = pool.some(p => p.jersey_number != null && String(p.jersey_number).length > v.length && String(p.jersey_number).startsWith(v));
+              if (longer) timer.current = setTimeout(() => onPick(hit.id), 1200);
+              else onPick(hit.id);
             }}
             style={{ ...field, width: 96, fontSize: 28, fontWeight: 700, textAlign: "center", borderColor: typedMiss ? "#a3211a" : undefined }} />
         </div>
         <div style={{ flex: "1 1 180px", minWidth: 0 }}>
           <label style={label11}>Or pick</label>
-          <select aria-label="Player of the Match" value={value ?? ""} onChange={e => { setNum(""); onPick(e.target.value); }} style={{ ...field, width: "100%" }}>
+          <select aria-label="Player of the Match" value={value ?? ""} onChange={e => { if (timer.current) clearTimeout(timer.current); setNum(""); onPick(e.target.value); }} style={{ ...field, width: "100%" }}>
             <option value="">{current ? "Clear Player of the Match" : "Pick Player of the Match..."}</option>
             {(["home", "away"] as Side[]).map(s => (
               <optgroup key={s} label={clubOf(s).name}>
