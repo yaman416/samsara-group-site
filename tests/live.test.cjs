@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const src = ts.transpileModule(fs.readFileSync('lib/live.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
 const m = { exports: {} };
 new Function('module', 'exports', src)(m, m.exports);
-const { applyLiveAction, emptyLive, matchClock } = m.exports;
+const { applyLiveAction, emptyLive, matchClock, savesResultAtFullTime } = m.exports;
 
 const T = '2026-11-14T05:00:00.000Z';
 
@@ -75,4 +75,15 @@ test('live minute follows football convention and the 2nd half carries on from t
   assert.equal(liveMinute({ ...emptyLive(), period: '1H', period_started_at: T }, start + 22 * 60e3 + 5e3), 23);
   assert.equal(liveMinute({ ...emptyLive(), period: '2H', period_started_at: T }, start + 60e3 + 1e3), 32);
   assert.equal(liveMinute({ ...emptyLive(), period: 'HT' }, start), null);
+});
+
+test('full time saves the result; score changes after full time keep it in step', () => {
+  const ft = { ...emptyLive(), period: 'FT' };
+  assert.equal(savesResultAtFullTime(ft, { type: 'period', period: 'FT' }), true);
+  assert.equal(savesResultAtFullTime(ft, { type: 'goal', side: 'home' }), true);
+  assert.equal(savesResultAtFullTime(ft, { type: 'undo', side: 'away' }), true);
+  assert.equal(savesResultAtFullTime(ft, { type: 'score', home: 2, away: 1 }), true);
+  assert.equal(savesResultAtFullTime(ft, { type: 'half_minutes', minutes: 30 }), false);
+  assert.equal(savesResultAtFullTime({ ...emptyLive(), period: '2H' }, { type: 'goal', side: 'home' }), false);
+  assert.equal(savesResultAtFullTime({ ...emptyLive(), period: 'HT' }, { type: 'period', period: 'HT' }), false);
 });
