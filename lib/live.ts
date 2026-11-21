@@ -86,6 +86,13 @@ export function applyLiveAction(s: LiveState, a: LiveAction, nowIso: string): Li
   }
 }
 
+/** True when this live update should save the final score as the match result:
+ *  the match is at full time and the action changed the period or the score. */
+export function savesResultAtFullTime(next: Pick<LiveState, "period">, action: LiveAction): boolean {
+  if (next.period !== "FT") return false;
+  return action.type === "period" || action.type === "goal" || action.type === "undo" || action.type === "score";
+}
+
 /** Match clock text: counts up from 00:00 in the 1st half and from the half length in the 2nd. */
 export function matchClock(s: Pick<LiveState, "period" | "period_started_at" | "half_minutes" | "paused_at">, nowMs: number): string {
   if (s.period === "HT") return "HT";

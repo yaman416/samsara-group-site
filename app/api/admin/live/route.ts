@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { checkAdminKey } from "@/lib/admin-auth";
-import { applyLiveAction, emptyLive, type LiveAction, type LiveState } from "@/lib/live";
+import { applyLiveAction, emptyLive, savesResultAtFullTime, type LiveAction, type LiveState } from "@/lib/live";
 
 const LIVE_COLS = "fixture_id, home_score, away_score, period, period_started_at, half_minutes, last_goal_side, last_goal_at, paused_at, updated_at";
 const STATE_COLS = "fixture_id, lt_name, lt_role, lt_club_id, lt_visible, updated_at";
@@ -82,6 +82,21 @@ export async function POST(req: NextRequest) {
       const { error: delErr } = await supabaseAdmin.from("goal_scorers").delete().eq("fixture_id", fixture_id);
       if (delErr) return NextResponse.json({ error: `Clock reset, but the saved scorers could not be cleared: ${delErr.message}` }, { status: 500 });
     }
+  }
+
+  // Full time saves the live score as the result and marks the match completed, so the
+  // website's played count and league table update without a separate "Save result" step.
+  // A goal or undo tapped after full time keeps the saved result in step with the live score.
+  // Goal scorers are already saved during play; Enter result can still correct anything.
+  const saved = data as LiveState;
+  if (savesResultAtFullTime(saved, action)) {
+    const { error: rErr } = await supabaseAdmin.from("results").upsert(
+      { fixture_id, home_score: saved.home_score, away_score: saved.away_score, entered_at: now },
+      { onConflict: "fixture_id" },
+    );
+    if (rErr) return NextResponse.json({ error: `Full time set, but the result was not saved (${rErr.message}). Tap Enter result and Save result.` }, { status: 500 });
+    const { error: sErr } = await supabaseAdmin.from("fixtures").update({ status: "completed" }).eq("id", fixture_id);
+    if (sErr) return NextResponse.json({ error: `Full time set and score saved, but the match was not marked completed (${sErr.message}). Tap Enter result and Save result.` }, { status: 500 });
   }
 
   // First tap on a match puts it on air if nothing else is.

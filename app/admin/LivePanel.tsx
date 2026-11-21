@@ -94,7 +94,7 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
     await act({ type: "undo", side });
   }
   function setPeriod(p: Period) {
-    if (p === "FT" && !confirm("Full time? The clock stops and the overlays show FT.")) return;
+    if (p === "FT" && !confirm("Full time? The clock stops, the overlays show FT, and the score is saved as the result.")) return;
     act({ type: "period", period: p });
   }
   function reset() {
@@ -176,7 +176,7 @@ export function LivePanel({ fixture, live, onAir, onChange, onSetOnAir }: {
           {[20, 25, 30, 35, 40, 45].map(m => <option key={m} value={m}>{m} min halves</option>)}
         </select>
       </div>
-      {s.period === "FT" && <div style={{ fontSize: 13, color: MUTED }}>Match over. Tap Enter result above to check the scorers, add cards, and save the final result.</div>}
+      {s.period === "FT" && <div style={{ fontSize: 13, color: MUTED }}>Match over. The result is saved and the website is updated. Tap Enter result above to check the scorers, add cards or correct the score.</div>}
       {err && <div role="status" style={{ fontSize: 13, color: "#a3211a" }}>{err}</div>}
     </div>
   );
