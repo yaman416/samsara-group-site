@@ -233,27 +233,70 @@ function ScorerPicker({ draft, setDraft, squads, clubOf, busy, onSave, onCancel 
   );
 }
 
-/** Player of the Match: type a jersey number or pick from either squad. Saves on pick. */
+/** Player of the Match: pick the team, type the jersey number (same as goal scorers), or pick from the list. Saves on pick. */
 export function PotmBox({ squads, clubOf, value, onPick }: {
   squads: Record<Side, SquadPlayer[]>; clubOf: (s: Side) => Club; value: string | null; onPick: (id: string) => void;
 }) {
   const all = [...squads.home, ...squads.away];
   const current = all.find(p => p.id === value);
   const currentSide: Side = current && squads.away.some(p => p.id === current.id) ? "away" : "home";
+  const [side, setSide] = useState<Side>(currentSide);
+  const [num, setNum] = useState("");
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  // Follow the saved pick (it loads after the squads, or changes from the list or another phone)
+  // so the highlighted team and the jersey box always match the player shown.
+  const [synced, setSynced] = useState<string | null>(null);
+  const syncKey = current ? `${current.id}:${currentSide}` : null;
+  if (syncKey !== synced) {
+    setSynced(syncKey);
+    if (current) {
+      setSide(currentSide);
+      if (!(side === currentSide && num !== "" && Number(num) === current.jersey_number)) setNum("");
+    }
+  }
+  const pool = squads[side];
+  const typedMiss = num.trim() !== "" && !pool.some(p => p.jersey_number === Number(num));
   return (
     <div style={{ border: "1px solid rgba(17,24,39,.14)", borderRadius: 14, background: "#fff", padding: 14, display: "grid", gap: 10 }}>
       <span style={label11}>Player of the Match</span>
       {current
         ? <div style={{ fontSize: 16, fontWeight: 700 }}>★ {playerLabel(current)} <span style={{ fontWeight: 500, color: MUTED, fontSize: 14 }}>· {clubOf(currentSide).name}</span></div>
         : <div style={{ fontSize: 13, color: MUTED }}>Not picked yet.</div>}
-      <select aria-label="Player of the Match" value={value ?? ""} onChange={e => onPick(e.target.value)} style={{ ...field, width: "100%" }}>
-        <option value="">{current ? "Clear Player of the Match" : "Pick Player of the Match..."}</option>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {(["home", "away"] as Side[]).map(s => (
-          <optgroup key={s} label={clubOf(s).name}>
-            {squads[s].map(p => <option key={p.id} value={p.id}>{playerLabel(p)}</option>)}
-          </optgroup>
+          <button key={s} type="button" style={chip(side === s)} onClick={() => { if (timer.current) clearTimeout(timer.current); setSide(s); setNum(""); }}>{clubOf(s).name}</button>
         ))}
-      </select>
+      </div>
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
+        <div>
+          <label style={label11}>Jersey no.</label>
+          <input aria-label="Player of the Match jersey number" type="number" inputMode="numeric" min={0} max={99} value={num} placeholder="No."
+            onChange={e => {
+              const v = e.target.value; setNum(v);
+              if (timer.current) clearTimeout(timer.current);
+              const hit = v.trim() === "" ? undefined : pool.find(p => p.jersey_number === Number(v));
+              if (!hit || hit.id === value) return;
+              // "1" could be the start of "10": wait a moment so only the finished number is saved.
+              const longer = pool.some(p => p.jersey_number != null && String(p.jersey_number).length > v.length && String(p.jersey_number).startsWith(v));
+              if (longer) timer.current = setTimeout(() => onPick(hit.id), 1200);
+              else onPick(hit.id);
+            }}
+            style={{ ...field, width: 96, fontSize: 28, fontWeight: 700, textAlign: "center", borderColor: typedMiss ? "#a3211a" : undefined }} />
+        </div>
+        <div style={{ flex: "1 1 180px", minWidth: 0 }}>
+          <label style={label11}>Or pick</label>
+          <select aria-label="Player of the Match" value={value ?? ""} onChange={e => { if (timer.current) clearTimeout(timer.current); setNum(""); onPick(e.target.value); }} style={{ ...field, width: "100%" }}>
+            <option value="">{current ? "Clear Player of the Match" : "Pick Player of the Match..."}</option>
+            {(["home", "away"] as Side[]).map(s => (
+              <optgroup key={s} label={clubOf(s).name}>
+                {squads[s].map(p => <option key={p.id} value={p.id}>{playerLabel(p)}</option>)}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+      </div>
+      {typedMiss && <div style={{ fontSize: 13, color: "#a3211a" }}>No {clubOf(side).name} player wears #{num}. Check the team or pick from the list.</div>}
     </div>
   );
 }
