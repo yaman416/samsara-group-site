@@ -4,8 +4,10 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 export async function GET() {
   const { data, error } = await supabaseAdmin
     .from("goal_scorers")
-    .select("player_id, players(full_name, jersey_number), clubs(id, name, short_code), is_own_goal, is_penalty")
-    .eq("is_own_goal", false);
+    .select("player_id, players(full_name, jersey_number), clubs(id, name, short_code), is_own_goal, is_penalty, fixtures!inner(status)")
+    .eq("is_own_goal", false)
+    // scorers saved during a live match count once the result is saved
+    .eq("fixtures.status", "completed");
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // aggregate by player

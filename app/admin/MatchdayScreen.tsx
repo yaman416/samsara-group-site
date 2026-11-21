@@ -4,6 +4,7 @@ import { LEAGUE_TZ } from "@/lib/utils";
 import { CARD_LABELS, CARD_TYPES, leagueDateKey, pickMatchday, tallyGoals, type CardType, type MatchSheet } from "@/lib/matchday";
 import { formatPlayerName } from "@/lib/playerName";
 import { BroadcastControls, LivePanel, liveApi, type BroadcastState, type LiveRow } from "./LivePanel";
+import { PotmBox } from "./LiveScorers";
 
 type Club = { id: string; name: string; short_code: string };
 type Fixture = {
@@ -191,6 +192,7 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
   const [score, setScore] = useState<Record<Side, string>>({ home: saved ? String(saved.home_score) : "", away: saved ? String(saved.away_score) : "" });
   const [goals, setGoals] = useState<GoalRow[]>([]);
   const [cards, setCards] = useState<CardRow[]>([]);
+  const [potm, setPotm] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -199,21 +201,19 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
     const r = await api(`/api/admin/match-sheet?fixture_id=${fixture.id}`);
     setLoading(false);
     if (!r.ok) { setMsg({ ok: false, text: (await r.json().catch(() => ({}))).error ?? "Could not load the match sheet." }); return; }
-    const d: { result: { home_score: number; away_score: number } | null; goals: SavedGoal[]; cards: SavedCard[]; home_players: SquadPlayer[]; away_players: SquadPlayer[] } = await r.json();
+    const d: { result: { home_score: number; away_score: number } | null; goals: SavedGoal[]; cards: SavedCard[]; potm_player_id: string | null; home_players: SquadPlayer[]; away_players: SquadPlayer[] } = await r.json();
     setSquads({ home: d.home_players, away: d.away_players });
     if (d.result) setScore({ home: String(d.result.home_score), away: String(d.result.away_score) });
     else if (live) setScore({ home: String(live.home_score), away: String(live.away_score) }); // carry over the live score
-    setGoals(d.goals.map(g => {
+    setPotm(d.potm_player_id ?? "");
+    const savedRows: GoalRow[] = d.goals.map(g => {
       const playerSide: Side = g.club_id === homeId ? "home" : "away";
       return { key: nextKey(), side: g.is_own_goal ? other(playerSide) : playerSide, kind: g.is_own_goal ? "og" : g.is_penalty ? "pen" : "goal", player_id: g.player_id, minute: g.minute != null ? String(g.minute) : "" };
-    }));
-    // Coming from the live scoreboard: one empty row per goal, ready for jersey numbers.
-    if (!d.result && live && d.goals.length === 0) {
-      setGoals([
-        ...Array.from({ length: live.home_score }, () => ({ key: nextKey(), side: "home" as Side, kind: "goal" as GoalKind, player_id: "", minute: "" })),
-        ...Array.from({ length: live.away_score }, () => ({ key: nextKey(), side: "away" as Side, kind: "goal" as GoalKind, player_id: "", minute: "" })),
-      ]);
-    }
+    });
+    // Scorers saved during play come in as they are. Coming from the live scoreboard, any goal
+    // still without a scorer gets an empty row, ready for a jersey number.
+    const blanks = (side: Side, n: number) => Array.from({ length: Math.max(0, n - savedRows.filter(g => g.side === side).length) }, () => ({ key: nextKey(), side, kind: "goal" as GoalKind, player_id: "", minute: "" }));
+    setGoals(!d.result && live ? [...savedRows, ...blanks("home", live.home_score), ...blanks("away", live.away_score)] : savedRows);
     const sideOfPlayer = (id: string | null): Side => (d.away_players.some(p => p.id === id) ? "away" : "home");
     setCards(d.cards.map(c => ({
       key: nextKey(), side: sideOfPlayer(c.player_id), player_id: c.player_id ?? "",
@@ -251,6 +251,7 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
         minute: toMinute(g.minute), is_own_goal: g.kind === "og", is_penalty: g.kind === "pen",
       })),
       cards: cards.map(c => ({ player_id: c.player_id, card_type: c.card_type, minute: toMinute(c.minute), reason: c.reason ?? null })),
+      potm_player_id: potm || null,
     };
     setBusy(true);
     const r = await api("/api/admin/match-sheet", { method: "POST", body: JSON.stringify(sheet) });
@@ -266,7 +267,7 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
     const r = await api("/api/admin/match-sheet", { method: "DELETE", body: JSON.stringify({ fixture_id: fixture.id }) });
     setBusy(false);
     if (!r.ok) { setMsg({ ok: false, text: "Could not clear the result." }); return; }
-    setScore({ home: "", away: "" }); setGoals([]); setCards([]);
+    setScore({ home: "", away: "" }); setGoals([]); setCards([]); setPotm("");
     setMsg({ ok: true, text: "Result cleared." });
     onSaved();
   }
@@ -378,6 +379,7 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
                 })}
               </div>
 
+              <PotmBox squads={squads} clubOf={clubOf} value={potm || null} onPick={setPotm} />
               {missing.length > 0 && (
                 <div style={{ fontSize: 13, color: MUTED }}>
                   {missing.map(m => `${clubOf(m.s).name}: ${m.n} goal${m.n === 1 ? "" : "s"} without a scorer`).join(" · ")}. Leave a row blank if the scorer is unknown; the score still counts.

@@ -66,3 +66,13 @@ test('pause holds the clock, resume carries on, adjust moves it, reset clears it
   assert.deepEqual([s.period, s.home_score, s.period_started_at], ['pre', 0, null]);
   assert.equal(typeof applyLiveAction(s, { type: 'pause' }, T), 'string');
 });
+
+test('live minute follows football convention and the 2nd half carries on from the half length', () => {
+  const { liveMinute } = m.exports;
+  const start = Date.parse(T);
+  assert.equal(liveMinute({ ...emptyLive(), period: 'pre' }, start), null);
+  assert.equal(liveMinute({ ...emptyLive(), period: '1H', period_started_at: T }, start + 30e3), 1);
+  assert.equal(liveMinute({ ...emptyLive(), period: '1H', period_started_at: T }, start + 22 * 60e3 + 5e3), 23);
+  assert.equal(liveMinute({ ...emptyLive(), period: '2H', period_started_at: T }, start + 60e3 + 1e3), 32);
+  assert.equal(liveMinute({ ...emptyLive(), period: 'HT' }, start), null);
+});

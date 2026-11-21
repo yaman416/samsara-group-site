@@ -9,7 +9,7 @@ export const CARD_LABELS: Record<CardType, string> = { yellow: "Yellow", yellow_
 
 export type SheetGoal = { player_id: string; club_id: string; minute: number | null; is_own_goal: boolean; is_penalty: boolean };
 export type SheetCard = { player_id: string; card_type: CardType; minute: number | null; reason?: string | null };
-export type MatchSheet = { fixture_id: string; home_score: number; away_score: number; goals: SheetGoal[]; cards: SheetCard[] };
+export type MatchSheet = { fixture_id: string; home_score: number; away_score: number; goals: SheetGoal[]; cards: SheetCard[]; potm_player_id?: string | null };
 
 /** "YYYY-MM-DD" of a timestamp in Canberra time. */
 export function leagueDateKey(value: string | number | Date): string {
@@ -75,5 +75,29 @@ export function validateMatchSheet(sheet: MatchSheet, homeId: string, awayId: st
     if (!isMinute(c.minute)) errors.push(`Card ${i + 1}: minute must be between 0 and 130.`);
   });
 
+  if (sheet.potm_player_id) {
+    const club = playerClub.get(sheet.potm_player_id);
+    if (!club || (club !== homeId && club !== awayId)) errors.push("Player of the Match: pick a registered player from either squad.");
+  }
+
   return errors;
+}
+
+export type LiveGoalKind = "goal" | "pen" | "og";
+export type LiveGoalInput = { side: "home" | "away"; kind: LiveGoalKind; player_id: string; minute: number | null };
+
+/**
+ * Checks one goal scorer saved during play. `side` is the team the goal counts for;
+ * an own goal is scored by a player of the other team. Returns the row to save, or an error message.
+ */
+export function checkLiveGoal(g: LiveGoalInput, homeId: string, awayId: string, playerClub: Map<string, string>) {
+  if (g.side !== "home" && g.side !== "away") return "Pick the team that scored.";
+  if (!["goal", "pen", "og"].includes(g.kind)) return "Pick goal, penalty or own goal.";
+  if (!isMinute(g.minute)) return "Minute must be between 0 and 130.";
+  const forClub = g.side === "home" ? homeId : awayId;
+  const playerClubId = g.kind === "og" ? (g.side === "home" ? awayId : homeId) : forClub;
+  const club = playerClub.get(g.player_id);
+  if (!club) return "Pick a registered player.";
+  if (club !== playerClubId) return g.kind === "og" ? "An own goal must be by a player from the other team." : "That player is not in this team's squad.";
+  return { player_id: g.player_id, club_id: club, minute: g.minute ?? null, is_own_goal: g.kind === "og", is_penalty: g.kind === "pen" };
 }
