@@ -242,6 +242,17 @@ export function PotmBox({ squads, clubOf, value, onPick }: {
   const currentSide: Side = current && squads.away.some(p => p.id === current.id) ? "away" : "home";
   const [side, setSide] = useState<Side>(currentSide);
   const [num, setNum] = useState("");
+  // Follow the saved pick (it loads after the squads, or changes from the list or another phone)
+  // so the highlighted team and the jersey box always match the player shown.
+  const [synced, setSynced] = useState<string | null>(null);
+  const syncKey = current ? `${current.id}:${currentSide}` : null;
+  if (syncKey !== synced) {
+    setSynced(syncKey);
+    if (current) {
+      setSide(currentSide);
+      if (!(side === currentSide && num !== "" && Number(num) === current.jersey_number)) setNum("");
+    }
+  }
   const pool = squads[side];
   const typedMiss = num.trim() !== "" && !pool.some(p => p.jersey_number === Number(num));
   return (
