@@ -2,18 +2,19 @@ import Image from "next/image";
 
 // Season 2 (2025-26) Best XI, honoured at the Samsara Gala Night.
 // Order follows the gala presentation. Club is the player's Season 2 club.
-const BEST_XI = [
-  { name: "Amrit Chhetri", club: "Khukuri Canberra FC", crest: "/team logos/Khukuri.png" },
-  { name: "Kiran Gautam", club: "Everest FC", crest: "/team logos/Everest.png" },
+// `no` is the jersey number from the Season 3 squad list (players table).
+const BEST_XI: { name: string; no?: number; club: string; crest: string }[] = [
+  { name: "Amrit Chhetri", no: 1, club: "Khukuri Canberra FC", crest: "/team logos/Khukuri.png" },
+  { name: "Kiran Gautam", no: 3, club: "Everest FC", crest: "/team logos/Everest.png" },
   { name: "Semun Gurung", club: "Khukuri Canberra FC", crest: "/team logos/Khukuri.png" },
-  { name: "Karma Nima", club: "Azhas FC", crest: "/team logos/azhas.png" },
+  { name: "Karma Nima", no: 18, club: "Azhas FC", crest: "/team logos/azhas.png" },
   { name: "Phola", club: "Azhas FC", crest: "/team logos/azhas.png" },
-  { name: "Singye Wangchuk", club: "Azhas FC", crest: "/team logos/azhas.png" },
-  { name: "Darshan Gautam", club: "JA Brothers FC", crest: "/team logos/JA.png" },
-  { name: "Tshering Dorji", club: "Thuenlam FC", crest: "/team logos/Thuenlam.png" },
-  { name: "Kelzang Jigme", club: "Achos FC", crest: "/team logos/Achos.png" },
-  { name: "Roshan Lamichhane", club: "Khukuri Canberra FC", crest: "/team logos/Khukuri.png" },
-  { name: "Sushant Shrestha", club: "Queanbeyan NUFC", crest: "/team logos/Queanbeyan.png" },
+  { name: "Singye Wangchuk", no: 19, club: "Azhas FC", crest: "/team logos/azhas.png" },
+  { name: "Darshan Gautam", no: 11, club: "JA Brothers FC", crest: "/team logos/JA.png" },
+  { name: "Tshering Dorji", no: 16, club: "Thuenlam FC", crest: "/team logos/Thuenlam.png" },
+  { name: "Kelzang Jigme", no: 7, club: "Achos FC", crest: "/team logos/Achos.png" },
+  { name: "Roshan Lamichhane", no: 9, club: "Khukuri Canberra FC", crest: "/team logos/Khukuri.png" },
+  { name: "Sushant Shrestha", no: 77, club: "Queanbeyan NUFC", crest: "/team logos/Queanbeyan.png" },
 ];
 
 export default function BestXI() {
@@ -32,15 +33,16 @@ export default function BestXI() {
         .bxi-photo-frame { position: relative; aspect-ratio: 2048 / 1531; border-radius: 14px; overflow: hidden; background: #101820; }
         .bxi-credit { font-size: 12px; color: #66707d; margin-top: 8px; text-align: left; }
         .bxi-grid { max-width: 1040px; margin: 28px auto 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
-        .bxi-card { width: calc((100% - 3 * 14px) / 4); background: #f4f4f1; border: 1px solid rgba(17,24,39,.08); border-radius: 14px; padding: 22px 12px 20px; display: flex; flex-direction: column; align-items: center; }
+        .bxi-card { position: relative; width: calc((100% - 3 * 14px) / 4); background: #f4f4f1; border: 1px solid rgba(17,24,39,.08); border-radius: 14px; padding: 22px 12px 20px; display: flex; flex-direction: column; align-items: center; }
+        .bxi-no { position: absolute; top: 12px; right: 12px; font-size: 12px; font-weight: 700; color: #cf2e24; font-variant-numeric: tabular-nums; }
         .bxi-crest { width: 44px; height: 44px; position: relative; }
         .bxi-name { font-size: 16px; font-weight: 700; color: #101820; margin-top: 14px; line-height: 1.25; }
         .bxi-club { font-size: 13px; font-weight: 500; color: #66707d; margin-top: 4px; }
-        @media (max-width: 900px) { .bxi-card { width: calc((100% - 2 * 14px) / 3); } }
+        @media (max-width: 900px) { .bxi-card { position: relative; width: calc((100% - 2 * 14px) / 3); } }
         @media (max-width: 600px) {
           .bxi { padding: 32px 16px 28px; }
           .bxi-grid { gap: 10px; }
-          .bxi-card { width: calc((100% - 10px) / 2); padding: 18px 8px 16px; }
+          .bxi-card { position: relative; width: calc((100% - 10px) / 2); padding: 18px 8px 16px; }
           .bxi-name { font-size: 15px; }
           .bxi-club { font-size: 12px; }
         }
@@ -66,6 +68,7 @@ export default function BestXI() {
       <ul className="bxi-grid" style={{ listStyle: "none", padding: 0 }}>
         {BEST_XI.map((p) => (
           <li key={p.name} className="bxi-card">
+            {p.no !== undefined && <span className="bxi-no" aria-label={`Jersey number ${p.no}`}>#{p.no}</span>}
             <div className="bxi-crest">
               <Image src={p.crest} alt="" fill sizes="44px" style={{ objectFit: "contain" }} />
             </div>
