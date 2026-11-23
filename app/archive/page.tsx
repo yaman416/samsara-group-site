@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import SiteLayout from "@/components/SiteLayout";
+import BestXI from "@/components/BestXI";
 
 type SeasonTab = "s2" | "s1" | "cup";
 
@@ -150,6 +151,9 @@ export default function ArchivePage() {
                 </div>
               </div>
             </div>
+
+            {/* Best XI */}
+            <BestXI />
 
             {/* At-a-glance */}
             <div>

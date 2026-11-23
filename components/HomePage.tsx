@@ -289,6 +289,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+          <a href="/archive#best-xi" style={{ display: "inline-block", marginTop: 36, background: "#fff", color: DARK, fontSize: 15, fontWeight: 500, padding: "14px 26px", borderRadius: 999, textDecoration: "none" }}>Meet the Season 2 Best XI</a>
         </div>
       </section>
 
