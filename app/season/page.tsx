@@ -580,17 +580,16 @@ function sideEvents(f: MatchResult, clubId: string, otherId: string): SideEvent[
   const byPlayer = new Map<string, SideEvent>();
   for (const g of [...goals].sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999))) {
     const name = formatPlayerName(g.players?.full_name) || "Unknown";
-    const note = g.is_own_goal ? "OG" : "";
+    const note = g.is_own_goal ? "OG" : g.is_penalty ? "P" : "";
     const key = `g:${name}:${note}`;
     const e = byPlayer.get(key) ?? { key, kind: "goal" as const, name, minutes: [], note, count: 0 };
     e.count += 1;
     if (g.minute != null) e.minutes.push(g.minute);
-    if (g.is_penalty && !g.is_own_goal) e.note = "P";
     byPlayer.set(key, e);
   }
   const cards: SideEvent[] = (f.cards ?? []).filter(c => c.club_id === clubId)
     .sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999))
-    .map(c => ({ key: `c:${c.id}`, kind: "card", name: formatPlayerName(c.player_name.replace(/\s*\((c|vc)\)\s*$/i, "")), minutes: c.minute != null ? [c.minute] : [], note: "", card: c.card_type, count: 1 }));
+    .map(c => ({ key: `c:${c.id}`, kind: "card", name: formatPlayerName(c.player_name.replace(/\s*\((c|vc)\)\s*$/i, "")), minutes: c.minute != null ? [c.minute] : [], note: "", card: c.card_type === "second_yellow" ? "yellow_red" : c.card_type, count: 1 }));
   return [...byPlayer.values(), ...cards];
 }
 
