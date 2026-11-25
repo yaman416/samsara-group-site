@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SiteLayout from "@/components/SiteLayout";
@@ -13,7 +13,7 @@ type Club = { id: string; name: string; short_code: string; community: string; h
 type ClubRef = { id: string; name: string; short_code: string; home_color: string; logo_url: string | null };
 type Result = { home_score: number; away_score: number };
 type GoalScorer = { id: string; minute: number | null; is_own_goal: boolean; is_penalty: boolean; club_id: string; players: { full_name: string; jersey_number: number } | null; clubs: { name: string } | null };
-type Card = { id: string; player_name: string; card_type: string; minute: number | null };
+type Card = { id: string; player_name: string; card_type: string; minute: number | null; club_id: string | null };
 type Fixture = { id: string; week: number; venue: string | null; played_at: string | null; status: string; home_club: ClubRef; away_club: ClubRef; results: Result[] | Result | null };
 type MatchResult = Fixture & { goal_scorers: GoalScorer[]; cards: Card[] };
 type TableRow = { position: number; club_name: string; short_code: string; home_color: string; logo_url: string | null; played: number; won: number; drawn: number; lost: number; goals_for: number; goals_against: number; goal_diff: number; points: number };
@@ -417,19 +417,7 @@ export default function SeasonPage() {
                                 <ClubBadge club={f.away_club} size={28} />
                               </div>
                             </div>
-                            {(f.goal_scorers?.length > 0 || f.cards?.length > 0) && (
-                              <div style={{ borderTop: "1px solid rgba(17,24,39,.07)", padding: "12px 20px", display: "flex", gap: 24, flexWrap: "wrap", fontSize: 13, color: "#66707d" }}>
-                                {f.goal_scorers?.filter(g => !g.is_own_goal).map(g => (
-                                  <span key={g.id}>⚽ {formatPlayerName(g.players?.full_name)}{g.minute ? ` ${g.minute}'` : ""}{g.is_penalty ? " (P)" : ""}</span>
-                                ))}
-                                {f.goal_scorers?.filter(g => g.is_own_goal).map(g => (
-                                  <span key={g.id} style={{ color: "#66707d" }}>OG: {formatPlayerName(g.players?.full_name)}{g.minute ? ` ${g.minute}'` : ""}</span>
-                                ))}
-                                {f.cards?.map(c => (
-                                  <span key={c.id}><span style={{ display: "inline-block", width: 10, height: 13, borderRadius: 2, background: c.card_type === "red" ? "#cf2e24" : "#f0b429", verticalAlign: "middle", marginRight: 4 }} />{c.player_name}{c.minute ? ` ${c.minute}'` : ""}</span>
-                                ))}
-                              </div>
-                            )}
+                            <MatchEvents f={f} />
                           </Link>
                         );
                       })}
@@ -580,6 +568,68 @@ function EmptyPane({ icon, title, desc, onBack }: { icon: string; title: string;
       <h2 style={{ fontFamily: "Lora,Georgia,serif", fontWeight: 500, fontSize: "clamp(24px,3vw,34px)", lineHeight: 1.24, letterSpacing: "-.012em", margin: "24px 0 0" }}>{title}</h2>
       <p style={{ margin: "14px 0 0", fontSize: 17, lineHeight: 1.72, color: "#4a545f", maxWidth: "52ch" }}>{desc}</p>
       <button type="button" onClick={onBack} style={{ fontFamily: "'DM Sans',system-ui,sans-serif", background: "#101820", color: "#fff", border: 0, fontSize: 15, fontWeight: 500, padding: "14px 26px", borderRadius: 999, cursor: "pointer", marginTop: 30 }}>Season overview</button>
+    </div>
+  );
+}
+
+// Results card footer: home side's scorers and cards on the left, away side's on the right.
+// An own goal counts for the other side, so it is listed under the team it was scored for.
+type SideEvent = { key: string; kind: "goal" | "card"; name: string; minutes: number[]; note: string; card?: string; count: number };
+function sideEvents(f: MatchResult, clubId: string, otherId: string): SideEvent[] {
+  const goals = (f.goal_scorers ?? []).filter(g => (g.club_id === clubId && !g.is_own_goal) || (g.club_id === otherId && g.is_own_goal));
+  const byPlayer = new Map<string, SideEvent>();
+  for (const g of [...goals].sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999))) {
+    const name = formatPlayerName(g.players?.full_name) || "Unknown";
+    const note = g.is_own_goal ? "OG" : g.is_penalty ? "P" : "";
+    const key = `g:${name}:${note}`;
+    const e = byPlayer.get(key) ?? { key, kind: "goal" as const, name, minutes: [], note, count: 0 };
+    e.count += 1;
+    if (g.minute != null) e.minutes.push(g.minute);
+    byPlayer.set(key, e);
+  }
+  const cards: SideEvent[] = (f.cards ?? []).filter(c => c.club_id === clubId)
+    .sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999))
+    .map(c => ({ key: `c:${c.id}`, kind: "card", name: formatPlayerName(c.player_name.replace(/\s*\((c|vc)\)\s*$/i, "")), minutes: c.minute != null ? [c.minute] : [], note: "", card: c.card_type === "second_yellow" ? "yellow_red" : c.card_type, count: 1 }));
+  return [...byPlayer.values(), ...cards];
+}
+
+function CardIcon({ type }: { type?: string }) {
+  const chip = (bg: string, extra?: CSSProperties) => <span style={{ display: "block", width: 9, height: 12, borderRadius: 2, background: bg, ...extra }} />;
+  const label = type === "red" ? "Red card" : type === "yellow_red" ? "Second yellow, red card" : "Yellow card";
+  return (
+    <span role="img" aria-label={label} style={{ position: "relative", display: "inline-block", width: type === "yellow_red" ? 13 : 9, height: 12, flexShrink: 0 }}>
+      {type === "yellow_red"
+        ? <>{chip("#f0b429", { position: "absolute", left: 0, top: 0 })}{chip("#cf2e24", { position: "absolute", left: 4, top: 0, boxShadow: "-1px 0 0 #fff" })}</>
+        : chip(type === "red" ? "#cf2e24" : "#f0b429")}
+    </span>
+  );
+}
+
+function MatchEvents({ f }: { f: MatchResult }) {
+  const home = sideEvents(f, f.home_club.id, f.away_club.id);
+  const away = sideEvents(f, f.away_club.id, f.home_club.id);
+  if (!home.length && !away.length) return null;
+  const col = (list: SideEvent[], align: "left" | "right") => (
+    <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 6, alignContent: "start", textAlign: align, minWidth: 0 }}>
+      {list.map(e => (
+        <li key={e.key} style={{ display: "flex", alignItems: "flex-start", gap: 7, flexDirection: align === "right" ? "row-reverse" : "row", lineHeight: 1.35 }}>
+          {e.kind === "goal"
+            ? <span aria-label={e.note === "OG" ? "Own goal" : "Goal"} style={{ fontSize: 11, lineHeight: "17.5px", flexShrink: 0, width: 13, textAlign: "center" }}>⚽</span>
+            : <span style={{ width: 13, height: 17.5, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><CardIcon type={e.card} /></span>}
+          <span style={{ minWidth: 0, overflowWrap: "anywhere" }}>
+            <span style={{ color: "#2b333d" }}>{e.name}</span>
+            {e.count > 1 && e.minutes.length < e.count && <span style={{ color: "#8a929c", whiteSpace: "nowrap" }}> ×{e.count}</span>}
+            {e.minutes.length > 0 && <span style={{ color: "#8a929c", whiteSpace: "nowrap" }}> {e.minutes.map(m => `${m}'`).join(", ")}</span>}
+            {e.note && <span style={{ color: "#8a929c" }}> ({e.note})</span>}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+  return (
+    <div style={{ borderTop: "1px solid rgba(17,24,39,.07)", padding: "12px 20px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 16, fontSize: 13, color: "#66707d" }}>
+      {col(home, "left")}
+      {col(away, "right")}
     </div>
   );
 }
