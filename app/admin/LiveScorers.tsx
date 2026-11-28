@@ -41,7 +41,7 @@ export const goalSide = (g: LiveGoal, f: Fx): Side => {
 /** Squads, saved scorers and Player of the Match for one fixture, refreshed every 8 seconds. */
 export function useLiveGoals(fixtureId: string) {
   const [rawSquads, setSquads] = useState<Record<Side, SquadPlayer[]>>({ home: [], away: [] });
-  const [kits, setKits] = useState<Record<Side, KitInfo>>({ home: { kit: "home", alt_name: null }, away: { kit: "home", alt_name: null } });
+  const [kits, setKits] = useState<Record<Side, KitInfo>>({ home: NO_KIT, away: NO_KIT });
   const squads: Record<Side, SquadPlayer[]> = { home: inKit(rawSquads.home, kits.home.kit), away: inKit(rawSquads.away, kits.away.kit) };
   const [goals, setGoals] = useState<LiveGoal[]>([]);
   const [potm, setPotm] = useState<string | null>(null);
@@ -76,10 +76,12 @@ export function useLiveGoals(fixtureId: string) {
     await api("/api/admin/fixtures", "PATCH", { id: fixtureId, [side === "home" ? "home_kit" : "away_kit"]: kit });
   }, [fixtureId]);
 
-  return { squads, goals, setGoals, potm, setPotm, ready, refresh, kits, setKit };
+  const hasAlt: Record<Side, boolean> = { home: rawSquads.home.some(p => p.alt_jersey_number != null), away: rawSquads.away.some(p => p.alt_jersey_number != null) };
+  return { squads, goals, setGoals, potm, setPotm, ready, refresh, kits, setKit, hasAlt };
 }
 
-export type KitInfo = { kit: Kit; alt_name: string | null };
+export type KitInfo = { kit: Kit; names: { home: string; alt: string }; colours: { home: string | null; alt: string | null } };
+export const NO_KIT: KitInfo = { kit: "home", names: { home: "Home", alt: "Other" }, colours: { home: null, alt: null } };
 
 type Draft = { id?: string; side: Side; kind: LiveGoalKind; player_id: string; minute: string };
 
@@ -88,7 +90,7 @@ export function LiveScorers({ fixture, scores, data, ask, onAsked, minuteNow }: 
   fixture: Fx; scores: Record<Side, number>; data: ReturnType<typeof useLiveGoals>;
   ask: Side | null; onAsked: () => void; minuteNow: () => number | null;
 }) {
-  const { squads, goals, setGoals, potm, setPotm, refresh, kits, setKit } = data;
+  const { squads, goals, setGoals, potm, setPotm, refresh, kits, setKit, hasAlt } = data;
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -151,7 +153,7 @@ export function LiveScorers({ fixture, scores, data, ask, onAsked, minuteNow }: 
             return (
               <div key={side} style={{ display: "grid", gap: 6, alignContent: "start" }}>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{clubOf(side).name}</div>
-                <KitToggle club={clubOf(side).name} kit={kits[side].kit} altName={kits[side].alt_name} onChange={k => setKit(side, k)} />
+                {hasAlt[side] && <KitToggle club={clubOf(side).name} kit={kits[side].kit} names={kits[side].names} colours={kits[side].colours} onChange={k => setKit(side, k)} />}
                 {mine.length === 0 && missing === 0 && <div style={{ fontSize: 13, color: MUTED }}>No goals yet.</div>}
                 {mine.map(g => {
                   const p = byId.get(g.player_id);
@@ -238,7 +240,7 @@ function ScorerPicker({ draft, setDraft, squads, clubOf, busy, onSave, onCancel 
       {typedMiss && <div style={{ fontSize: 13, color: "#a3211a" }}>No player wears #{num} in this squad. Pick from the list instead.</div>}
       {typedClash && (
         <div style={{ display: "grid", gap: 8 }}>
-          <div style={{ fontSize: 13, color: "#8a5a12" }}>{wearing.length} players wear #{num} (main or alt kit). Who scored?</div>
+          <div style={{ fontSize: 13, color: "#8a5a12" }}>{wearing.length} players wear #{num}. Who scored?</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {wearing.map(p => <button key={p.id} type="button" style={chip(false)} onClick={() => setDraft({ ...draft, player_id: p.id })}>{playerLabel(p)}</button>)}
           </div>
