@@ -1,3 +1,4 @@
+import { kitNames } from "@/lib/jersey";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { checkAdminKey } from "@/lib/admin-auth";
@@ -12,6 +13,14 @@ type Fixture = { id: string; home_club_id: string; away_club_id: string; potm_pl
 async function loadFixture(id: string) {
   return supabaseAdmin.from("fixtures").select("id, home_club_id, away_club_id, potm_player_id, home_kit, away_kit").eq("id", id).maybeSingle<Fixture>();
 }
+
+type KitClub = { home_kit_name: string | null; alt_kit_name: string | null; home_color: string | null; away_color: string | null };
+const kitInfo = (kit: string | null, c: KitClub | undefined) => ({
+  kit: kit === "alt" ? "alt" : "home",
+  names: kitNames(c ?? {}),
+  // A typed name may not match the stored colour, so show a swatch only for names taken from the colour.
+  colours: { home: c?.home_kit_name ? null : c?.home_color ?? null, alt: c?.alt_kit_name ? null : c?.away_color ?? null },
+});
 
 async function loadSquads(f: Fixture) {
   return supabaseAdmin
@@ -39,7 +48,7 @@ export async function GET(req: NextRequest) {
     supabaseAdmin.from("results").select("home_score, away_score").eq("fixture_id", fixtureId).maybeSingle(),
     supabaseAdmin.from("goal_scorers").select("id, player_id, club_id, minute, is_own_goal, is_penalty").eq("fixture_id", fixtureId).order("created_at").order("minute", { nullsFirst: false }),
     supabaseAdmin.from("cards").select("id, player_id, player_name, card_type, minute, reason").eq("fixture_id", fixtureId).order("minute", { nullsFirst: false }),
-    supabaseAdmin.from("clubs").select("id, alt_kit_name").in("id", [fixture.home_club_id, fixture.away_club_id]),
+    supabaseAdmin.from("clubs").select("id, home_kit_name, alt_kit_name, home_color, away_color").in("id", [fixture.home_club_id, fixture.away_club_id]),
   ]);
   const failed = players.error || result.error || goals.error || cards.error || kitClubs.error;
   if (failed) return NextResponse.json({ error: failed.message }, { status: 500 });
@@ -51,8 +60,8 @@ export async function GET(req: NextRequest) {
     cards: cards.data ?? [],
     potm_player_id: fixture.potm_player_id ?? null,
     kits: {
-      home: { kit: fixture.home_kit === "alt" ? "alt" : "home", alt_name: kitClubs.data?.find(c => c.id === fixture.home_club_id)?.alt_kit_name ?? null },
-      away: { kit: fixture.away_kit === "alt" ? "alt" : "home", alt_name: kitClubs.data?.find(c => c.id === fixture.away_club_id)?.alt_kit_name ?? null },
+      home: kitInfo(fixture.home_kit, kitClubs.data?.find(c => c.id === fixture.home_club_id)),
+      away: kitInfo(fixture.away_kit, kitClubs.data?.find(c => c.id === fixture.away_club_id)),
     },
     home_players: squad.filter(p => p.club_id === fixture.home_club_id),
     away_players: squad.filter(p => p.club_id === fixture.away_club_id),

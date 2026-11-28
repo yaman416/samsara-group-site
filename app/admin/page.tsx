@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { LEAGUE_TZ, toLeagueInput, fromLeagueInput } from "@/lib/utils";
 import MatchdayScreen from "./MatchdayScreen";
+import { kitNames } from "@/lib/jersey";
 import { formatPlayerName } from "@/lib/playerName";
 
 const ADMIN_KEY = "spl_admin";
@@ -16,7 +17,7 @@ type Reg = {
   registration: { id: string; status: string; submitted_at: string; reviewed_at: string | null; reviewer_notes: string | null } | null;
 };
 type Invite ={ id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
-type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_ground: string; founded: number | null; manager_id: string | null; logo_url?: string | null };
+type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_kit_name?: string | null; alt_kit_name?: string | null; home_ground: string; founded: number | null; manager_id: string | null; logo_url?: string | null };
 type Player = { id: string; full_name: string; jersey_number: number; alt_jersey_number?: number | null; position: string; date_of_birth: string | null };
 type Season = { id: string; name: string; year: number; is_active: boolean; squad_deadline: string | null };
 type Fixture = {
@@ -302,6 +303,7 @@ export default function AdminPage() {
     </main>
   );
 
+  const clubKits = kitNames(clubs.find(c => c.id === clubPlayersId) ?? {});
   return (
     <main style={{ background: "#f4f4f1", fontFamily: F, color: "#101820", minHeight: "100vh" }}>
       <style>{`
@@ -504,6 +506,8 @@ export default function AdminPage() {
                     <input value={editClub.home_color} onChange={e => setEditClub(c => c && ({ ...c, home_color: e.target.value }))} style={{ ...inputSm, flex: 1 }} />
                   </div>
                 </div>
+                <div><label style={label11}>Home jersey colour name</label><input aria-label="Home jersey colour name" placeholder={kitNames({ home_color: editClub.home_color }).home} value={editClub.home_kit_name ?? ""} onChange={e => setEditClub(c => c && ({ ...c, home_kit_name: e.target.value || null }))} style={inputSm} /></div>
+                <div><label style={label11}>Other jersey colour name</label><input aria-label="Other jersey colour name" placeholder={kitNames({ away_color: editClub.away_color }).alt} value={editClub.alt_kit_name ?? ""} onChange={e => setEditClub(c => c && ({ ...c, alt_kit_name: e.target.value || null }))} style={inputSm} /></div>
                 <div>
                   <label style={label11}>Away colour</label>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -602,8 +606,8 @@ export default function AdminPage() {
                       <td colSpan={5} style={{ padding: "14px 12px" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10, marginBottom: 10 }}>
                           <div><label style={label11}>Name</label><input aria-label="Name" value={editPlayer.full_name} onChange={e => setEditPlayer(p => p && ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
-                          <div><label style={label11}>Jersey no.</label><input aria-label="Jersey no." type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => p && ({ ...p, jersey_number: parseInt(e.target.value) }))} style={inputSm} /></div>
-                          <div><label style={label11}>Alt kit no.</label><input aria-label="Alt kit no." type="number" min={0} max={99} placeholder="Same" value={editPlayer.alt_jersey_number ?? ""} onChange={e => setEditPlayer(p => p && ({ ...p, alt_jersey_number: e.target.value === "" ? null : parseInt(e.target.value) }))} style={inputSm} /></div>
+                          <div><label style={label11}>{clubKits.home} jersey no.</label><input aria-label="Jersey no." type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => p && ({ ...p, jersey_number: parseInt(e.target.value) }))} style={inputSm} /></div>
+                          <div><label style={label11}>{clubKits.alt} jersey no.</label><input aria-label={`${clubKits.alt} jersey no.`} type="number" min={0} max={99} placeholder="Same" value={editPlayer.alt_jersey_number ?? ""} onChange={e => setEditPlayer(p => p && ({ ...p, alt_jersey_number: e.target.value === "" ? null : parseInt(e.target.value) }))} style={inputSm} /></div>
                           <div><label style={label11}>Position</label>
                             <select aria-label="Position" value={editPlayer.position} onChange={e => setEditPlayer(p => p && ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
                               <option value="GK">Goalkeeper</option><option value="DF">Defender</option><option value="MF">Midfielder</option><option value="FW">Forward</option>
@@ -620,7 +624,7 @@ export default function AdminPage() {
                   ) : (
                     <tr key={p.id}>
                       <td><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 6, background: "#101820", color: "#fff", fontSize: 13, fontWeight: 600 }}>{p.jersey_number}</span></td>
-                      <td style={{ fontWeight: 500 }}>{formatPlayerName(p.full_name)}{p.alt_jersey_number != null && p.alt_jersey_number !== p.jersey_number && <span style={{ marginLeft: 8, fontSize: 12, color: "#66707d", fontWeight: 500 }}>Alt kit #{p.alt_jersey_number}</span>}</td>
+                      <td style={{ fontWeight: 500 }}>{formatPlayerName(p.full_name)}{p.alt_jersey_number != null && p.alt_jersey_number !== p.jersey_number && <span style={{ marginLeft: 8, fontSize: 12, color: "#66707d", fontWeight: 500 }}>{clubKits.alt} #{p.alt_jersey_number}</span>}</td>
                       <td><span style={{ background: "rgba(17,24,39,.07)", borderRadius: 6, padding: "3px 8px", fontSize: 12, fontWeight: 500 }}>{p.position}</span></td>
                       <td style={{ color: "#66707d", fontSize: 13 }}>{p.date_of_birth || "-"}</td>
                       <td style={{ textAlign: "right" }}>

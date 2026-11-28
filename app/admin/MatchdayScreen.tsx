@@ -5,7 +5,7 @@ import { CARD_LABELS, CARD_TYPES, leagueDateKey, pickMatchday, tallyGoals, type 
 import { inKit, playerLabel, playersWearing, type Kit } from "@/lib/jersey";
 import { KitToggle } from "./KitToggle";
 import { BroadcastControls, LivePanel, liveApi, type BroadcastState, type LiveRow } from "./LivePanel";
-import { PotmBox, type KitInfo } from "./LiveScorers";
+import { NO_KIT, PotmBox, type KitInfo } from "./LiveScorers";
 
 type Club = { id: string; name: string; short_code: string };
 type Fixture = {
@@ -189,7 +189,7 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rawSquads, setSquads] = useState<Record<Side, SquadPlayer[]>>({ home: [], away: [] });
-  const [kits, setKits] = useState<Record<Side, KitInfo>>({ home: { kit: "home", alt_name: null }, away: { kit: "home", alt_name: null } });
+  const [kits, setKits] = useState<Record<Side, KitInfo>>({ home: NO_KIT, away: NO_KIT });
   const squads: Record<Side, SquadPlayer[]> = { home: inKit(rawSquads.home, kits.home.kit), away: inKit(rawSquads.away, kits.away.kit) };
   async function setKit(side: Side, kit: Kit) {
     setKits(k => ({ ...k, [side]: { ...k[side], kit } }));
@@ -327,7 +327,7 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
                   return (
                     <div key={side} style={{ display: "grid", gap: 16, alignContent: "start" }}>
                       <div style={{ fontSize: 15, fontWeight: 600 }}>{club.name}</div>
-                      <KitToggle club={club.name} kit={kits[side].kit} altName={kits[side].alt_name} onChange={k => setKit(side, k)} />
+                      <KitToggle club={club.name} kit={kits[side].kit} names={kits[side].names} colours={kits[side].colours} onChange={k => setKit(side, k)} />
                       {squads[side].length === 0 && (
                         <div style={{ fontSize: 13, color: "#8a5a12", background: "#fff9ec", borderRadius: 8, padding: "8px 12px" }}>No registered players yet. You can still save the score.</div>
                       )}
@@ -408,7 +408,7 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
   );
 }
 
-/** Type a jersey number (main or alt kit) to pick the player. Red when no one wears it,
+/** Type a jersey number (in the jersey colour chosen for the team) to pick the player. Red when no one wears it,
  *  amber when two players share it (e.g. one player's alt-kit number): pick from the list. */
 function JerseyInput({ pool, value, onPick }: { pool: SquadPlayer[]; value: string; onPick: (id: string) => void }) {
   const current = pool.find(p => p.id === value);
