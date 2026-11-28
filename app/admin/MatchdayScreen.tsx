@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { LEAGUE_TZ } from "@/lib/utils";
 import { CARD_LABELS, CARD_TYPES, leagueDateKey, pickMatchday, tallyGoals, type CardType, type MatchSheet } from "@/lib/matchday";
-import { formatPlayerName } from "@/lib/playerName";
+import { playerLabel, playersWearing } from "@/lib/jersey";
 import { BroadcastControls, LivePanel, liveApi, type BroadcastState, type LiveRow } from "./LivePanel";
 import { PotmBox } from "./LiveScorers";
 
@@ -12,7 +12,7 @@ type Fixture = {
   home_club: Club; away_club: Club;
   results: { home_score: number; away_score: number }[] | { home_score: number; away_score: number } | null;
 };
-type SquadPlayer = { id: string; club_id: string; full_name: string; jersey_number: number | null; position: string | null };
+type SquadPlayer = { id: string; club_id: string; full_name: string; jersey_number: number | null; alt_jersey_number?: number | null; position: string | null };
 type SavedGoal = { player_id: string; club_id: string; minute: number | null; is_own_goal: boolean; is_penalty: boolean };
 type SavedCard = { player_id: string | null; player_name: string; card_type: string; minute: number | null; reason: string | null };
 type TableRow = { position: number; club_name: string; short_code: string; home_color: string | null; played: number; won: number; drawn: number; lost: number; goal_diff: number; points: number };
@@ -42,7 +42,6 @@ let rowKey = 0;
 const nextKey = () => ++rowKey;
 const other = (s: Side): Side => (s === "home" ? "away" : "home");
 const toMinute = (v: string) => (v.trim() === "" ? null : parseInt(v, 10));
-const playerLabel = (p: SquadPlayer) => `${p.jersey_number != null ? `#${p.jersey_number} ` : ""}${formatPlayerName(p.full_name)}`;
 const resultOf = (f: Fixture) => (Array.isArray(f.results) ? f.results[0] ?? null : f.results ?? null);
 const dayLabel = (iso: string) => new Date(iso).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: LEAGUE_TZ });
 const timeLabel = (iso: string) => new Date(iso).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: LEAGUE_TZ });
@@ -400,21 +399,25 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
   );
 }
 
-/** Type a jersey number to pick the player. Shows "?" when no one in the squad wears it. */
+/** Type a jersey number (main or alt kit) to pick the player. Red when no one wears it,
+ *  amber when two players share it (e.g. one player's alt-kit number): pick from the list. */
 function JerseyInput({ pool, value, onPick }: { pool: SquadPlayer[]; value: string; onPick: (id: string) => void }) {
   const current = pool.find(p => p.id === value);
   const [text, setText] = useState("");
   // A picked player shows their number; otherwise show what was typed (red when nobody wears it).
-  const shown = current ? (current.jersey_number != null ? String(current.jersey_number) : "") : text;
-  const miss = !current && text.trim() !== "";
+  const shown = current ? (text.trim() !== "" && playersWearing(pool, text).some(p => p.id === current.id) ? text : current.jersey_number != null ? String(current.jersey_number) : "") : text;
+  const wearing = current ? [] : playersWearing(pool, text);
+  const clash = wearing.length > 1;
+  const miss = !current && text.trim() !== "" && !clash;
   return (
     <input aria-label="Jersey number" type="number" inputMode="numeric" min={0} max={99} placeholder="No."
       value={shown}
       onChange={e => {
         const v = e.target.value; setText(v);
-        const hit = v.trim() === "" ? undefined : pool.find(p => p.jersey_number === Number(v));
-        onPick(hit ? hit.id : "");
+        const hits = playersWearing(pool, v);
+        onPick(hits.length === 1 ? hits[0].id : "");
       }}
-      style={{ ...field, width: 64, borderColor: miss ? "#a3211a" : undefined }} title={miss ? "No player with that number" : "Jersey number"} />
+      style={{ ...field, width: 64, borderColor: miss ? "#a3211a" : clash ? "#d08a12" : undefined }}
+      title={miss ? "No player with that number" : clash ? `${wearing.length} players wear #${text}: pick from the list` : "Jersey number"} />
   );
 }

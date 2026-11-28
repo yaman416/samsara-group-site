@@ -17,7 +17,7 @@ type Reg = {
 };
 type Invite ={ id: string; code: string; club_name: string; manager_email: string; season: number; used: boolean; created_at: string };
 type Club = { id: string; name: string; short_code: string; community: string; home_color: string; away_color: string; home_ground: string; founded: number | null; manager_id: string | null; logo_url?: string | null };
-type Player = { id: string; full_name: string; jersey_number: number; position: string; date_of_birth: string | null };
+type Player = { id: string; full_name: string; jersey_number: number; alt_jersey_number?: number | null; position: string; date_of_birth: string | null };
 type Season = { id: string; name: string; year: number; is_active: boolean; squad_deadline: string | null };
 type Fixture = {
   id: string; week: number; venue: string | null; played_at: string | null; status: string;
@@ -603,6 +603,7 @@ export default function AdminPage() {
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10, marginBottom: 10 }}>
                           <div><label style={label11}>Name</label><input aria-label="Name" value={editPlayer.full_name} onChange={e => setEditPlayer(p => p && ({ ...p, full_name: e.target.value }))} style={inputSm} /></div>
                           <div><label style={label11}>Jersey no.</label><input aria-label="Jersey no." type="number" min={1} max={99} value={editPlayer.jersey_number} onChange={e => setEditPlayer(p => p && ({ ...p, jersey_number: parseInt(e.target.value) }))} style={inputSm} /></div>
+                          <div><label style={label11}>Alt kit no.</label><input aria-label="Alt kit no." type="number" min={0} max={99} placeholder="Same" value={editPlayer.alt_jersey_number ?? ""} onChange={e => setEditPlayer(p => p && ({ ...p, alt_jersey_number: e.target.value === "" ? null : parseInt(e.target.value) }))} style={inputSm} /></div>
                           <div><label style={label11}>Position</label>
                             <select aria-label="Position" value={editPlayer.position} onChange={e => setEditPlayer(p => p && ({ ...p, position: e.target.value }))} style={{ ...inputSm, background: "#fff" }}>
                               <option value="GK">Goalkeeper</option><option value="DF">Defender</option><option value="MF">Midfielder</option><option value="FW">Forward</option>
@@ -619,7 +620,7 @@ export default function AdminPage() {
                   ) : (
                     <tr key={p.id}>
                       <td><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 6, background: "#101820", color: "#fff", fontSize: 13, fontWeight: 600 }}>{p.jersey_number}</span></td>
-                      <td style={{ fontWeight: 500 }}>{formatPlayerName(p.full_name)}</td>
+                      <td style={{ fontWeight: 500 }}>{formatPlayerName(p.full_name)}{p.alt_jersey_number != null && p.alt_jersey_number !== p.jersey_number && <span style={{ marginLeft: 8, fontSize: 12, color: "#66707d", fontWeight: 500 }}>Alt kit #{p.alt_jersey_number}</span>}</td>
                       <td><span style={{ background: "rgba(17,24,39,.07)", borderRadius: 6, padding: "3px 8px", fontSize: 12, fontWeight: 500 }}>{p.position}</span></td>
                       <td style={{ color: "#66707d", fontSize: 13 }}>{p.date_of_birth || "-"}</td>
                       <td style={{ textAlign: "right" }}>

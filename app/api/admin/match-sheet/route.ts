@@ -16,7 +16,7 @@ async function loadFixture(id: string) {
 async function loadSquads(f: Fixture) {
   return supabaseAdmin
     .from("players")
-    .select("id, club_id, full_name, jersey_number, position, is_active")
+    .select("id, club_id, full_name, jersey_number, alt_jersey_number, position, is_active")
     .in("club_id", [f.home_club_id, f.away_club_id])
     .order("jersey_number", { ascending: true, nullsFirst: false })
     .order("full_name");
