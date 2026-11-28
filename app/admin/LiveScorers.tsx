@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { formatPlayerName } from "@/lib/playerName";
+import { playerLabel, playersWearing } from "@/lib/jersey";
 import type { LiveGoalKind } from "@/lib/matchday";
 
 // Goal scorers and Player of the Match during a live match.
@@ -9,7 +9,7 @@ import type { LiveGoalKind } from "@/lib/matchday";
 type Club = { id: string; name: string; short_code: string };
 type Fx = { id: string; home_club: Club; away_club: Club };
 type Side = "home" | "away";
-export type SquadPlayer = { id: string; club_id: string; full_name: string; jersey_number: number | null };
+export type SquadPlayer = { id: string; club_id: string; full_name: string; jersey_number: number | null; alt_jersey_number?: number | null };
 export type LiveGoal = { id: string; player_id: string; club_id: string; minute: number | null; is_own_goal: boolean; is_penalty: boolean };
 
 const F = "'DM Sans',system-ui,sans-serif";
@@ -29,7 +29,7 @@ function api(path: string, method = "GET", body?: unknown) {
 }
 const errOf = async (r: Response, fallback: string) => (await r.json().catch(() => ({}))).error ?? fallback;
 
-export const playerLabel = (p: SquadPlayer) => `${p.jersey_number != null ? `#${p.jersey_number} ` : ""}${formatPlayerName(p.full_name)}`;
+export { playerLabel };
 
 /** Which team a saved goal counts for. An own goal counts for the other team. */
 export const goalSide = (g: LiveGoal, f: Fx): Side => {
@@ -183,7 +183,9 @@ function ScorerPicker({ draft, setDraft, squads, clubOf, busy, onSave, onCancel 
   const [num, setNum] = useState(picked?.jersey_number != null ? String(picked.jersey_number) : "");
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => { box.current?.scrollIntoView({ block: "center", behavior: "smooth" }); }, []);
-  const typedMiss = num.trim() !== "" && !pool.some(p => p.jersey_number === Number(num));
+  const wearing = playersWearing(pool, num);
+  const typedMiss = num.trim() !== "" && wearing.length === 0;
+  const typedClash = wearing.length > 1 && !wearing.some(p => p.id === draft.player_id);
   const setKind = (kind: LiveGoalKind) => {
     const keep = (kind === "og") === (draft.kind === "og");
     setDraft({ ...draft, kind, player_id: keep ? draft.player_id : "" });
@@ -203,8 +205,8 @@ function ScorerPicker({ draft, setDraft, squads, clubOf, busy, onSave, onCancel 
           <input id={`jn-${draft.side}`} autoFocus type="number" inputMode="numeric" min={0} max={99} value={num} placeholder="No."
             onChange={e => {
               const v = e.target.value; setNum(v);
-              const hit = v.trim() === "" ? undefined : pool.find(p => p.jersey_number === Number(v));
-              setDraft({ ...draft, player_id: hit ? hit.id : "" });
+              const hits = playersWearing(pool, v);
+              setDraft({ ...draft, player_id: hits.length === 1 ? hits[0].id : "" });
             }}
             style={{ ...field, width: 96, fontSize: 28, fontWeight: 700, textAlign: "center", borderColor: typedMiss ? "#a3211a" : undefined }} />
         </div>
@@ -221,6 +223,14 @@ function ScorerPicker({ draft, setDraft, squads, clubOf, busy, onSave, onCancel 
         </div>
       </div>
       {typedMiss && <div style={{ fontSize: 13, color: "#a3211a" }}>No player wears #{num} in this squad. Pick from the list instead.</div>}
+      {typedClash && (
+        <div style={{ display: "grid", gap: 8 }}>
+          <div style={{ fontSize: 13, color: "#8a5a12" }}>{wearing.length} players wear #{num} (main or alt kit). Who scored?</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {wearing.map(p => <button key={p.id} type="button" style={chip(false)} onClick={() => setDraft({ ...draft, player_id: p.id })}>{playerLabel(p)}</button>)}
+          </div>
+        </div>
+      )}
       {picked && <div style={{ fontSize: 15, fontWeight: 600 }}>{playerLabel(picked)}</div>}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <button type="button" disabled={busy || !draft.player_id} onClick={onSave}
