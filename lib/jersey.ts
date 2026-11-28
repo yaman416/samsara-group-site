@@ -21,3 +21,13 @@ export function playersWearing<T extends NumberedPlayer>(pool: T[], typed: strin
   const alt = pool.filter(p => p.alt_jersey_number === n && p.jersey_number !== n);
   return [...main, ...alt];
 }
+
+export type Kit = "home" | "alt";
+
+/** The squad as numbered in the chosen kit. In the alt kit a player with an alt
+ *  number wears that; everyone else keeps their main number. */
+export function inKit<T extends NumberedPlayer>(pool: T[], kit: Kit): T[] {
+  return pool.map(p => ({ ...p, jersey_number: kit === "alt" && p.alt_jersey_number != null ? p.alt_jersey_number : p.jersey_number, alt_jersey_number: null }));
+}
+
+export const kitName = (kit: Kit, altName: string | null | undefined) => (kit === "alt" ? `${altName?.trim() || "Alt"} kit` : "Home kit");

@@ -2,9 +2,10 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { LEAGUE_TZ } from "@/lib/utils";
 import { CARD_LABELS, CARD_TYPES, leagueDateKey, pickMatchday, tallyGoals, type CardType, type MatchSheet } from "@/lib/matchday";
-import { playerLabel, playersWearing } from "@/lib/jersey";
+import { inKit, playerLabel, playersWearing, type Kit } from "@/lib/jersey";
+import { KitToggle } from "./KitToggle";
 import { BroadcastControls, LivePanel, liveApi, type BroadcastState, type LiveRow } from "./LivePanel";
-import { PotmBox } from "./LiveScorers";
+import { PotmBox, type KitInfo } from "./LiveScorers";
 
 type Club = { id: string; name: string; short_code: string };
 type Fixture = {
@@ -187,7 +188,13 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [squads, setSquads] = useState<Record<Side, SquadPlayer[]>>({ home: [], away: [] });
+  const [rawSquads, setSquads] = useState<Record<Side, SquadPlayer[]>>({ home: [], away: [] });
+  const [kits, setKits] = useState<Record<Side, KitInfo>>({ home: { kit: "home", alt_name: null }, away: { kit: "home", alt_name: null } });
+  const squads: Record<Side, SquadPlayer[]> = { home: inKit(rawSquads.home, kits.home.kit), away: inKit(rawSquads.away, kits.away.kit) };
+  async function setKit(side: Side, kit: Kit) {
+    setKits(k => ({ ...k, [side]: { ...k[side], kit } }));
+    await api("/api/admin/fixtures", { method: "PATCH", body: JSON.stringify({ id: fixture.id, [side === "home" ? "home_kit" : "away_kit"]: kit }) });
+  }
   const [score, setScore] = useState<Record<Side, string>>({ home: saved ? String(saved.home_score) : "", away: saved ? String(saved.away_score) : "" });
   const [goals, setGoals] = useState<GoalRow[]>([]);
   const [cards, setCards] = useState<CardRow[]>([]);
@@ -200,8 +207,9 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
     const r = await api(`/api/admin/match-sheet?fixture_id=${fixture.id}`);
     setLoading(false);
     if (!r.ok) { setMsg({ ok: false, text: (await r.json().catch(() => ({}))).error ?? "Could not load the match sheet." }); return; }
-    const d: { result: { home_score: number; away_score: number } | null; goals: SavedGoal[]; cards: SavedCard[]; potm_player_id: string | null; home_players: SquadPlayer[]; away_players: SquadPlayer[] } = await r.json();
+    const d: { result: { home_score: number; away_score: number } | null; goals: SavedGoal[]; cards: SavedCard[]; potm_player_id: string | null; home_players: SquadPlayer[]; away_players: SquadPlayer[]; kits?: Record<Side, KitInfo> } = await r.json();
     setSquads({ home: d.home_players, away: d.away_players });
+    if (d.kits) setKits(d.kits);
     if (d.result) setScore({ home: String(d.result.home_score), away: String(d.result.away_score) });
     else if (live) setScore({ home: String(live.home_score), away: String(live.away_score) }); // carry over the live score
     setPotm(d.potm_player_id ?? "");
@@ -319,6 +327,7 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
                   return (
                     <div key={side} style={{ display: "grid", gap: 16, alignContent: "start" }}>
                       <div style={{ fontSize: 15, fontWeight: 600 }}>{club.name}</div>
+                      <KitToggle club={club.name} kit={kits[side].kit} altName={kits[side].alt_name} onChange={k => setKit(side, k)} />
                       {squads[side].length === 0 && (
                         <div style={{ fontSize: 13, color: "#8a5a12", background: "#fff9ec", borderRadius: 8, padding: "8px 12px" }}>No registered players yet. You can still save the score.</div>
                       )}
