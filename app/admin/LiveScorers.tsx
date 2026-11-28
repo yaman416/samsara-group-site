@@ -76,7 +76,8 @@ export function useLiveGoals(fixtureId: string) {
     await api("/api/admin/fixtures", "PATCH", { id: fixtureId, [side === "home" ? "home_kit" : "away_kit"]: kit });
   }, [fixtureId]);
 
-  return { squads, goals, setGoals, potm, setPotm, ready, refresh, kits, setKit };
+  const hasAlt: Record<Side, boolean> = { home: rawSquads.home.some(p => p.alt_jersey_number != null), away: rawSquads.away.some(p => p.alt_jersey_number != null) };
+  return { squads, goals, setGoals, potm, setPotm, ready, refresh, kits, setKit, hasAlt };
 }
 
 export type KitInfo = { kit: Kit; names: { home: string; alt: string }; colours: { home: string | null; alt: string | null } };
@@ -89,7 +90,7 @@ export function LiveScorers({ fixture, scores, data, ask, onAsked, minuteNow }: 
   fixture: Fx; scores: Record<Side, number>; data: ReturnType<typeof useLiveGoals>;
   ask: Side | null; onAsked: () => void; minuteNow: () => number | null;
 }) {
-  const { squads, goals, setGoals, potm, setPotm, refresh, kits, setKit } = data;
+  const { squads, goals, setGoals, potm, setPotm, refresh, kits, setKit, hasAlt } = data;
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -152,7 +153,7 @@ export function LiveScorers({ fixture, scores, data, ask, onAsked, minuteNow }: 
             return (
               <div key={side} style={{ display: "grid", gap: 6, alignContent: "start" }}>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{clubOf(side).name}</div>
-                <KitToggle club={clubOf(side).name} kit={kits[side].kit} names={kits[side].names} colours={kits[side].colours} onChange={k => setKit(side, k)} />
+                {hasAlt[side] && <KitToggle club={clubOf(side).name} kit={kits[side].kit} names={kits[side].names} colours={kits[side].colours} onChange={k => setKit(side, k)} />}
                 {mine.length === 0 && missing === 0 && <div style={{ fontSize: 13, color: MUTED }}>No goals yet.</div>}
                 {mine.map(g => {
                   const p = byId.get(g.player_id);

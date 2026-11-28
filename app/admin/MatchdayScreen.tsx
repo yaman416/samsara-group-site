@@ -327,7 +327,7 @@ function MatchSheetCard({ fixture, onSaved, live, onAir, onLive, onSetOnAir }: {
                   return (
                     <div key={side} style={{ display: "grid", gap: 16, alignContent: "start" }}>
                       <div style={{ fontSize: 15, fontWeight: 600 }}>{club.name}</div>
-                      <KitToggle club={club.name} kit={kits[side].kit} names={kits[side].names} colours={kits[side].colours} onChange={k => setKit(side, k)} />
+                      {rawSquads[side].some(p => p.alt_jersey_number != null) && <KitToggle club={club.name} kit={kits[side].kit} names={kits[side].names} colours={kits[side].colours} onChange={k => setKit(side, k)} />}
                       {squads[side].length === 0 && (
                         <div style={{ fontSize: 13, color: "#8a5a12", background: "#fff9ec", borderRadius: 8, padding: "8px 12px" }}>No registered players yet. You can still save the score.</div>
                       )}
