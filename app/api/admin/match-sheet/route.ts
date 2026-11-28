@@ -7,10 +7,10 @@ import { validateMatchSheet, type MatchSheet } from "@/lib/matchday";
 // card uses the "Unattributed" team row. The club comes from cards.player_id.
 const FALLBACK_TEAM_ID = "07b51ddc-6bd1-43a5-b912-b13dfc5d6aa2";
 
-type Fixture = { id: string; home_club_id: string; away_club_id: string; potm_player_id: string | null };
+type Fixture = { id: string; home_club_id: string; away_club_id: string; potm_player_id: string | null; home_kit: string | null; away_kit: string | null };
 
 async function loadFixture(id: string) {
-  return supabaseAdmin.from("fixtures").select("id, home_club_id, away_club_id, potm_player_id").eq("id", id).maybeSingle<Fixture>();
+  return supabaseAdmin.from("fixtures").select("id, home_club_id, away_club_id, potm_player_id, home_kit, away_kit").eq("id", id).maybeSingle<Fixture>();
 }
 
 async function loadSquads(f: Fixture) {
@@ -34,13 +34,14 @@ export async function GET(req: NextRequest) {
   if (fErr) return NextResponse.json({ error: fErr.message }, { status: 500 });
   if (!fixture) return NextResponse.json({ error: "Fixture not found" }, { status: 404 });
 
-  const [players, result, goals, cards] = await Promise.all([
+  const [players, result, goals, cards, kitClubs] = await Promise.all([
     loadSquads(fixture),
     supabaseAdmin.from("results").select("home_score, away_score").eq("fixture_id", fixtureId).maybeSingle(),
     supabaseAdmin.from("goal_scorers").select("id, player_id, club_id, minute, is_own_goal, is_penalty").eq("fixture_id", fixtureId).order("created_at").order("minute", { nullsFirst: false }),
     supabaseAdmin.from("cards").select("id, player_id, player_name, card_type, minute, reason").eq("fixture_id", fixtureId).order("minute", { nullsFirst: false }),
+    supabaseAdmin.from("clubs").select("id, alt_kit_name").in("id", [fixture.home_club_id, fixture.away_club_id]),
   ]);
-  const failed = players.error || result.error || goals.error || cards.error;
+  const failed = players.error || result.error || goals.error || cards.error || kitClubs.error;
   if (failed) return NextResponse.json({ error: failed.message }, { status: 500 });
 
   const squad = (players.data ?? []).filter(p => p.is_active !== false);
@@ -49,6 +50,10 @@ export async function GET(req: NextRequest) {
     goals: goals.data ?? [],
     cards: cards.data ?? [],
     potm_player_id: fixture.potm_player_id ?? null,
+    kits: {
+      home: { kit: fixture.home_kit === "alt" ? "alt" : "home", alt_name: kitClubs.data?.find(c => c.id === fixture.home_club_id)?.alt_kit_name ?? null },
+      away: { kit: fixture.away_kit === "alt" ? "alt" : "home", alt_name: kitClubs.data?.find(c => c.id === fixture.away_club_id)?.alt_kit_name ?? null },
+    },
     home_players: squad.filter(p => p.club_id === fixture.home_club_id),
     away_players: squad.filter(p => p.club_id === fixture.away_club_id),
   });

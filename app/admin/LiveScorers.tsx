@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { playerLabel, playersWearing } from "@/lib/jersey";
+import { inKit, playerLabel, playersWearing, type Kit } from "@/lib/jersey";
+import { KitToggle } from "./KitToggle";
 import type { LiveGoalKind } from "@/lib/matchday";
 
 // Goal scorers and Player of the Match during a live match.
@@ -39,7 +40,9 @@ export const goalSide = (g: LiveGoal, f: Fx): Side => {
 
 /** Squads, saved scorers and Player of the Match for one fixture, refreshed every 8 seconds. */
 export function useLiveGoals(fixtureId: string) {
-  const [squads, setSquads] = useState<Record<Side, SquadPlayer[]>>({ home: [], away: [] });
+  const [rawSquads, setSquads] = useState<Record<Side, SquadPlayer[]>>({ home: [], away: [] });
+  const [kits, setKits] = useState<Record<Side, KitInfo>>({ home: { kit: "home", alt_name: null }, away: { kit: "home", alt_name: null } });
+  const squads: Record<Side, SquadPlayer[]> = { home: inKit(rawSquads.home, kits.home.kit), away: inKit(rawSquads.away, kits.away.kit) };
   const [goals, setGoals] = useState<LiveGoal[]>([]);
   const [potm, setPotm] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -56,8 +59,9 @@ export function useLiveGoals(fixtureId: string) {
     (async () => {
       const r = await api(`/api/admin/match-sheet?fixture_id=${fixtureId}`);
       if (!r.ok || stop) return;
-      const d: { home_players: SquadPlayer[]; away_players: SquadPlayer[]; goals: LiveGoal[]; potm_player_id: string | null } = await r.json();
+      const d: { home_players: SquadPlayer[]; away_players: SquadPlayer[]; goals: LiveGoal[]; potm_player_id: string | null; kits?: Record<Side, KitInfo> } = await r.json();
       setSquads({ home: d.home_players, away: d.away_players });
+      if (d.kits) setKits(d.kits);
       setReady(true);
     })();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch saved scorers for this match
@@ -66,8 +70,16 @@ export function useLiveGoals(fixtureId: string) {
     return () => { stop = true; clearInterval(t); };
   }, [fixtureId, refresh]);
 
-  return { squads, goals, setGoals, potm, setPotm, ready, refresh };
+  // Which kit each team wore: saved on the fixture so the live panel and match sheet agree.
+  const setKit = useCallback(async (side: Side, kit: Kit) => {
+    setKits(k => ({ ...k, [side]: { ...k[side], kit } }));
+    await api("/api/admin/fixtures", "PATCH", { id: fixtureId, [side === "home" ? "home_kit" : "away_kit"]: kit });
+  }, [fixtureId]);
+
+  return { squads, goals, setGoals, potm, setPotm, ready, refresh, kits, setKit };
 }
+
+export type KitInfo = { kit: Kit; alt_name: string | null };
 
 type Draft = { id?: string; side: Side; kind: LiveGoalKind; player_id: string; minute: string };
 
@@ -76,7 +88,7 @@ export function LiveScorers({ fixture, scores, data, ask, onAsked, minuteNow }: 
   fixture: Fx; scores: Record<Side, number>; data: ReturnType<typeof useLiveGoals>;
   ask: Side | null; onAsked: () => void; minuteNow: () => number | null;
 }) {
-  const { squads, goals, setGoals, potm, setPotm, refresh } = data;
+  const { squads, goals, setGoals, potm, setPotm, refresh, kits, setKit } = data;
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -139,6 +151,7 @@ export function LiveScorers({ fixture, scores, data, ask, onAsked, minuteNow }: 
             return (
               <div key={side} style={{ display: "grid", gap: 6, alignContent: "start" }}>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{clubOf(side).name}</div>
+                <KitToggle club={clubOf(side).name} kit={kits[side].kit} altName={kits[side].alt_name} onChange={k => setKit(side, k)} />
                 {mine.length === 0 && missing === 0 && <div style={{ fontSize: 13, color: MUTED }}>No goals yet.</div>}
                 {mine.map(g => {
                   const p = byId.get(g.player_id);
